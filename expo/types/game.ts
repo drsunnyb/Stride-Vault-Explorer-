@@ -244,6 +244,8 @@ export interface PlayerState {
   cityVotes?: Record<string, number>;
   /** Steps already credited toward the city-vote ladder (avoids double-count). */
   cityVoteStepsCredited?: number;
+  /** Inbox notifications (most recent first). */
+  notifications?: InboxNotification[];
 }
 
 /** One pick in the weekly Stride Predict market. */
@@ -299,6 +301,40 @@ export interface ChallengeParticipant {
   baseline: number;
   /** Current metric value (live for you, simulated for friends). */
   current: number;
+}
+
+/** A user-facing notification surfaced in the inbox. */
+export type NotificationKind =
+  | "friend-request"
+  | "friend-joined"
+  | "challenge-invite"
+  | "challenge-won"
+  | "challenge-lost"
+  | "city-live"
+  | "system";
+
+export interface InboxNotification {
+  id: string;
+  kind: NotificationKind;
+  createdAt: number;
+  /** Has the user opened/read the notification. */
+  read: boolean;
+  /** Top-line headline (e.g. "Kai wants to be friends"). */
+  title: string;
+  /** Sub-line body / context (e.g. "Walked 12,400 steps this week"). */
+  body: string;
+  /** Optional avatar seed of the sender (drives initial-circle colour). */
+  avatarSeed?: string;
+  /** Optional display name for sender — used in avatars. */
+  fromName?: string;
+  /** Friend username (for friend-request kind). */
+  fromUsername?: string;
+  /** Linked stake-challenge id (for challenge-invite/won/lost kinds). */
+  challengeId?: string;
+  /** Whether this notification still has pending accept/decline actions. */
+  actionable: boolean;
+  /** Once acted on: "accepted" | "declined". */
+  resolution?: "accepted" | "declined";
 }
 
 export interface StakeChallenge {

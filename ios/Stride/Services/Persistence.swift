@@ -78,6 +78,11 @@ nonisolated struct PersistedPlayer: Codable, Sendable {
     /// Lifetime-steps total already credited toward city votes (anti-double-count).
     var cityVoteStepsCredited: Int = 0
 
+    /// Inbox notifications (most recent first). Seeded on first launch with
+    /// a handful of realistic incoming friend requests + challenge invites
+    /// so the UI has content before backend push wiring lands.
+    var notifications: [InboxNotification] = InboxNotification.seedDefaults()
+
     var userCoordinate: CLLocationCoordinate2D {
         get { CLLocationCoordinate2D(latitude: userLat, longitude: userLng) }
         set { userLat = newValue.latitude; userLng = newValue.longitude }
@@ -85,6 +90,64 @@ nonisolated struct PersistedPlayer: Codable, Sendable {
 }
 
 /// Codable friend record persisted on-device. Mirrors `expo/types/game.ts Friend`.
+// MARK: - Inbox notifications
+
+nonisolated enum InboxNotificationKind: String, Codable, Sendable, Hashable {
+    case friendRequest = "friend-request"
+    case friendJoined = "friend-joined"
+    case challengeInvite = "challenge-invite"
+    case challengeWon = "challenge-won"
+    case challengeLost = "challenge-lost"
+    case cityLive = "city-live"
+    case system
+}
+
+nonisolated enum InboxResolution: String, Codable, Sendable, Hashable {
+    case accepted, declined
+}
+
+nonisolated struct InboxNotification: Codable, Hashable, Sendable, Identifiable {
+    var id: String
+    var kind: InboxNotificationKind
+    var createdAt: Date
+    var read: Bool
+    var actionable: Bool
+    var title: String
+    var body: String
+    var fromName: String?
+    var fromUsername: String?
+    var avatarSeed: Int?
+    var challengeId: String?
+    var resolution: InboxResolution?
+
+    static func seedDefaults() -> [InboxNotification] {
+        let now = Date()
+        return [
+            .init(id: "n_req_nova", kind: .friendRequest,
+                  createdAt: now.addingTimeInterval(-60 * 18), read: false, actionable: true,
+                  title: "Nova Vance wants to be friends",
+                  body: "Walked 14,210 steps this week · same tribe",
+                  fromName: "Nova Vance", fromUsername: "novavance", avatarSeed: 1),
+            .init(id: "n_req_atlas", kind: .friendRequest,
+                  createdAt: now.addingTimeInterval(-60 * 60 * 6), read: false, actionable: true,
+                  title: "Atlas Jin wants to be friends",
+                  body: "Top 50 walker this month · invited by Kai",
+                  fromName: "Atlas Jin", fromUsername: "atlas.j", avatarSeed: 11),
+            .init(id: "n_chal_sable", kind: .challengeInvite,
+                  createdAt: now.addingTimeInterval(-60 * 60 * 2), read: false, actionable: true,
+                  title: "Sable invited you to a Step Showdown",
+                  body: "500c stake · 7 days · winner takes the pot",
+                  fromName: "Sable Wren", fromUsername: "sable", avatarSeed: 4,
+                  challengeId: "c_seed_sable"),
+            .init(id: "n_joined_juno", kind: .friendJoined,
+                  createdAt: now.addingTimeInterval(-60 * 60 * 26), read: true, actionable: false,
+                  title: "Juno Park joined via your link",
+                  body: "+500 coins paid to you both",
+                  fromName: "Juno Park", fromUsername: "junopark", avatarSeed: 6),
+        ]
+    }
+}
+
 nonisolated struct PersistedFriend: Codable, Hashable, Sendable, Identifiable {
     let id: String
     let username: String

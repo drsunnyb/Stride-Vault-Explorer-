@@ -66,6 +66,8 @@ import type {
   ChallengeParticipant,
   ClaimedVault,
   Friend,
+  InboxNotification,
+  NotificationKind,
   PlayerState,
   PredictionPick,
   Raffle,
@@ -133,7 +135,90 @@ const DEFAULT_PLAYER: PlayerState = {
   comebackClaimsRemaining: 0,
   predictions: [],
   predictionHistory: [],
+  notifications: seedNotifications(),
 };
+
+/**
+ * Seed the inbox with a handful of realistic incoming events so the
+ * Notifications screen has something to render on first launch. These
+ * are pure UI fixtures — the production backend will replace them with
+ * server-driven push events.
+ */
+function seedNotifications(): InboxNotification[] {
+  const now = Date.now();
+  return [
+    {
+      id: "n_req_nova",
+      kind: "friend-request",
+      createdAt: now - 1000 * 60 * 18,
+      read: false,
+      actionable: true,
+      title: "Nova Vance wants to be friends",
+      body: "Walked 14,210 steps this week · same tribe",
+      fromName: "Nova Vance",
+      fromUsername: "novavance",
+      avatarSeed: "nova-1",
+    },
+    {
+      id: "n_req_atlas",
+      kind: "friend-request",
+      createdAt: now - 1000 * 60 * 60 * 6,
+      read: false,
+      actionable: true,
+      title: "Atlas Jin wants to be friends",
+      body: "Top 50 walker this month · invited by Kai",
+      fromName: "Atlas Jin",
+      fromUsername: "atlas.j",
+      avatarSeed: "atlas-11",
+    },
+    {
+      id: "n_chal_sable",
+      kind: "challenge-invite",
+      createdAt: now - 1000 * 60 * 60 * 2,
+      read: false,
+      actionable: true,
+      title: "Sable invited you to a Step Showdown",
+      body: "500c stake · 7 days · winner takes the pot",
+      fromName: "Sable Wren",
+      fromUsername: "sable",
+      avatarSeed: "sable-4",
+      challengeId: "c_seed_sable",
+    },
+    {
+      id: "n_joined_juno",
+      kind: "friend-joined",
+      createdAt: now - 1000 * 60 * 60 * 26,
+      read: true,
+      actionable: false,
+      title: "Juno Park joined via your link",
+      body: "+500 coins paid to you both",
+      fromName: "Juno Park",
+      fromUsername: "junopark",
+      avatarSeed: "juno-6",
+    },
+  ];
+}
+
+/** A seeded challenge attached to the seed Sable challenge invite. */
+function seedSableChallenge(now: number): StakeChallenge {
+  return {
+    id: "c_seed_sable",
+    title: "Sable's Step Showdown",
+    createdBy: "f_sable",
+    stake: 500,
+    metric: "steps",
+    createdAt: now - 1000 * 60 * 60 * 2,
+    startsAt: now - 1000 * 60 * 60 * 2,
+    endsAt: now + 1000 * 60 * 60 * 24 * 7,
+    inviteExpiresAt: now + 1000 * 60 * 60 * 22,
+    status: "live",
+    participants: [
+      { playerId: "f_sable", displayName: "Sable Wren", avatarSeed: "sable-4", state: "in", baseline: 0, current: 4200 },
+      { playerId: "you", displayName: "You", avatarSeed: "halcyon-7", state: "invited", baseline: 0, current: 0 },
+      { playerId: "f_kai", displayName: "Kai Mercer", avatarSeed: "kai-2", state: "in", baseline: 0, current: 3100 },
+    ],
+  };
+}
 
 /**
  * Daily claim ladder — diminishing returns so a player who walks all day still
@@ -887,6 +972,80 @@ export const [GameProvider, useGame] = createContextHook(() => {
     const next = { ...player, notificationsEnabled: false };
     await setPlayer(next);
   }, [player, setPlayer]);
+
+  // ── Notifications inbox ──────────────────────────────────────────────
+  /** Make sure the seed Sable challenge is attached when the matching
+   *  invite notification is present — so accepting it has something
+   *  concrete to bind to in the challenges list. Idempotent. */
+  useEffect(() => {
+    const cur = qc.getQueryData<PlayerState>(["player"]) ?? DEFAULT_PLAYER;
+    const hasSeedInvite = (cur.notifications ?? []).some((n) => n.id === "n_chal_sable");
+    if (!hasSeedInvite) return;
+    const hasSeedChallenge = (cur.challenges ?? []).some((c) => c.id === "c_seed_sable");
+    if (hasSeedChallenge) return;
+    setPlayer({
+      ...cur,
+      challenges: [seedSableChallenge(Date.now()), ...(cur.challenges ?? [])],
+    }).catch(() => {});
+    // run once at mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const unreadNotifications = useMemo(
+    () => (player.notifications ?? []).filter((n) => !n.read).length,
+    [player.notifications]
+  );
+  const pendingNotifications = useMemo(
+    () => (player.notifications ?? []).filter((n) => n.actionable && !n.resolution).length,
+    [player.notifications]
+  );
+
+  const markNotificationRead = useCallback(
+    async (id: string) => {
+      const cur = qc.getQueryData<PlayerState>(["player"]) ?? DEFAULT_PLAYER;
+      const next = (cur.notifications ?? []).map((n) =>
+        n.id === id ? { ...n, read: true } : n
+      );
+      await setPlayer({ ...cur, notifications: next });
+    },
+    [qc, setPlayer]
+  );
+
+  const markAllNotificationsRead = useCallback(async () => {
+    const cur = qc.getQueryData<PlayerState>(["player"]) ?? DEFAULT_PLAYER;
+    if ((cur.notifications ?? []).every((n) => n.read)) return;
+    const next = (cur.notifications ?? []).map((n) => ({ ...n, read: true }));
+    await setPlayer({ ...cur, notifications: next });
+  }, [qc, setPlayer]);
+
+  const resolveNotification = useCallback(
+    async (id: string, resolution: "accepted" | "declined") => {
+      const cur = qc.getQueryData<PlayerState>(["player"]) ?? DEFAULT_PLAYER;
+      const next = (cur.notifications ?? []).map((n) =>
+        n.id === id ? { ...n, read: true, actionable: false, resolution } : n
+      );
+      await setPlayer({ ...cur, notifications: next });
+    },
+    [qc, setPlayer]
+  );
+
+  /** Pushes a fresh notification onto the inbox (most recent first). */
+  const pushNotification = useCallback(
+    async (n: Omit<InboxNotification, "id" | "createdAt" | "read">) => {
+      const cur = qc.getQueryData<PlayerState>(["player"]) ?? DEFAULT_PLAYER;
+      const fresh: InboxNotification = {
+        id: `n_${Date.now().toString(36)}`,
+        createdAt: Date.now(),
+        read: false,
+        ...n,
+      };
+      await setPlayer({
+        ...cur,
+        notifications: [fresh, ...(cur.notifications ?? [])],
+      });
+    },
+    [qc, setPlayer]
+  );
 
   // ── Friends ─────────────────────────────────────────────────────────
   const addFriend = useCallback(
@@ -1652,6 +1811,14 @@ export const [GameProvider, useGame] = createContextHook(() => {
       createChallenge,
       acceptChallenge,
       declineChallenge,
+      // Notifications inbox
+      notifications: player.notifications ?? [],
+      unreadNotifications,
+      pendingNotifications,
+      markNotificationRead,
+      markAllNotificationsRead,
+      resolveNotification,
+      pushNotification,
       periodCoinsEarned,
       brandPeriodCoinsEarned,
       leaderboardFor,
@@ -1747,6 +1914,12 @@ export const [GameProvider, useGame] = createContextHook(() => {
       createChallenge,
       acceptChallenge,
       declineChallenge,
+      unreadNotifications,
+      pendingNotifications,
+      markNotificationRead,
+      markAllNotificationsRead,
+      resolveNotification,
+      pushNotification,
       periodCoinsEarned,
       brandPeriodCoinsEarned,
       leaderboardFor,

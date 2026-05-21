@@ -239,6 +239,91 @@ final class VaultStore {
         return true
     }
 
+    // ── Notifications inbox ─────────────────────────────────────────────────
+    var notifications: [InboxNotification] {
+        state.notifications.sorted { $0.createdAt > $1.createdAt }
+    }
+    var unreadNotificationCount: Int { state.notifications.filter { !$0.read }.count }
+    var pendingNotificationCount: Int {
+        state.notifications.filter { $0.actionable && $0.resolution == nil }.count
+    }
+
+    func markNotificationRead(id: String) {
+        guard let i = state.notifications.firstIndex(where: { $0.id == id }) else { return }
+        if state.notifications[i].read { return }
+        state.notifications[i].read = true
+        save()
+    }
+
+    func markAllNotificationsRead() {
+        var dirty = false
+        for i in state.notifications.indices where !state.notifications[i].read {
+            state.notifications[i].read = true
+            dirty = true
+        }
+        if dirty { save() }
+    }
+
+    /// Resolves an actionable notification — wires through to the matching
+    /// friend / challenge mutation so the inbox button does real work.
+    @discardableResult
+    func resolveNotification(id: String, accept: Bool) -> Bool {
+        guard let i = state.notifications.firstIndex(where: { $0.id == id }) else { return false }
+        let n = state.notifications[i]
+        if accept {
+            switch n.kind {
+            case .friendRequest:
+                if let uname = n.fromUsername {
+                    _ = addFriend(username: uname)
+                }
+            case .challengeInvite:
+                if let cid = n.challengeId {
+                    if !state.stakeChallenges.contains(where: { $0.id == cid }) {
+                        attachSeededChallenge(id: cid, from: n)
+                    }
+                    _ = acceptStakeChallenge(id: cid)
+                }
+            default: break
+            }
+        } else if n.kind == .challengeInvite, let cid = n.challengeId {
+            _ = declineStakeChallenge(id: cid)
+        }
+        state.notifications[i].read = true
+        state.notifications[i].actionable = false
+        state.notifications[i].resolution = accept ? .accepted : .declined
+        save()
+        return true
+    }
+
+    /// Lazily creates the seed Sable challenge backing the seed challenge
+    /// invite the first time the user accepts it.
+    private func attachSeededChallenge(id: String, from n: InboxNotification) {
+        let start = now
+        let challenge = PersistedStakeChallenge(
+            id: id,
+            title: "\(n.fromName ?? "Sable")'s Step Showdown",
+            createdBy: "f_sable",
+            stake: 500,
+            metric: .steps,
+            createdAt: start,
+            startsAt: start,
+            endsAt: start.addingTimeInterval(7 * 86400),
+            inviteExpiresAt: start.addingTimeInterval(22 * 3600),
+            status: .live,
+            participants: [
+                .init(playerId: "f_sable", displayName: n.fromName ?? "Sable Wren",
+                      avatarSeed: n.avatarSeed ?? 4, state: .joined, baseline: 0, current: 4200),
+                .init(playerId: "you", displayName: state.displayName,
+                      avatarSeed: state.avatarSeed, state: .invited, baseline: 0, current: 0),
+                .init(playerId: "f_kai", displayName: "Kai Mercer",
+                      avatarSeed: 2, state: .joined, baseline: 0, current: 3100),
+            ],
+            winnerId: nil,
+            payout: nil
+        )
+        state.stakeChallenges.insert(challenge, at: 0)
+    }
+
     @discardableResult
     func declineStakeChallenge(id: String) -> Bool {
         guard let idx = state.stakeChallenges.firstIndex(where: { $0.id == id }) else { return false }

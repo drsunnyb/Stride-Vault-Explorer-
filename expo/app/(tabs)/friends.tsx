@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Copy, Share2, Sword, Trophy, UserPlus, UserX, Users } from "lucide-react-native";
+import { Bell, Copy, Share2, Sword, Trophy, UserPlus, UserX, Users } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -13,7 +13,7 @@ import { useGame } from "@/providers/GameProvider";
 import type { StakeChallenge } from "@/types/game";
 
 export default function FriendsScreen() {
-  const { player, friends, challenges, now, addFriend, removeFriend } = useGame();
+  const { player, friends, challenges, now, addFriend, removeFriend, unreadNotifications, pendingNotifications } = useGame();
   const [query, setQuery] = useState<string>("");
   const [busy, setBusy] = useState<boolean>(false);
 
@@ -42,8 +42,36 @@ export default function FriendsScreen() {
   const liveChallenges = challenges.filter((c) => c.status === "live");
   const settledChallenges = challenges.filter((c) => c.status === "settled" || c.status === "cancelled");
 
+  const inboxBadge = pendingNotifications > 0 ? pendingNotifications : unreadNotifications;
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 60 }}>
+      {/* Inbox entry */}
+      <Pressable
+        onPress={() => router.push("/notifications")}
+        style={({ pressed }) => [styles.inboxRow, pressed && { transform: [{ scale: 0.99 }] }]}
+      >
+        <View style={styles.inboxIcon}>
+          <Bell size={16} color={theme.goldBright} />
+          {inboxBadge > 0 ? (
+            <View style={styles.inboxBadge}>
+              <Text style={styles.inboxBadgeText}>{inboxBadge > 9 ? "9+" : inboxBadge}</Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.inboxTitle}>NOTIFICATIONS</Text>
+          <Text style={styles.inboxSub}>
+            {pendingNotifications > 0
+              ? `${pendingNotifications} pending · friend requests & challenge invites`
+              : unreadNotifications > 0
+                ? `${unreadNotifications} unread`
+                : "All caught up"}
+          </Text>
+        </View>
+        <Text style={styles.inboxAction}>OPEN →</Text>
+      </Pressable>
+
       {/* Invite hero */}
       <View style={styles.heroCard}>
         <LinearGradient
@@ -253,6 +281,46 @@ function ChallengeTicket({ challenge, now }: { challenge: StakeChallenge; now: n
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.bg },
+  inboxRow: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: theme.bgCard,
+    borderRadius: theme.radius.lg,
+    borderWidth: 1,
+    borderColor: theme.gold + "55",
+  },
+  inboxIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(244,208,63,0.12)",
+    borderWidth: 1,
+    borderColor: theme.gold + "55",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  inboxBadge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    borderRadius: 9,
+    backgroundColor: theme.goldBright,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: theme.bgCard,
+  },
+  inboxBadgeText: { color: "#1A0A00", fontSize: 9, fontWeight: "900" as const },
+  inboxTitle: { color: theme.goldBright, fontSize: 11, fontWeight: "900" as const, letterSpacing: 1.4 },
+  inboxSub: { color: theme.textMuted, fontSize: 11, marginTop: 2 },
+  inboxAction: { color: theme.text, fontSize: 11, fontWeight: "900" as const, letterSpacing: 1 },
   heroCard: {
     margin: 16,
     padding: 18,

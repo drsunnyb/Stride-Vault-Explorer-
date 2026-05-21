@@ -12,6 +12,8 @@ struct RewardsView: View {
     @State private var showPredict = false
     @State private var showTribes = false
     @State private var exchangeBrand: Brand?
+    @State private var showPaywall = false
+    @State private var showCities = false
 
     enum Tab: Hashable { case browse, codes, entries }
 
@@ -29,6 +31,7 @@ struct RewardsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
+                    if onWaitlist { waitlistBanner }
                     tabBar
                     switch tab {
                     case .browse:   browseTab
@@ -53,7 +56,115 @@ struct RewardsView: View {
             .sheet(isPresented: $showPredict) { PredictView(store: store) }
             .sheet(isPresented: $showTribes) { TribesView(store: store) }
             .sheet(item: $exchangeBrand) { brand in BrandExchangeSheet(store: store, brand: brand) }
+            .sheet(isPresented: $showPaywall) { PaywallView() }
+            .sheet(isPresented: $showCities) { CitiesView(store: store) }
         }
+    }
+
+    // MARK: - Waitlist preview
+
+    private var onWaitlist: Bool {
+        if let id = store.homeCityId { return id != Cities.liveId }
+        return false
+    }
+
+    private var waitlistBanner: some View {
+        let city = store.homeCity
+        let cityName = city?.name ?? "your city"
+        let rank = store.homeCityRank
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                HStack(spacing: 6) {
+                    Image(systemName: "eye.fill").font(.system(size: 10, weight: .bold))
+                    Text("PREVIEW MODE").tracking(1.4)
+                }
+                .font(.system(size: 10, weight: .black, design: .rounded))
+                .foregroundStyle(Theme.goldBright)
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(Theme.goldBright.opacity(0.16))
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Theme.goldBright.opacity(0.5), lineWidth: 1))
+                Spacer()
+                if let flag = city?.flag { Text(flag).font(.system(size: 24)) }
+            }
+            Text("Coins are minting in \(cityName) — spending unlocks when your city is live.")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .foregroundStyle(Theme.text)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("Browse the catalogue, see exactly what your steps will buy. Codes & raffles activate the moment \(cityName) hits #1 on the waitlist\(rank > 0 ? " (currently #\(rank))" : "").")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: 10) {
+                Button {
+                    Haptics.tap(); showPaywall = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("SKIP THE LINE WITH STRIDE+")
+                                .font(.system(size: 12, weight: .black, design: .rounded)).tracking(1.2)
+                                .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                            Text("3× city votes · 1.5× step value · weekly free votes")
+                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .foregroundStyle(Color(red: 58/255, green: 36/255, blue: 0/255))
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 12)
+                    .background(Theme.goldBright)
+                    .clipShape(.rect(cornerRadius: 14))
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    Haptics.tap(); showCities = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "bolt.fill")
+                        Text("RALLY MY CITY").tracking(1.4)
+                    }
+                    .font(.system(size: 11, weight: .black, design: .rounded))
+                    .foregroundStyle(Theme.emerald)
+                    .frame(maxWidth: .infinity).padding(.vertical, 11)
+                    .background(Theme.emerald.opacity(0.14))
+                    .clipShape(.rect(cornerRadius: 14))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.emerald.opacity(0.55), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+            }
+            HStack(spacing: 8) {
+                footChip(icon: "sparkles", text: "Coins keep minting", tint: Theme.goldBright)
+                footChip(icon: "lock.fill", text: "Spend locked until live", tint: Theme.textMuted)
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(18)
+        .background(
+            ZStack {
+                Theme.bgElev
+                LinearGradient(colors: [Theme.goldBright.opacity(0.18), .clear],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+            }
+        )
+        .clipShape(.rect(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Theme.goldBright.opacity(0.5), lineWidth: 1))
+        .padding(.horizontal, 16)
+    }
+
+    private func footChip(icon: String, text: String, tint: Color) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon).font(.system(size: 9, weight: .bold))
+            Text(text)
+        }
+        .font(.system(size: 10, weight: .heavy, design: .rounded)).tracking(0.4)
+        .foregroundStyle(tint)
+        .padding(.horizontal, 9).padding(.vertical, 5)
+        .background(Color.white.opacity(0.04))
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Theme.border, lineWidth: 1))
     }
 
     // MARK: - Tab bar

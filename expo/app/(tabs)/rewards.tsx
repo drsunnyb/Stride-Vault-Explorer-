@@ -5,18 +5,22 @@ import {
   CheckCircle2,
   Clock,
   Crown,
+  Eye,
   Hourglass,
   Lock,
   Receipt,
   Repeat,
+  Sparkles,
   Ticket,
   Trophy,
   Users,
+  Zap,
 } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { CoinIcon } from "@/components/CoinIcon";
+import { LIVE_CITY_ID, flagEmoji } from "@/constants/cities";
 import { RAFFLES, formatCountdown } from "@/constants/raffles";
 import { DEFAULT_BRANDS, exchangeRate, getBrand, REWARDS, type BrandMeta } from "@/constants/rewards";
 import { theme } from "@/constants/theme";
@@ -30,9 +34,17 @@ const EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export default function RewardsScreen() {
   const router = useRouter();
-  const { player, raffles, rewards, brands, entriesForRaffle, now, exchange, isExchanging } = useGame();
+  const { player, raffles, rewards, brands, entriesForRaffle, now, exchange, isExchanging, homeCity, homeCityRank } = useGame();
   const [tab, setTab] = useState<Tab>("browse");
   const [filter, setFilter] = useState<Filter>("all");
+
+  /**
+   * Waitlist gate — players whose home city isn't London yet can browse the
+   * catalogue as a preview but every CTA is locked. Their coins still mint;
+   * spending unlocks the moment their city goes live. Stride+ shortens the
+   * wait by boosting city votes (handled by the Memberships admin config).
+   */
+  const onWaitlist = !!player.homeCityId && player.homeCityId !== LIVE_CITY_ID;
 
   /**
    * Active brand catalogue — derived in priority order so the UI works whether
@@ -95,6 +107,16 @@ export default function RewardsScreen() {
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 32 }}>
+      {onWaitlist ? (
+        <WaitlistPreviewBanner
+          cityName={homeCity?.name ?? "your city"}
+          countryCode={homeCity?.countryCode}
+          rank={homeCityRank}
+          onMembership={() => router.push("/plus")}
+          onRally={() => router.push("/cities")}
+        />
+      ) : null}
+
       {/* SEGMENTED 3-WAY TAB */}
       <View style={styles.tabRow}>
         <TabButton
@@ -119,6 +141,7 @@ export default function RewardsScreen() {
         />
       </View>
 
+      <View pointerEvents={onWaitlist ? "none" : "auto"} style={onWaitlist ? styles.previewDim : undefined}>
       {tab === "codes" ? (
         <ClaimedList
           redemptions={player.redemptions}
@@ -149,7 +172,73 @@ export default function RewardsScreen() {
           activeBrands={activeBrands}
         />
       )}
+      </View>
     </ScrollView>
+  );
+}
+
+function WaitlistPreviewBanner({
+  cityName,
+  countryCode,
+  rank,
+  onMembership,
+  onRally,
+}: {
+  cityName: string;
+  countryCode?: string;
+  rank: number;
+  onMembership: () => void;
+  onRally: () => void;
+}) {
+  return (
+    <View style={styles.waitlistCard}>
+      <LinearGradient
+        colors={["rgba(244,208,63,0.18)", "rgba(244,208,63,0.04)", "rgba(6,7,13,0)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={styles.waitlistTop}>
+        <View style={styles.waitlistChip}>
+          <Eye size={11} color={theme.goldBright} />
+          <Text style={styles.waitlistChipText}>PREVIEW MODE</Text>
+        </View>
+        {countryCode ? <Text style={styles.waitlistFlag}>{flagEmoji(countryCode)}</Text> : null}
+      </View>
+      <Text style={styles.waitlistTitle}>
+        Coins are minting in {cityName} — spending unlocks when your city is live.
+      </Text>
+      <Text style={styles.waitlistBody}>
+        Browse the catalogue, see exactly what your steps will buy. Codes &
+        raffles activate the moment {cityName} hits #1 on the waitlist
+        {rank > 0 ? ` (currently #${rank})` : ""}.
+      </Text>
+
+      <View style={styles.waitlistRow}>
+        <Pressable onPress={onMembership} style={({ pressed }) => [styles.waitlistCtaPrimary, pressed && { transform: [{ scale: 0.99 }] }]}>
+          <Crown size={14} color="#1A0A00" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.waitlistCtaPrimaryTitle}>SKIP THE LINE WITH STRIDE+</Text>
+            <Text style={styles.waitlistCtaPrimarySub}>3× city votes · 1.5× step value · weekly free votes</Text>
+          </View>
+        </Pressable>
+        <Pressable onPress={onRally} style={({ pressed }) => [styles.waitlistCtaGhost, pressed && { transform: [{ scale: 0.99 }] }]}>
+          <Zap size={13} color={theme.emeraldBright} />
+          <Text style={styles.waitlistCtaGhostText}>RALLY MY CITY</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.waitlistFootRow}>
+        <View style={styles.waitlistFootChip}>
+          <Sparkles size={10} color={theme.goldBright} />
+          <Text style={styles.waitlistFootText}>Coins keep minting</Text>
+        </View>
+        <View style={styles.waitlistFootChip}>
+          <Lock size={10} color={theme.textMuted} />
+          <Text style={styles.waitlistFootText}>Spend locked until live</Text>
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -1254,4 +1343,70 @@ const styles = StyleSheet.create({
     borderColor: theme.borderSoft,
   },
   inStoreText: { color: theme.textMuted, fontSize: 8, fontWeight: "900" as const, letterSpacing: 1 },
+  // Waitlist preview banner
+  waitlistCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 18,
+    borderRadius: theme.radius.xl,
+    backgroundColor: theme.bgElev,
+    borderWidth: 1,
+    borderColor: theme.gold + "66",
+    overflow: "hidden",
+    gap: 12,
+  },
+  waitlistTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  waitlistChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(244,208,63,0.16)",
+    borderWidth: 1,
+    borderColor: theme.gold + "66",
+  },
+  waitlistChipText: { color: theme.goldBright, fontSize: 10, fontWeight: "900" as const, letterSpacing: 1.4 },
+  waitlistFlag: { fontSize: 26 },
+  waitlistTitle: { color: theme.text, fontSize: 16, fontWeight: "900" as const, lineHeight: 22 },
+  waitlistBody: { color: theme.textMuted, fontSize: 12, fontWeight: "600" as const, lineHeight: 18 },
+  waitlistRow: { gap: 10 },
+  waitlistCtaPrimary: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.goldBright,
+  },
+  waitlistCtaPrimaryTitle: { color: "#1A0A00", fontSize: 12, fontWeight: "900" as const, letterSpacing: 1.2 },
+  waitlistCtaPrimarySub: { color: "#3A2400", fontSize: 11, fontWeight: "700" as const, marginTop: 2 },
+  waitlistCtaGhost: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 11,
+    borderRadius: theme.radius.lg,
+    borderWidth: 1,
+    borderColor: theme.emerald + "77",
+    backgroundColor: theme.emerald + "14",
+  },
+  waitlistCtaGhostText: { color: theme.emeraldBright, fontSize: 11, fontWeight: "900" as const, letterSpacing: 1.4 },
+  waitlistFootRow: { flexDirection: "row", gap: 8 },
+  waitlistFootChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: theme.borderSoft,
+  },
+  waitlistFootText: { color: theme.textMuted, fontSize: 10, fontWeight: "800" as const, letterSpacing: 0.6 },
+  previewDim: { opacity: 0.55 },
 });
