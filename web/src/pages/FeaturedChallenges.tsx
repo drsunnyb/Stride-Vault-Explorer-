@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trophy } from "lucide-react";
+import { Plus, Trophy, Bell } from "lucide-react";
 
 import { getSupabase } from "@/lib/supabase";
+import { sendPush } from "@/lib/push";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -91,6 +92,7 @@ export function FeaturedChallengesPage() {
 
   const [editing, setEditing] = useState<FeaturedChallengeRow | null>(null);
   const [isNew, setIsNew] = useState<boolean>(false);
+  const [notifyOnSave, setNotifyOnSave] = useState<boolean>(true);
 
   const save = useMutation({
     mutationFn: async (row: FeaturedChallengeRow) => {
@@ -99,10 +101,30 @@ export function FeaturedChallengesPage() {
         .from("featured_challenges")
         .upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "id" });
       if (error) throw error;
+      return row;
     },
-    onSuccess: () => {
+    onSuccess: async (row) => {
       toast.success("Challenge saved");
       qc.invalidateQueries({ queryKey: ["featured_challenges"] });
+      // Auto-broadcast on first publish: only when this was a brand-new
+      // active row + the admin opted in. Avoids spam on tiny tweaks.
+      if (isNew && row.active && notifyOnSave) {
+        try {
+          const res = await sendPush({
+            title: `🏆 ${row.hero_emoji ?? "⚡️"} New challenge: ${row.title}`,
+            body: row.subtitle
+              ? `${row.subtitle} — prize pool ${row.prize_pool_coins.toLocaleString()}c`
+              : `${row.duration_days}-day cohort · prize pool ${row.prize_pool_coins.toLocaleString()}c`,
+            audience: row.plus_only ? "plus" : "featured",
+            plusOnly: row.plus_only,
+            data: { kind: "challenge-invite", challengeId: row.id },
+            sentBy: "auto:featured-challenge",
+          });
+          toast.message(`Push fired · ${res.ok}/${res.expoTokens} delivered`);
+        } catch (e) {
+          toast.error(`Push failed: ${(e as Error).message}`);
+        }
+      }
       setEditing(null);
     },
     onError: (e: Error) => toast.error(e.message),
@@ -300,6 +322,14 @@ export function FeaturedChallengesPage() {
                 onChange={(e) => setEditing({ ...editing, sort_order: parseInt(e.target.value) || 0 })}
               />
             </Field>
+            {isNew && (
+              <Field label="Notify players on publish" hint="Fires a push + inbox alert to the targeted cohort when saved.">
+                <div className="flex items-center gap-3">
+                  <Switch checked={notifyOnSave} onCheckedChange={setNotifyOnSave} />
+                  <Bell className={`size-4 ${notifyOnSave ? "text-amber-400" : "text-zinc-600"}`} />
+                </div>
+              </Field>
+            )}
           </div>
         )}
       </RowEditor>

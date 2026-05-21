@@ -485,4 +485,131 @@ export async function fetchTokenomics(): Promise<Tokenomics> {
   return out;
 }
 
+// ── Push notification engine ────────────────────────────────────────
+
+/**
+ * Push & notification engine. Two Supabase tables back this:
+ *
+ *   create table device_tokens (
+ *     token text primary key,
+ *     auth_id text,
+ *     username text,
+ *     platform text not null,           -- 'expo' | 'apns' | 'fcm'
+ *     home_city_id text,
+ *     plus boolean default false,
+ *     locale text,
+ *     created_at timestamptz default now(),
+ *     updated_at timestamptz default now()
+ *   );
+ *   create index device_tokens_city_idx on device_tokens(home_city_id);
+ *   create index device_tokens_plus_idx on device_tokens(plus);
+ *
+ *   create table notification_log (
+ *     id uuid primary key default gen_random_uuid(),
+ *     title text not null,
+ *     body text not null,
+ *     audience text not null,           -- 'all'|'city'|'plus'|'featured'
+ *     audience_filter jsonb default '{}'::jsonb,
+ *     data jsonb default '{}'::jsonb,
+ *     sent_at timestamptz default now(),
+ *     sent_count int default 0,
+ *     ok_count int default 0,
+ *     error_count int default 0,
+ *     sent_by text
+ *   );
+ *   create index notification_log_sent_at_idx on notification_log(sent_at desc);
+ *
+ * RLS: `select for anon` on notification_log so the apps can poll for new
+ * server-pushed items; `insert/upsert for anon` on device_tokens so apps can
+ * register their token. Mutations to notification_log stay locked to the
+ * admin (service role).
+ */
+export interface DeviceTokenInput {
+  token: string;
+  platform: "expo" | "apns" | "fcm";
+  authId?: string;
+  username?: string;
+  homeCityId?: string;
+  plus?: boolean;
+  locale?: string;
+}
+
+/** Upsert a push token + its current city / plus state. Fire-and-forget. */
+export async function upsertDeviceToken(input: DeviceTokenInput): Promise<void> {
+  if (!hasSupabase() || !input.token) return;
+  try {
+    const body = {
+      token: input.token,
+      platform: input.platform,
+      auth_id: input.authId ?? null,
+      username: input.username ?? null,
+      home_city_id: input.homeCityId ?? null,
+      plus: !!input.plus,
+      locale: input.locale ?? null,
+      updated_at: new Date().toISOString(),
+    };
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/device_tokens`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY ?? "",
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) console.log("[backend] upsertDeviceToken non-OK", res.status);
+  } catch (e) {
+    console.log("[backend] upsertDeviceToken failed", e);
+  }
+}
+
+export interface NotificationLogRow {
+  id: string;
+  title: string;
+  body: string;
+  audience: "all" | "city" | "plus" | "featured";
+  audience_filter: { cityId?: string; plusOnly?: boolean } | null;
+  data: Record<string, unknown> | null;
+  sent_at: string;
+}
+
+export interface ServerNotification {
+  id: string;
+  title: string;
+  body: string;
+  audience: NotificationLogRow["audience"];
+  cityId?: string;
+  plusOnly?: boolean;
+  data: Record<string, unknown>;
+  sentAt: number;
+}
+
+/**
+ * Fetch server-pushed notifications sent after `sinceMs`. Used by the client
+ * to merge admin-broadcast announcements into the in-app inbox — works even
+ * when a user hasn't granted push permission. Returns newest first.
+ */
+export async function fetchRecentNotifications(
+  sinceMs: number,
+  limit: number = 30
+): Promise<ServerNotification[]> {
+  if (!hasSupabase()) return [];
+  const sinceIso = new Date(sinceMs).toISOString();
+  const rows = await rest<NotificationLogRow[]>(
+    `notification_log?sent_at=gt.${encodeURIComponent(sinceIso)}&order=sent_at.desc&limit=${limit}`
+  );
+  if (!rows) return [];
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    body: r.body,
+    audience: r.audience,
+    cityId: r.audience_filter?.cityId,
+    plusOnly: r.audience_filter?.plusOnly,
+    data: r.data ?? {},
+    sentAt: new Date(r.sent_at).getTime(),
+  }));
+}
+
 export const BACKEND_CONNECTED = hasSupabase();

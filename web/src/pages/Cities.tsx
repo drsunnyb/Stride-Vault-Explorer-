@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
 import { getSupabase } from "@/lib/supabase";
+import { sendPush } from "@/lib/push";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -54,15 +55,35 @@ export function CitiesPage() {
   const save = useMutation({
     mutationFn: async (row: CityRow) => {
       const supa = getSupabase();
+      // Detect waitlist -> live flips so we can broadcast to that city's
+      // residents without spamming on every edit.
+      const prev = (data ?? []).find((r) => r.id === row.id);
+      const goingLive = prev && prev.status !== "live" && row.status === "live";
       const { error } = await supa.from("cities").upsert(
         { ...row, updated_at: new Date().toISOString() },
         { onConflict: "id" }
       );
       if (error) throw error;
+      return { row, goingLive: !!goingLive };
     },
-    onSuccess: () => {
+    onSuccess: async ({ row, goingLive }) => {
       toast.success("City saved");
       qc.invalidateQueries({ queryKey: ["cities"] });
+      if (goingLive) {
+        try {
+          const res = await sendPush({
+            title: `🎉 ${row.name} is now LIVE`,
+            body: `Vaults just unlocked in ${row.name} — open the map and start your streak.`,
+            audience: "city",
+            cityId: row.id,
+            data: { kind: "city-live", cityId: row.id },
+            sentBy: "auto:city-live",
+          });
+          toast.message(`Push fired to ${row.name} · ${res.ok}/${res.expoTokens} delivered`);
+        } catch (e) {
+          toast.error(`Push failed: ${(e as Error).message}`);
+        }
+      }
       setEditing(null);
     },
     onError: (e: Error) => toast.error(e.message),

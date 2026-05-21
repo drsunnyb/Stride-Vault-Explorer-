@@ -18,6 +18,7 @@ import { LiveEventsPage } from "@/pages/LiveEvents";
 import { MembershipsPage } from "@/pages/Memberships";
 import { FeaturedChallengesPage } from "@/pages/FeaturedChallenges";
 import { StakeChallengesPage } from "@/pages/StakeChallenges";
+import { PushPage } from "@/pages/Push";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +54,7 @@ function App() {
                 <Route path="/memberships" element={<MembershipsPage />} />
                 <Route path="/featured-challenges" element={<FeaturedChallengesPage />} />
                 <Route path="/stake-challenges" element={<StakeChallengesPage />} />
+                <Route path="/push" element={<PushPage />} />
                 <Route path="/config" element={<ConfigPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

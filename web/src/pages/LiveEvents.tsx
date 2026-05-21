@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Flame, Zap, Save, X, Plus, Clock } from "lucide-react";
+import { Flame, Zap, Save, X, Plus, Clock, Bell } from "lucide-react";
 
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Field } from "@/components/RowEditor";
+import { sendPush } from "@/lib/push";
 import type { ConfigRow } from "@/lib/types";
 
 /**
@@ -166,6 +167,7 @@ function HotVaultsCard({
     return toIsoLocal(t.getTime());
   });
   const [note, setNote] = useState<string>("");
+  const [notify, setNotify] = useState<boolean>(true);
 
   useEffect(() => {
     if (liveHot) {
@@ -231,6 +233,17 @@ function HotVaultsCard({
             <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Black Friday Nike drop" />
           </Field>
         </div>
+        <div className="col-span-2">
+          <Field label="Notify everyone" hint="Sends a push + inbox alert to every registered device when you save.">
+            <div className="flex items-center gap-3">
+              <Switch checked={notify} onCheckedChange={setNotify} />
+              <Bell className={`size-4 ${notify ? "text-orange-400" : "text-zinc-600"}`} />
+              <span className="text-xs text-zinc-500">
+                {notify ? `“🔥 ${multiplier}× Hot Vaults are live” will hit every player's home screen.` : "Stays silent — only visible to players who open the app."}
+              </span>
+            </div>
+          </Field>
+        </div>
       </div>
 
       <div className="px-5 py-4 border-t border-zinc-900 flex items-center gap-2 bg-zinc-950/60">
@@ -245,7 +258,7 @@ function HotVaultsCard({
         )}
         <div className="ml-auto" />
         <Button
-          onClick={() => {
+          onClick={async () => {
             const vaultIds = vaultIdsText
               .split(/\r?\n|,/)
               .map((s) => s.trim())
@@ -254,6 +267,20 @@ function HotVaultsCard({
             if (vaultIds.length === 0) return toast.error("Add at least one vault ID");
             if (!endsAt || endsAt < Date.now()) return toast.error("End time must be in the future");
             onSave({ vaultIds, multiplier, endsAt, note: note.trim() || undefined });
+            if (notify) {
+              try {
+                const res = await sendPush({
+                  title: `🔥 ${vaultIds.length} Hot Vaults are live`,
+                  body: `Every claim pays ${multiplier}× until ${new Date(endsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} — get walking.`,
+                  audience: "all",
+                  data: { kind: "hot", vaultIds, multiplier, endsAt },
+                  sentBy: "auto:hot-vault",
+                });
+                toast.message(`Push fired · ${res.ok}/${res.expoTokens} delivered`);
+              } catch (e) {
+                toast.error(`Push failed: ${(e as Error).message}`);
+              }
+            }
           }}
           disabled={loading || saving}
           className="bg-orange-500 hover:bg-orange-400 text-zinc-950 font-bold"
@@ -286,6 +313,7 @@ function PowerHourCard({
   const [endsAtLocal, setEndsAtLocal] = useState<string>(() => toIsoLocal(Date.now() + 60 * 60_000));
   const [note, setNote] = useState<string>("");
   const [startNow, setStartNow] = useState<boolean>(true);
+  const [notify, setNotify] = useState<boolean>(true);
 
   useEffect(() => {
     if (livePower) {
@@ -353,6 +381,14 @@ function PowerHourCard({
             <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Sunday rally push" />
           </Field>
         </div>
+        <div className="col-span-2">
+          <Field label="Notify everyone" hint="Sends a push + inbox alert to every registered device when you save.">
+            <div className="flex items-center gap-3">
+              <Switch checked={notify} onCheckedChange={setNotify} />
+              <Bell className={`size-4 ${notify ? "text-amber-400" : "text-zinc-600"}`} />
+            </div>
+          </Field>
+        </div>
       </div>
 
       <div className="px-5 py-4 border-t border-zinc-900 flex items-center gap-2 bg-zinc-950/60">
@@ -367,12 +403,27 @@ function PowerHourCard({
         )}
         <div className="ml-auto" />
         <Button
-          onClick={() => {
+          onClick={async () => {
             const startsAt = startNow ? Date.now() : fromIsoLocal(startsAtLocal);
             const endsAt = fromIsoLocal(endsAtLocal);
             if (!endsAt || endsAt <= startsAt) return toast.error("End time must be after start");
             if (endsAt < Date.now()) return toast.error("End time must be in the future");
             onSave({ multiplier, startsAt, endsAt, note: note.trim() || undefined });
+            if (notify) {
+              const lead = startNow ? "is live now" : `starts ${new Date(startsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+              try {
+                const res = await sendPush({
+                  title: `⚡ Power Hour ${lead}`,
+                  body: `Every vault pays ${multiplier}× until ${new Date(endsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`,
+                  audience: "all",
+                  data: { kind: "power", startsAt, endsAt, multiplier },
+                  sentBy: "auto:power-hour",
+                });
+                toast.message(`Push fired · ${res.ok}/${res.expoTokens} delivered`);
+              } catch (e) {
+                toast.error(`Push failed: ${(e as Error).message}`);
+              }
+            }
           }}
           disabled={loading || saving}
           className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold"

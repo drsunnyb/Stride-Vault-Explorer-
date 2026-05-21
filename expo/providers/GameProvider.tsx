@@ -57,11 +57,15 @@ import {
   fetchFeaturedChallenges,
   fetchLiveConfig,
   fetchRaffles,
+  fetchRecentNotifications,
   fetchRewards,
+  fetchTokenomics,
   pushStakeChallenge,
   type FeaturedChallenge,
   type LiveConfig,
+  type ServerNotification,
 } from "@/lib/backend";
+import { onForegroundPush, registerPush } from "@/lib/push";
 import { distanceMeters } from "@/lib/geo";
 import {
   cancelAllStrideNotifications,
@@ -1036,6 +1040,97 @@ export const [GameProvider, useGame] = createContextHook(() => {
     const next = { ...player, notificationsEnabled: false };
     await setPlayer(next);
   }, [player, setPlayer]);
+
+  // ── Push registration + server-pushed inbox sync ──────────────────────────────
+  // Whenever the user has notifications enabled and we know who they are,
+  // upsert their push token to Supabase keyed on city + Plus state. Re-runs
+  // when any of those signals change so admin pushes targeted by city or
+  // Plus status reach the right cohort.
+  useEffect(() => {
+    if (!player.notificationsEnabled) return;
+    registerPush({
+      authId: player.authId,
+      username: player.username,
+      homeCityId: player.homeCityId,
+      plus: isPlusActive(player.plus),
+    }).catch((e) => console.log("[GameProvider] registerPush failed", e));
+  }, [
+    player.notificationsEnabled,
+    player.authId,
+    player.username,
+    player.homeCityId,
+    player.plus,
+  ]);
+
+  // Foreground push → mirror into the in-app inbox so users see the
+  // notification regardless of whether they tapped the banner.
+  useEffect(() => {
+    let cleanup: (() => void) | null = null;
+    (async () => {
+      cleanup = await onForegroundPush(({ title, body, data }) => {
+        const kind = (data?.kind as InboxNotification["kind"]) ?? "system";
+        const cur = qc.getQueryData<PlayerState>(["player"]) ?? DEFAULT_PLAYER;
+        const inbox = cur.notifications ?? [];
+        const fresh: InboxNotification = {
+          id: `n_push_${Date.now().toString(36)}`,
+          kind,
+          createdAt: Date.now(),
+          read: false,
+          actionable: false,
+          title: title || "Stride",
+          body: body || "",
+        };
+        setPlayer({ ...cur, notifications: [fresh, ...inbox] }).catch(() => {});
+      });
+    })();
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [qc, setPlayer]);
+
+  // Poll the notification_log (admin broadcasts) every 60s and merge into
+  // the in-app inbox. Works even for users without push permission, and is
+  // the single source of truth for city-scoped + plus-scoped announcements.
+  const serverInboxQuery = useQuery<ServerNotification[]>({
+    queryKey: ["server-notifications"],
+    queryFn: () => fetchRecentNotifications(Date.now() - 7 * 86_400_000, 50),
+    refetchInterval: 60_000,
+    initialData: [],
+  });
+  useEffect(() => {
+    const items = serverInboxQuery.data ?? [];
+    if (items.length === 0) return;
+    const cur = qc.getQueryData<PlayerState>(["player"]) ?? DEFAULT_PLAYER;
+    const cursor = cur.serverInboxCursor ?? 0;
+    const homeCity = cur.homeCityId;
+    const plus = isPlusActive(cur.plus);
+    // Only items the user is eligible for (city + plus targeting).
+    const eligible = items.filter((n) => {
+      if (n.sentAt <= cursor) return false;
+      if (n.audience === "city" && n.cityId && homeCity !== n.cityId) return false;
+      if ((n.audience === "plus" || n.plusOnly) && !plus) return false;
+      return true;
+    });
+    if (eligible.length === 0) return;
+    const existingIds = new Set((cur.notifications ?? []).map((n) => n.id));
+    const toAdd: InboxNotification[] = eligible
+      .filter((n) => !existingIds.has(`srv_${n.id}`))
+      .map((n) => ({
+        id: `srv_${n.id}`,
+        kind: ((n.data?.kind as InboxNotification["kind"]) ?? "system"),
+        createdAt: n.sentAt,
+        read: false,
+        actionable: false,
+        title: n.title,
+        body: n.body,
+      }));
+    const newCursor = Math.max(cursor, ...eligible.map((n) => n.sentAt));
+    setPlayer({
+      ...cur,
+      notifications: [...toAdd, ...(cur.notifications ?? [])],
+      serverInboxCursor: newCursor,
+    }).catch(() => {});
+  }, [serverInboxQuery.data, qc, setPlayer]);
 
   // ── Notifications inbox ──────────────────────────────────────────────
   /** Make sure the seed Sable challenge is attached when the matching

@@ -252,6 +252,10 @@ export interface PlayerState {
   cityVoteStepsCredited?: number;
   /** Inbox notifications (most recent first). */
   notifications?: InboxNotification[];
+  /** Newest sent_at (ms) of a server-pushed broadcast already merged into the inbox. */
+  serverInboxCursor?: number;
+  /** v3 brand-coin -> Stride Coin migration flag. */
+  brandCoinsMigratedV3?: boolean;
 }
 
 /** One pick in the weekly Stride Predict market. */

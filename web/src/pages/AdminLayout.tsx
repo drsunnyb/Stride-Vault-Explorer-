@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { clearServiceKey } from "@/lib/supabase";
-import { LayoutDashboard, Tag, Gift, Ticket, Globe2, Settings, LogOut, Flame, Crown, Trophy, Swords } from "lucide-react";
+import { LayoutDashboard, Tag, Gift, Ticket, Globe2, Settings, LogOut, Flame, Crown, Trophy, Swords, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props { onSignOut: () => void }
@@ -15,6 +15,7 @@ const NAV = [
   { to: "/memberships", label: "Memberships", icon: Crown },
   { to: "/featured-challenges", label: "Featured Challenges", icon: Trophy },
   { to: "/stake-challenges", label: "Stake Challenges", icon: Swords },
+  { to: "/push", label: "Push & Inbox", icon: Bell },
   { to: "/config", label: "Config", icon: Settings },
 ];
 
