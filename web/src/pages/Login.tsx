@@ -37,6 +37,7 @@ export function LoginScreen({ onAuthed }: Props) {
     localStorage.setItem(EMAIL_STORAGE_KEY, normalized);
     setError("");
     setEmailOk(true);
+    onAuthed();
   };
 
   const submit = async () => {
@@ -66,6 +67,11 @@ export function LoginScreen({ onAuthed }: Props) {
       setBusy(false);
     }
   };
+
+  // Auto-advance if email was already saved from a previous session.
+  if (emailOk) {
+    onAuthed();
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-emerald-950 flex items-center justify-center p-6">
