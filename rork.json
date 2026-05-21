@@ -1,0 +1,25 @@
+{
+  "$schema": "https://rork.com/schema/rork.json",
+  "apps": [
+    {
+      "name": "Stride Quest",
+      "path": "expo",
+      "framework": "react-native"
+    },
+    {
+      "name": "Stride",
+      "path": "ios",
+      "framework": "swift"
+    },
+    {
+      "name": "Backend",
+      "path": "backend",
+      "framework": "supabase"
+    },
+    {
+      "name": "Stride Admin",
+      "path": "web",
+      "framework": "web"
+    }
+  ]
+}
