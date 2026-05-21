@@ -5,322 +5,498 @@ struct FriendsView: View {
     let store: VaultStore
     @State private var query: String = ""
     @State private var copied = false
+    @State private var showShare = false
+    @State private var newChallengeFor: String? = nil
+    @State private var showNewChallenge = false
+    @State private var detailChallenge: PersistedStakeChallenge? = nil
+    @State private var addError: String? = nil
 
     private var stake: WeeklyStake { AppData.weeklyStake }
 
-    private var filtered: [Friend] {
-        let f = AppData.friends
-        guard !query.isEmpty else { return f }
-        return f.filter { $0.handle.localizedCaseInsensitiveContains(query) || $0.name.localizedCaseInsensitiveContains(query) }
+    private var friends: [PersistedFriend] {
+        let all = store.personalFriends
+        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return all }
+        return all.filter {
+            $0.username.lowercased().contains(q) || $0.displayName.lowercased().contains(q)
+        }
+    }
+
+    private var liveChallenges: [PersistedStakeChallenge] {
+        store.stakeChallenges.filter { $0.status == .live }
+    }
+    private var pastChallenges: [PersistedStakeChallenge] {
+        store.stakeChallenges.filter { $0.status == .settled || $0.status == .cancelled }
     }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 18) {
                 inviteHero
-                weeklyStakeCard
-                searchBar
-                addByHandle
-                friendsList
+                searchAndAdd
+                stakeCTA
+                if !liveChallenges.isEmpty {
+                    section("LIVE CHALLENGES")
+                    VStack(spacing: 10) {
+                        ForEach(liveChallenges) { ch in
+                            ChallengeTicket(challenge: ch, now: store.now)
+                                .onTapGesture { Haptics.tap(); detailChallenge = ch }
+                        }
+                    }
+                }
+                friendsListSection
+                if !pastChallenges.isEmpty {
+                    section("PAST CHALLENGES")
+                    VStack(spacing: 10) {
+                        ForEach(pastChallenges.prefix(5)) { ch in
+                            ChallengeTicket(challenge: ch, now: store.now)
+                                .onTapGesture { Haptics.tap(); detailChallenge = ch }
+                        }
+                    }
+                }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 100)
         }
         .background(Theme.bg)
+        .sheet(isPresented: $showShare) {
+            ActivityShareSheet(items: [
+                "Walk with me on Stride — we both get +500 coins when you join. https://\(store.inviteLink)"
+            ])
+        }
+        .sheet(isPresented: $showNewChallenge) {
+            NewStakeChallengeView(store: store, prefillFriendId: newChallengeFor)
+        }
+        .sheet(item: $detailChallenge) { ch in
+            StakeChallengeDetailView(store: store, challengeId: ch.id)
+        }
+        .alert("Add friend",
+               isPresented: Binding(get: { addError != nil }, set: { if !$0 { addError = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: { Text(addError ?? "") }
     }
+
+    // MARK: - Sections
 
     private var inviteHero: some View {
-        VStack(spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("FRIENDS")
-                        .font(.system(size: 11, weight: .heavy, design: .rounded))
-                        .tracking(2.4)
-                        .foregroundStyle(Theme.textMuted)
-                    Text("Walk together")
-                        .font(.system(size: 28, weight: .black, design: .rounded))
-                        .foregroundStyle(Theme.text)
+                ZStack {
+                    Circle().fill(Theme.emerald.opacity(0.15))
+                    Image(systemName: "person.2.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Theme.emerald)
                 }
+                .frame(width: 40, height: 40)
                 Spacer()
-                Image(systemName: "person.2.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(Theme.emerald)
             }
-            .padding(.top, 8)
+            Text("Walk together, earn more")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(Theme.text)
+            (Text("You + a friend each get ")
+                .foregroundStyle(Theme.textMuted) +
+             Text("+500c").foregroundStyle(Theme.emerald).fontWeight(.black) +
+             Text(" when they join via your link.").foregroundStyle(Theme.textMuted))
+                .font(.system(size: 12, weight: .medium))
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text("INVITE LINK")
-                    .font(.system(size: 10, weight: .heavy, design: .rounded))
-                    .tracking(1.4)
-                    .foregroundStyle(Theme.textMuted)
-                HStack {
-                    Text("stride.app/i/yourcode")
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(Theme.text)
-                        .lineLimit(1)
-                    Spacer()
-                    Button {
-                        Haptics.tap()
-                        UIPasteboard.general.string = "https://stride.app/i/yourcode"
-                        withAnimation(.snappy) { copied = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
-                            withAnimation(.snappy) { copied = false }
-                        }
-                    } label: {
-                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(copied ? Theme.emerald : Theme.text)
-                            .frame(width: 32, height: 32)
-                            .background(Theme.surface)
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(12)
-                .background(Theme.bg)
-                .clipShape(.rect(cornerRadius: 12))
-
-                HStack(spacing: 10) {
-                    ShareButton(label: "SHARE LINK", icon: "square.and.arrow.up", tint: Theme.goldBright)
-                    ShareButton(label: "STAKE A FRIEND", icon: "flame.fill", tint: Theme.ruby)
-                }
-            }
-            .padding(16)
-            .background(
-                LinearGradient(colors: [Theme.card, Theme.bgElev],
-                               startPoint: .topLeading, endPoint: .bottomTrailing)
-            )
-            .clipShape(.rect(cornerRadius: 20))
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.border, lineWidth: 1))
-        }
-    }
-
-    // MARK: - Weekly Stake
-
-    private var weeklyStakeCard: some View {
-        let sorted = stake.entrants.sorted { $0.steps > $1.steps }
-        return VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "flame.fill").foregroundStyle(Theme.ruby)
-                        Text("WEEKLY STAKE")
-                            .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1.6)
-                            .foregroundStyle(Theme.ruby)
-                    }
-                    Text(stake.title)
-                        .font(.system(size: 20, weight: .black, design: .rounded))
-                        .foregroundStyle(Theme.text)
-                    Text(stake.subtitle)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Theme.textMuted)
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    HStack(spacing: 4) {
-                        CoinIcon(size: 16)
-                        Text("\(stake.pot)")
-                            .font(.system(size: 22, weight: .black, design: .rounded))
-                            .foregroundStyle(Theme.goldBright)
-                            .monospacedDigit()
-                    }
-                    Text("POT")
-                        .font(.system(size: 9, weight: .black, design: .rounded)).tracking(1)
-                        .foregroundStyle(Theme.textDim)
-                }
-            }
-
-            VStack(spacing: 6) {
-                ForEach(Array(sorted.prefix(3).enumerated()), id: \.element.id) { idx, e in
-                    HStack(spacing: 10) {
-                        Text("#\(idx + 1)")
-                            .font(.system(size: 12, weight: .black, design: .rounded))
-                            .foregroundStyle(idx == 0 ? Theme.goldBright : Theme.textMuted)
-                            .frame(width: 26, alignment: .leading)
-                        AvatarView(seed: e.avatarSeed, size: 26, initials: String(e.name.prefix(2)).uppercased())
-                        Text(e.handle)
-                            .font(.system(size: 12, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Theme.text)
-                        Spacer()
-                        Text("\(e.steps.formatted()) steps")
-                            .font(.system(size: 12, weight: .heavy, design: .rounded))
-                            .foregroundStyle(idx == 0 ? Theme.goldBright : Theme.textMuted)
-                            .monospacedDigit()
-                    }
-                }
-            }
-
-            HStack(spacing: 10) {
-                EndsInLabel(date: stake.endsAt)
+            // Link box
+            HStack(spacing: 8) {
+                Text(store.inviteLink)
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(Theme.text)
+                    .lineLimit(1)
                 Spacer()
                 Button {
                     Haptics.tap()
-                    _ = store.joinWeeklyStake(stake.stake)
-                } label: {
-                    HStack(spacing: 6) {
-                        if store.weeklyStakeJoined {
-                            Image(systemName: "checkmark.seal.fill")
-                            Text("STAKED")
-                        } else {
-                            CoinIcon(size: 13)
-                            Text("STAKE \(stake.stake)")
-                        }
+                    UIPasteboard.general.string = "https://\(store.inviteLink)"
+                    withAnimation(.snappy) { copied = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                        withAnimation(.snappy) { copied = false }
                     }
-                    .font(.system(size: 12, weight: .black, design: .rounded)).tracking(1.4)
-                    .foregroundStyle(store.weeklyStakeJoined ? Theme.emerald : Theme.bg)
-                    .padding(.horizontal, 16).padding(.vertical, 10)
-                    .background(store.weeklyStakeJoined ? Theme.emerald.opacity(0.15) : Theme.ruby)
-                    .clipShape(Capsule())
-                    .overlay(Capsule().stroke(store.weeklyStakeJoined ? Theme.emerald : .clear, lineWidth: 1.5))
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                        Text(copied ? "COPIED" : "COPY")
+                    }
+                    .font(.system(size: 10, weight: .black, design: .rounded)).tracking(1)
+                    .foregroundStyle(Theme.emerald)
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .background(Theme.emerald.opacity(0.12))
+                    .clipShape(.rect(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
-                .disabled(store.weeklyStakeJoined)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(Theme.bg)
+            .clipShape(.rect(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.border, lineWidth: 1))
+
+            // Share button
+            Button {
+                Haptics.tap()
+                _ = store.recordShare()
+                showShare = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "square.and.arrow.up")
+                    Text("SHARE INVITE").tracking(1.4)
+                }
+                .font(.system(size: 12, weight: .black, design: .rounded))
+                .foregroundStyle(Color(red: 4/255, green: 38/255, blue: 26/255))
+                .frame(maxWidth: .infinity).frame(height: 46)
+                .background(Theme.emerald)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            if store.lifetimeShares > 0 || store.referralSignups > 0 {
+                HStack(spacing: 14) {
+                    sharedStat("\(store.referralSignups)", "JOINED")
+                    sharedStat("\(store.lifetimeShares)", "SHARES")
+                    sharedStat("\(store.shareCoinsEarned)c", "EARNED")
+                    Spacer()
+                }
+                .padding(.top, 4)
             }
         }
         .padding(16)
         .background(
-            LinearGradient(colors: [Theme.ruby.opacity(0.12), Theme.card],
+            LinearGradient(colors: [Theme.emerald.opacity(0.14), Theme.card.opacity(0.6)],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
         )
         .clipShape(.rect(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.ruby.opacity(0.35), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.emerald.opacity(0.4), lineWidth: 1))
     }
 
-    private var searchBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass").foregroundStyle(Theme.textMuted)
-            TextField("Search friends", text: $query)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
+    private func sharedStat(_ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.system(size: 14, weight: .black, design: .rounded))
                 .foregroundStyle(Theme.text)
+                .monospacedDigit()
+            Text(label)
+                .font(.system(size: 9, weight: .heavy, design: .rounded)).tracking(1)
+                .foregroundStyle(Theme.textDim)
         }
-        .padding(14)
-        .background(Theme.card)
-        .clipShape(.rect(cornerRadius: 14))
     }
 
-    private var addByHandle: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "at").foregroundStyle(Theme.emerald)
-            Text("Add by username")
-                .font(.system(size: 14, weight: .heavy, design: .rounded))
+    private var searchAndAdd: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("FIND A FRIEND")
+                .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1.8)
                 .foregroundStyle(Theme.text)
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .heavy))
-                .foregroundStyle(Theme.textMuted)
-        }
-        .padding(14)
-        .background(Theme.card)
-        .clipShape(.rect(cornerRadius: 14))
-    }
+            HStack(spacing: 8) {
+                HStack(spacing: 6) {
+                    Text("@")
+                        .font(.system(size: 16, weight: .heavy))
+                        .foregroundStyle(Theme.textDim)
+                    TextField("username", text: $query)
+                        .foregroundStyle(Theme.text)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .submitLabel(.search)
+                        .onSubmit(performAdd)
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 44)
+                .background(Theme.card)
+                .clipShape(.rect(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.border, lineWidth: 1))
 
-    private var friendsList: some View {
-        VStack(spacing: 8) {
-            ForEach(filtered) { friend in
-                FriendRow(friend: friend)
+                Button(action: performAdd) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.badge.plus")
+                        Text("ADD").tracking(1.2)
+                    }
+                    .font(.system(size: 11, weight: .black, design: .rounded))
+                    .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                    .padding(.horizontal, 14)
+                    .frame(height: 44)
+                    .background(Theme.goldBright)
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(query.trimmingCharacters(in: .whitespaces).isEmpty)
             }
+            Text("Try @kai.mercer, @sable, @junopark, @rune, @novavance…")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Theme.textDim)
         }
     }
-}
 
-private struct EndsInLabel: View {
-    let date: Date
-    @State private var now: Date = Date()
-    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
-
-    private var text: String {
-        let remaining = date.timeIntervalSince(now)
-        if remaining < 0 { return "Ended" }
-        let days = Int(remaining / 86400)
-        let hours = Int((remaining.truncatingRemainder(dividingBy: 86400)) / 3600)
-        return "Ends in \(days)d \(hours)h"
-    }
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "clock.fill").font(.system(size: 11, weight: .bold))
-            Text(text.uppercased())
-                .font(.system(size: 10, weight: .black, design: .rounded)).tracking(1)
-        }
-        .foregroundStyle(Theme.textMuted)
-        .onReceive(timer) { now = $0 }
-    }
-}
-
-private struct ShareButton: View {
-    let label: String
-    let icon: String
-    let tint: Color
-    var body: some View {
+    private var stakeCTA: some View {
         Button {
             Haptics.tap()
+            newChallengeFor = nil
+            showNewChallenge = true
         } label: {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                Text(label).tracking(1.2)
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(Theme.goldBright)
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                }
+                .frame(width: 40, height: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("WEEKLY STAKE CHALLENGE")
+                        .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1.4)
+                        .foregroundStyle(Theme.goldBright)
+                    Text("Pick friends · winner takes the pot · 2% rake")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Theme.textMuted)
+                }
+                Spacer()
+                Text("START →")
+                    .font(.system(size: 12, weight: .black, design: .rounded)).tracking(1)
+                    .foregroundStyle(Theme.text)
             }
-            .font(.system(size: 12, weight: .heavy, design: .rounded))
-            .foregroundStyle(Theme.bg)
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .background(tint)
-            .clipShape(Capsule())
+            .padding(14)
+            .background(Theme.card)
+            .clipShape(.rect(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.goldBright.opacity(0.55), lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
-}
 
-private struct FriendRow: View {
-    let friend: Friend
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack(alignment: .bottomTrailing) {
-                AvatarView(seed: friend.avatarSeed, size: 44,
-                           initials: String(friend.name.prefix(2)).uppercased())
-                if friend.isOnline {
-                    Circle()
-                        .fill(Theme.emerald)
-                        .frame(width: 12, height: 12)
-                        .overlay(Circle().stroke(Theme.bg, lineWidth: 2))
+    private var friendsListSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("YOUR FRIENDS · \(store.personalFriends.count)")
+                .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1.8)
+                .foregroundStyle(Theme.text)
+                .padding(.top, 6)
+            if friends.isEmpty {
+                Text(store.personalFriends.isEmpty
+                     ? "No friends yet — share your link or add by username above."
+                     : "No friends match “\(query)”.")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.textMuted)
+                    .frame(maxWidth: .infinity)
+                    .padding(18)
+                    .background(Theme.card)
+                    .clipShape(.rect(cornerRadius: 14))
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(friends) { f in
+                        FriendRowView(
+                            friend: f,
+                            weeklyCoins: AppData.pseudoPeriodCoins(playerId: f.id,
+                                                                   periodKey: AppData.currentWeekKey(store.now)),
+                            onChallenge: {
+                                Haptics.tap()
+                                newChallengeFor = f.id
+                                showNewChallenge = true
+                            },
+                            onRemove: { store.removeFriend(id: f.id) }
+                        )
+                    }
                 }
             }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(friend.name)
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.text)
-                Text(friend.lastSeen)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(Theme.textMuted)
-            }
+        }
+    }
+
+    private func section(_ title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1.8)
+                .foregroundStyle(Theme.text)
             Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                HStack(spacing: 3) {
-                    CoinIcon(size: 12)
-                    Text("\(friend.coinsThisWeek)")
-                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+        }
+        .padding(.top, 8)
+    }
+
+    private func performAdd() {
+        Haptics.tap()
+        switch store.addFriend(username: query) {
+        case .success:
+            query = ""
+        case .failure(let err):
+            switch err {
+            case .empty:       addError = "Enter a username."
+            case .alreadyAdded:addError = "You're already friends."
+            case .notFound:    addError = "No user with that username."
+            }
+            Haptics.error()
+        }
+    }
+}
+
+// MARK: - Friend row
+
+private struct FriendRowView: View {
+    let friend: PersistedFriend
+    let weeklyCoins: Int
+    let onChallenge: () -> Void
+    let onRemove: () -> Void
+    @State private var showConfirmRemove = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            AvatarView(seed: friend.avatarSeed, size: 40,
+                       initials: String(friend.displayName.prefix(2)).uppercased())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(friend.displayName)
+                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Theme.text)
+                HStack(spacing: 6) {
+                    Text("@\(friend.username)")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Theme.textDim)
+                    Text("·")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Theme.textDim)
+                    Text("\(weeklyCoins.formatted())c this week")
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
                         .foregroundStyle(Theme.goldBright)
                         .monospacedDigit()
                 }
-                Text("THIS WEEK")
-                    .font(.system(size: 9, weight: .heavy, design: .rounded))
-                    .tracking(1.0)
-                    .foregroundStyle(Theme.textDim)
             }
+            Spacer()
+            Button(action: onChallenge) {
+                HStack(spacing: 4) {
+                    Image(systemName: "flame.fill")
+                    Text("CHALLENGE").tracking(1)
+                }
+                .font(.system(size: 10, weight: .black, design: .rounded))
+                .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                .padding(.horizontal, 10).padding(.vertical, 7)
+                .background(Theme.goldBright)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
             Button {
-                Haptics.tap()
+                showConfirmRemove = true
             } label: {
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(Theme.ruby)
-                    .frame(width: 32, height: 32)
-                    .background(Theme.ruby.opacity(0.12))
-                    .clipShape(Circle())
+                Image(systemName: "person.badge.minus")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Theme.textDim)
+                    .padding(6)
             }
             .buttonStyle(.plain)
         }
-        .padding(12)
+        .padding(10)
         .background(Theme.card)
         .clipShape(.rect(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.border, lineWidth: 1))
+        .confirmationDialog("Remove \(friend.displayName)?", isPresented: $showConfirmRemove, titleVisibility: .visible) {
+            Button("Remove", role: .destructive) { onRemove() }
+            Button("Cancel", role: .cancel) {}
+        }
     }
+}
+
+// MARK: - Challenge ticket
+
+struct ChallengeTicket: View {
+    let challenge: PersistedStakeChallenge
+    let now: Date
+
+    private var joined: [PersistedChallengeParticipant] { challenge.participants.filter { $0.state != .out } }
+    private var pot: Int { challenge.stake * joined.count }
+    private var live: Bool { challenge.status == .live }
+    private var leader: PersistedChallengeParticipant? {
+        let cands = joined.filter { $0.state == .joined }
+        guard !cands.isEmpty else { return nil }
+        return cands.max(by: { $0.delta < $1.delta })
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                HStack(spacing: 4) {
+                    Image(systemName: "trophy.fill").font(.system(size: 10))
+                    Text(challenge.metric.label).tracking(1)
+                }
+                .font(.system(size: 9, weight: .black, design: .rounded))
+                .foregroundStyle(live ? Theme.goldBright : Theme.textMuted)
+                .padding(.horizontal, 7).padding(.vertical, 4)
+                .background(Theme.surface)
+                .clipShape(.rect(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke((live ? Theme.goldBright : Theme.textMuted).opacity(0.45), lineWidth: 1))
+
+                Text(challenge.title)
+                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .foregroundStyle(Theme.text)
+                    .lineLimit(1)
+                Spacer()
+            }
+
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("POT")
+                        .font(.system(size: 8, weight: .black, design: .rounded)).tracking(1)
+                        .foregroundStyle(Theme.textDim)
+                    Text("\(pot.formatted())c")
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .foregroundStyle(Theme.goldBright)
+                        .monospacedDigit()
+                }
+
+                HStack(spacing: -10) {
+                    ForEach(Array(joined.prefix(4))) { p in
+                        AvatarView(seed: p.avatarSeed, size: 28,
+                                   initials: String(p.displayName.prefix(1)))
+                            .overlay(Circle().stroke(Theme.card, lineWidth: 2))
+                    }
+                    if joined.count > 4 {
+                        Text("+\(joined.count - 4)")
+                            .font(.system(size: 11, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Theme.textMuted)
+                            .padding(.leading, 14)
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(live ? "ENDS IN" : challenge.status == .settled ? "SETTLED" : "CANCELLED")
+                        .font(.system(size: 8, weight: .black, design: .rounded)).tracking(1)
+                        .foregroundStyle(Theme.textDim)
+                    Text(live
+                         ? formatRemaining(end: challenge.endsAt, now: now)
+                         : (challenge.status == .settled ? "\((challenge.payout ?? 0).formatted())c" : "—"))
+                        .font(.system(size: 13, weight: .black, design: .rounded))
+                        .foregroundStyle(Theme.text)
+                        .monospacedDigit()
+                }
+            }
+            if let leader {
+                Text(challenge.status == .settled
+                     ? "🏆 Won by \(leader.displayName)"
+                     : "Leader: \(leader.displayName)")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Theme.textMuted)
+                    .lineLimit(1)
+            }
+        }
+        .padding(12)
+        .background(
+            LinearGradient(colors: live
+                           ? [Theme.goldBright.opacity(0.18), Theme.card.opacity(0.4)]
+                           : [Theme.card.opacity(0.7), Theme.card.opacity(0.4)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+        )
+        .clipShape(.rect(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke((live ? Theme.goldBright : Theme.border).opacity(0.55), lineWidth: 1))
+        .opacity(live ? 1 : 0.78)
+    }
+
+    private func formatRemaining(end: Date, now: Date) -> String {
+        let r = end.timeIntervalSince(now)
+        if r <= 0 { return "Settling…" }
+        let days = Int(r / 86400)
+        let hours = Int((r.truncatingRemainder(dividingBy: 86400)) / 3600)
+        let minutes = Int((r.truncatingRemainder(dividingBy: 3600)) / 60)
+        if days > 0 { return "\(days)d \(hours)h" }
+        if hours > 0 { return "\(hours)h \(minutes)m" }
+        return "\(minutes)m"
+    }
+}
+
+// MARK: - Share sheet
+
+struct ActivityShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }

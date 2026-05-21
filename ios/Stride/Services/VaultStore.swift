@@ -63,6 +63,240 @@ final class VaultStore {
 
     var weeklyStakeJoined: Bool { get { state.weeklyStakeJoined } set { state.weeklyStakeJoined = newValue; save() } }
 
+    // ── Friends & stake challenges ──────────────────────────────────────────
+    /// Cap of participants on a single stake challenge (inviter + 5).
+    static let maxChallengeParticipants: Int = 6
+    /// Rake taken from every settled stake-challenge pot — funds the Champions Pool.
+    static let challengeRakePct: Double = 0.02
+    /// Coins paid when a friend signs up via referral (matches Expo).
+    static let referralBonusCoinsPaid: Int = 500
+
+    /// Coins locked inside open stake challenges — not spendable.
+    var lockedCoins: Int { state.lockedCoins }
+    /// Spendable coin balance (after subtracting locked stakes).
+    var spendableCoins: Int { max(0, state.coins - state.lockedCoins) }
+
+    var personalFriends: [PersistedFriend] {
+        state.friendsList.sorted { $0.addedAt > $1.addedAt }
+    }
+
+    var stakeChallenges: [PersistedStakeChallenge] {
+        state.stakeChallenges.sorted { $0.createdAt > $1.createdAt }
+    }
+
+    /// Lifetime shares — surfaced on profile / friends hero.
+    var lifetimeShares: Int { state.lifetimeShares }
+    var shareCoinsEarned: Int { state.shareCoinsEarned }
+    var referralSignups: Int { state.referralSignups }
+
+    /// Stable referral code for the player's invite link. Falls back to handle.
+    var referralCode: String {
+        let raw = state.handle.replacingOccurrences(of: "@", with: "").lowercased()
+        let cleaned = raw.filter { $0.isLetter || $0.isNumber || $0 == "." || $0 == "_" }
+        return cleaned.isEmpty ? "stride" : cleaned
+    }
+
+    var inviteLink: String { "stride.app/i/\(referralCode)" }
+
+    enum AddFriendError: Error, Equatable { case empty, notFound, alreadyAdded }
+
+    @discardableResult
+    func addFriend(username raw: String) -> Result<PersistedFriend, AddFriendError> {
+        let q = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "@", with: "")
+            .lowercased()
+        guard !q.isEmpty else { return .failure(.empty) }
+        if state.friendsList.contains(where: { $0.username.lowercased() == q }) {
+            return .failure(.alreadyAdded)
+        }
+        guard let match = AppData.allKnownUsers.first(where: { $0.username.lowercased() == q }) else {
+            return .failure(.notFound)
+        }
+        let friend = PersistedFriend(
+            id: match.id, username: match.username, displayName: match.displayName,
+            avatarSeed: match.avatarSeed, addedAt: now
+        )
+        state.friendsList.insert(friend, at: 0)
+        save(); Haptics.success()
+        return .success(friend)
+    }
+
+    func removeFriend(id: String) {
+        state.friendsList.removeAll { $0.id == id }
+        save(); Haptics.tap()
+    }
+
+    // MARK: Stake challenges
+
+    /// Snapshot the player's metric value used as baseline at challenge start.
+    private func metricSnapshot(_ metric: ChallengeMetric) -> Int {
+        switch metric {
+        case .steps:  return state.stepsLifetime + state.stepsToday
+        case .vaults: return state.claimedIDs.count
+        case .coins:  return state.coins
+        }
+    }
+
+    /// Deterministic simulated current value for a friend during a live challenge.
+    private func simulatedCurrent(for participant: PersistedChallengeParticipant,
+                                  challenge: PersistedStakeChallenge) -> Int {
+        let total = challenge.endsAt.timeIntervalSince(challenge.startsAt)
+        let elapsed = max(0, min(total, now.timeIntervalSince(challenge.startsAt)))
+        let progress = total > 0 ? elapsed / total : 0
+        var rng = SeededRandom(seed: "\(challenge.id)::\(participant.playerId)".hashValue)
+        let cap: Int = {
+            switch challenge.metric {
+            case .steps:  return 35_000 + Int(rng.next() % 30_000)
+            case .vaults: return 4 + Int(rng.next() % 6)
+            case .coins:  return 1_500 + Int(rng.next() % 4_000)
+            }
+        }()
+        return participant.baseline + Int(Double(cap) * progress)
+    }
+
+    enum CreateChallengeError: Error, Equatable { case noFriends, badStake, notEnoughCoins }
+
+    @discardableResult
+    func createStakeChallenge(
+        friendIds: [String],
+        metric: ChallengeMetric,
+        stake: Int
+    ) -> Result<PersistedStakeChallenge, CreateChallengeError> {
+        guard !friendIds.isEmpty else { return .failure(.noFriends) }
+        guard stake > 0 else { return .failure(.badStake) }
+        guard spendableCoins >= stake else { return .failure(.notEnoughCoins) }
+        let chosen = state.friendsList.filter { friendIds.contains($0.id) }
+        guard !chosen.isEmpty else { return .failure(.noFriends) }
+
+        let baseline = metricSnapshot(metric)
+        let startsAt = now
+        let endsAt = now.addingTimeInterval(7 * 86_400)
+        let inviteExpires = startsAt.addingTimeInterval(86_400)
+
+        let you = PersistedChallengeParticipant(
+            playerId: "you",
+            displayName: state.displayName.isEmpty ? "You" : state.displayName,
+            avatarSeed: state.avatarSeed,
+            state: .joined,
+            baseline: baseline,
+            current: baseline
+        )
+        let invitees: [PersistedChallengeParticipant] = chosen
+            .prefix(Self.maxChallengeParticipants - 1)
+            .map { f in
+                PersistedChallengeParticipant(
+                    playerId: f.id,
+                    displayName: f.displayName,
+                    avatarSeed: f.avatarSeed,
+                    state: .invited,
+                    baseline: 0,
+                    current: 0
+                )
+            }
+
+        let firstName = chosen.first?.displayName.split(separator: " ").first.map(String.init) ?? "Friend"
+        let titleStem: String = {
+            switch metric {
+            case .steps:  return "\(firstName)'s Step Showdown"
+            case .vaults: return "\(firstName)'s Vault Hunt"
+            case .coins:  return "\(firstName)'s Coin Sprint"
+            }
+        }()
+
+        let ch = PersistedStakeChallenge(
+            id: "ch_\(Int(now.timeIntervalSince1970 * 1000))",
+            title: titleStem,
+            createdBy: "you",
+            stake: stake,
+            metric: metric,
+            createdAt: now,
+            startsAt: startsAt,
+            endsAt: endsAt,
+            inviteExpiresAt: inviteExpires,
+            status: .live,
+            participants: [you] + invitees
+        )
+
+        state.stakeChallenges.insert(ch, at: 0)
+        state.lockedCoins += stake
+        save(); Haptics.success()
+        return .success(ch)
+    }
+
+    @discardableResult
+    func acceptStakeChallenge(id: String) -> Bool {
+        guard let idx = state.stakeChallenges.firstIndex(where: { $0.id == id }) else { return false }
+        var ch = state.stakeChallenges[idx]
+        guard let pIdx = ch.participants.firstIndex(where: { $0.playerId == "you" }) else { return false }
+        guard ch.participants[pIdx].state == .invited else { return false }
+        guard spendableCoins >= ch.stake else { return false }
+        ch.participants[pIdx].state = .joined
+        ch.participants[pIdx].baseline = metricSnapshot(ch.metric)
+        ch.participants[pIdx].current = ch.participants[pIdx].baseline
+        state.stakeChallenges[idx] = ch
+        state.lockedCoins += ch.stake
+        save(); Haptics.success()
+        return true
+    }
+
+    @discardableResult
+    func declineStakeChallenge(id: String) -> Bool {
+        guard let idx = state.stakeChallenges.firstIndex(where: { $0.id == id }) else { return false }
+        var ch = state.stakeChallenges[idx]
+        guard let pIdx = ch.participants.firstIndex(where: { $0.playerId == "you" }) else { return false }
+        ch.participants[pIdx].state = .out
+        state.stakeChallenges[idx] = ch
+        save(); Haptics.tap()
+        return true
+    }
+
+    /// Refresh `current` for every participant in every live challenge, then
+    /// settle any whose `endsAt` has passed. Pays the winner the pot less rake.
+    func tickStakeChallenges() {
+        var dirty = false
+        for i in state.stakeChallenges.indices {
+            var ch = state.stakeChallenges[i]
+            guard ch.status == .live else { continue }
+            // Live update participants.
+            for j in ch.participants.indices {
+                let p = ch.participants[j]
+                if p.playerId == "you", p.state == .joined {
+                    ch.participants[j].current = metricSnapshot(ch.metric)
+                } else if p.state == .joined {
+                    ch.participants[j].current = simulatedCurrent(for: p, challenge: ch)
+                } else if p.state == .invited, now >= ch.inviteExpiresAt {
+                    ch.participants[j].state = .out
+                }
+            }
+            // Settle?
+            if now >= ch.endsAt {
+                let joined = ch.participants.filter { $0.state == .joined }
+                let pot = ch.stake * joined.count
+                let rake = Int(Double(pot) * Self.challengeRakePct)
+                let payout = max(0, pot - rake)
+                let winner = joined.max(by: { $0.delta < $1.delta })
+                ch.winnerId = winner?.playerId
+                ch.payout = payout
+                ch.status = .settled
+                // Unlock the player's stake (it was held in lockedCoins).
+                if joined.contains(where: { $0.playerId == "you" }) {
+                    // Unlock the held stake first — coins balance is unchanged by this.
+                    state.lockedCoins = max(0, state.lockedCoins - ch.stake)
+                    if winner?.playerId == "you" {
+                        // Winner: gain payout, but their own stake was part of the pot.
+                        state.coins += max(0, payout - ch.stake)
+                    } else {
+                        // Loser: forfeit the staked coins.
+                        state.coins = max(0, state.coins - ch.stake)
+                    }
+                }
+            }
+            state.stakeChallenges[i] = ch
+            dirty = true
+        }
+        if dirty { save() }
+    }
+
     var handle: String { get { state.handle } set { state.handle = newValue; save() } }
     var displayName: String { get { state.displayName } set { state.displayName = newValue; save() } }
     var avatarSeed: Int { get { state.avatarSeed } set { state.avatarSeed = newValue; save() } }
@@ -833,6 +1067,7 @@ final class VaultStore {
         now = Date()
         settleOverdue()
         settleTribeDerby()
+        tickStakeChallenges()
     }
 
     /// Auto-settle the prior week's derby for this player's tribe. Mirrors

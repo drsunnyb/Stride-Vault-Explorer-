@@ -264,6 +264,55 @@ enum AppData {
         return pool.sorted { $0.coins > $1.coins }
     }
 
+    /// Seed friend records persisted on first launch. Mirrors `SEED_FRIENDS` in expo.
+    static let seedFriends: [PersistedFriend] = [
+        .init(id: "f_kai",   username: "kai.mercer", displayName: "Kai Mercer",  avatarSeed: 11, addedAt: Date().addingTimeInterval(-86_400 * 21)),
+        .init(id: "f_sable", username: "sable",      displayName: "Sable Wren",  avatarSeed: 4,  addedAt: Date().addingTimeInterval(-86_400 * 14)),
+        .init(id: "f_juno",  username: "junopark",   displayName: "Juno Park",   avatarSeed: 7,  addedAt: Date().addingTimeInterval(-86_400 * 9)),
+        .init(id: "f_rune",  username: "rune",       displayName: "Rune Calder", avatarSeed: 2,  addedAt: Date().addingTimeInterval(-86_400 * 4))
+    ]
+
+    /// Additional players who appear in search + on the global ladder.
+    static let globalPlayers: [(id: String, username: String, displayName: String, avatarSeed: Int)] = [
+        ("g_nova",   "novavance",  "Nova Vance",     9),
+        ("g_iris",   "irisdoyle",  "Iris Doyle",     3),
+        ("g_onyx",   "onyx",       "Onyx Ravel",     5),
+        ("g_pax",    "pax",        "Pax Holloway",   13),
+        ("g_echo",   "echovale",   "Echo Vale",      10),
+        ("g_atlas",  "atlas.j",    "Atlas Jin",      11),
+        ("g_vesper", "vesper",     "Vesper Locke",   12),
+        ("g_rook",   "rookwilde",  "Rook Wilde",     6),
+        ("g_sage",   "sage.bly",   "Sage Bly",       14),
+        ("g_zara",   "zarakade",   "Zara Kade",      8),
+        ("g_finn",   "finn",       "Finn Asher",     15),
+        ("g_lyra",   "lyrawren",   "Lyra Wren",      1)
+    ]
+
+    /// Combined directory used by `addFriend(username:)`.
+    static var allKnownUsers: [(id: String, username: String, displayName: String, avatarSeed: Int)] {
+        let seeded = seedFriends.map { ($0.id, $0.username, $0.displayName, $0.avatarSeed) }
+        return seeded + globalPlayers
+    }
+
+    /// Deterministic pseudo-coin total for a friend in a given period (mirrors `pseudoPeriodCoins`).
+    static func pseudoPeriodCoins(playerId: String, periodKey: String) -> Int {
+        var h: UInt32 = 0
+        let s = "\(playerId)::\(periodKey)"
+        for u in s.unicodeScalars { h = h &* 31 &+ u.value }
+        switch periodKey.count {
+        case 4:  return 8_000 + Int(h % 90_000)
+        case 7:  return 1_500 + Int(h % 18_000)
+        default: return 200 + Int(h % 3_500)
+        }
+    }
+
+    /// ISO-ish week key (matches `periodKey(start, "week")` in expo).
+    static func currentWeekKey(_ date: Date = Date()) -> String {
+        let cal = Calendar(identifier: .iso8601)
+        let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        return "\(comps.yearForWeekOfYear ?? 0)-W\(comps.weekOfYear ?? 0)"
+    }
+
     static let friends: [Friend] = [
         .init(id: "f1", handle: "@sable", name: "Sable Quinn", avatarSeed: 4, coinsThisWeek: 8_420, isOnline: true, lastSeen: "Active now"),
         .init(id: "f2", handle: "@rune", name: "Rune Aalto", avatarSeed: 2, coinsThisWeek: 6_110, isOnline: true, lastSeen: "Active now"),

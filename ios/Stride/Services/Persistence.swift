@@ -58,6 +58,13 @@ nonisolated struct PersistedPlayer: Codable, Sendable {
     var weeklyStakeJoinedWeek: String?
     var notificationsEnabled: Bool = false
 
+    /// Friends the player has added (mirrors Expo `player.friends`).
+    var friendsList: [PersistedFriend] = AppData.seedFriends
+    /// Stake challenges (live + settled, most recent first).
+    var stakeChallenges: [PersistedStakeChallenge] = []
+    /// Coins locked inside open stake challenges (not spendable elsewhere).
+    var lockedCoins: Int = 0
+
     var plus: PlusSubscription?
 
     // Stored as lat/lng since CLLocationCoordinate2D isn't Codable.
@@ -75,6 +82,66 @@ nonisolated struct PersistedPlayer: Codable, Sendable {
         get { CLLocationCoordinate2D(latitude: userLat, longitude: userLng) }
         set { userLat = newValue.latitude; userLng = newValue.longitude }
     }
+}
+
+/// Codable friend record persisted on-device. Mirrors `expo/types/game.ts Friend`.
+nonisolated struct PersistedFriend: Codable, Hashable, Sendable, Identifiable {
+    let id: String
+    let username: String
+    let displayName: String
+    let avatarSeed: Int
+    let addedAt: Date
+}
+
+nonisolated enum ChallengeMetric: String, Codable, Sendable, CaseIterable, Hashable {
+    case steps, vaults, coins
+
+    var label: String {
+        switch self {
+        case .steps: return "STEPS"
+        case .vaults: return "VAULTS"
+        case .coins: return "COINS"
+        }
+    }
+}
+
+nonisolated enum ChallengeParticipantState: String, Codable, Sendable, Hashable {
+    case invited, joined, out
+}
+
+nonisolated struct PersistedChallengeParticipant: Codable, Hashable, Sendable, Identifiable {
+    /// "you" for the local player, otherwise the friend id.
+    let playerId: String
+    let displayName: String
+    let avatarSeed: Int
+    var state: ChallengeParticipantState
+    /// Metric value at challenge start.
+    var baseline: Int
+    /// Current metric value (live for you, simulated for friends).
+    var current: Int
+
+    var id: String { playerId }
+    var delta: Int { max(0, current - baseline) }
+}
+
+nonisolated enum ChallengeStatus: String, Codable, Sendable, Hashable {
+    case pending, live, settled, cancelled
+}
+
+nonisolated struct PersistedStakeChallenge: Codable, Hashable, Sendable, Identifiable {
+    let id: String
+    var title: String
+    let createdBy: String
+    let stake: Int
+    let metric: ChallengeMetric
+    let createdAt: Date
+    let startsAt: Date
+    let endsAt: Date
+    let inviteExpiresAt: Date
+    var status: ChallengeStatus
+    var participants: [PersistedChallengeParticipant]
+    var winnerId: String?
+    var payout: Int?
 }
 
 nonisolated struct Redemption: Codable, Hashable, Sendable, Identifiable {
