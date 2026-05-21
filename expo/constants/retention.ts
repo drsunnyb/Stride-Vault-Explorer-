@@ -85,12 +85,13 @@ export function powerHoursForDay(ms: number = Date.now()): PowerHour[] {
   }
   picks.sort((a, b) => a - b);
   // One window per day is a rare 3× — pick the lunch/evening slot.
-  const threeXIdx = picks.length > 1 ? Math.floor(rng() * picks.length) : -1;
+  // v3: Power Hour capped at 2× — the 3× mega-window is retired.
+  void rng;
   const dayStart = d.getTime();
-  return picks.map((h, i) => ({
+  return picks.map((h) => ({
     startsAt: dayStart + h * 3600_000,
     endsAt: dayStart + (h + 1) * 3600_000,
-    multiplier: (i === threeXIdx ? 3 : 2) as 2 | 3,
+    multiplier: 2 as 2 | 3,
   }));
 }
 
@@ -156,8 +157,8 @@ export const STREAK_FREEZE_FREE_INTERVAL = 14;
 
 /** How many vaults turn Hot per day. */
 export const HOT_VAULT_COUNT = 5;
-/** Extra coin multiplier on a Hot Vault claim. */
-export const HOT_VAULT_MULTIPLIER = 5;
+/** Extra coin multiplier on a Hot Vault claim. Capped at 3× (v3, raffles-era). */
+export const HOT_VAULT_MULTIPLIER = 3;
 /** When the daily rotation flips (local hour). */
 export const HOT_VAULT_RESET_HOUR = 6;
 
@@ -417,8 +418,9 @@ export function pseudoTribeCoins(tribeId: string, weekStart: number): number {
 
 // ── COMBINED MULTIPLIER HELPER ──────────────────────────────────────────────
 
-/** Hard global cap so a perfect-storm claim can't break the economy. */
-export const MAX_TOTAL_MULTIPLIER = 20;
+/** Hard global cap so a perfect-storm claim can't break the economy.
+ *  v3 (raffles-only burn era): tightened from 20 to 10. */
+export const MAX_TOTAL_MULTIPLIER = 10;
 
 export interface MultiplierBreakdown {
   base: number;

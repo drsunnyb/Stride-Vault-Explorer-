@@ -220,11 +220,48 @@ struct RewardsView: View {
     private var browseTab: some View {
         VStack(alignment: .leading, spacing: 22) {
             walletCard
+            rafflesHeroCta
             quickActions
             LiveEventsStrip(events: AppData.liveEvents)
             challengesSection
             rafflesSection
             rewardsSection
+        }
+    }
+
+    /// v3 (raffles-only era): single most-prominent CTA — jumps straight into
+    /// the soonest-ending live raffle so coins always have somewhere to land.
+    private var rafflesHeroCta: some View {
+        let live = AppData.raffles
+            .filter { $0.endsAt > Date() }
+            .sorted { $0.endsAt < $1.endsAt }
+        return Group {
+            if let r = live.first {
+                Button {
+                    Haptics.tap()
+                    selectedRaffle = r
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "trophy.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                        Text("ENTER · \(live.count) LIVE RAFFLE\(live.count == 1 ? "" : "S")")
+                            .font(.system(size: 12, weight: .black, design: .rounded)).tracking(1.4)
+                            .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+                    .background(Theme.goldBright)
+                    .clipShape(.rect(cornerRadius: 14))
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+            } else {
+                EmptyView()
+            }
         }
     }
 
@@ -246,21 +283,13 @@ struct RewardsView: View {
                     .padding(.bottom, 8)
                 Spacer()
             }
-            HStack(spacing: 10) {
-                ForEach(AppData.brands) { brand in
-                    Button {
-                        Haptics.tap()
-                        exchangeBrand = brand
-                    } label: {
-                        BrandWalletChip(brand: brand, balance: store.brandCoins[brand.id] ?? 0)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
+            // v3 (raffles-only era): brand coins auto-convert to Stride at
+            // claim time. Wallet brand pills + exchange hint are hidden until
+            // partners go live; keep tagline below so users know what's next.
             HStack(spacing: 6) {
-                Image(systemName: "arrow.left.arrow.right").font(.system(size: 10, weight: .black))
-                Text("TAP A BRAND TO EXCHANGE COINS")
-                    .font(.system(size: 10, weight: .black, design: .rounded)).tracking(1.4)
+                Image(systemName: "flame.fill").font(.system(size: 10, weight: .black))
+                Text("BURN COINS ON RAFFLES · EVERY ENTRY FUNDS THE PRIZE POOL")
+                    .font(.system(size: 10, weight: .black, design: .rounded)).tracking(1.2)
             }
             .foregroundStyle(Theme.textMuted)
             .padding(.top, 2)
@@ -337,7 +366,7 @@ struct RewardsView: View {
 
     private var rewardsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("REWARDS", "Spend coins on real things.")
+            sectionHeader("COMING SOON · REWARDS", "Vouchers & brand perks unlock as we onboard partners.")
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -368,9 +397,22 @@ struct RewardsView: View {
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(filteredRewards) { r in
-                    Button { selectedReward = r } label: {
-                        RewardCard(reward: r, owned: store.ownedRewards.contains(r.id))
-                    }.buttonStyle(.plain)
+                    RewardCard(reward: r, owned: store.ownedRewards.contains(r.id))
+                        .overlay(alignment: .topTrailing) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "lock.fill").font(.system(size: 9, weight: .black))
+                                Text("COMING SOON").tracking(1)
+                            }
+                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .foregroundStyle(Theme.goldBright)
+                            .padding(.horizontal, 6).padding(.vertical, 3)
+                            .background(Theme.goldBright.opacity(0.16))
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Theme.goldBright.opacity(0.55), lineWidth: 1))
+                            .padding(10)
+                        }
+                        .opacity(0.55)
+                        .allowsHitTesting(false)
                 }
             }
             .padding(.horizontal, 16)

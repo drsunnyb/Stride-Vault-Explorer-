@@ -46,13 +46,14 @@ enum Tier: String, CaseIterable, Codable, Sendable {
         [color.opacity(0.95), glow]
     }
 
-    /// Random reward range per tier — tuned for taste, not real economy.
+    /// Random reward range per tier — v3 (raffles-only era): cut ~25% so weekly
+    /// coin supply lines up with a £500–£1,500 raffle outlay.
     var rewardRange: ClosedRange<Int> {
         switch self {
-        case .bronze: 35...60
-        case .silver: 80...140
-        case .gold: 180...260
-        case .platinum: 360...520
+        case .bronze: 26...45
+        case .silver: 60...105
+        case .gold: 135...195
+        case .platinum: 270...390
         }
     }
 

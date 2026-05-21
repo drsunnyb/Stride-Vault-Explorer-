@@ -81,6 +81,10 @@ import type {
 
 const STORAGE_KEY = "stridequest.player.v7";
 
+/** Tokenomics v3: raffles-only burn era — daily coins-from-claims soft cap. */
+export const DAILY_COIN_CAP_FREE = 3000;
+export const DAILY_COIN_CAP_PLUS = 5000;
+
 /** Rake taken from every settled stake challenge pot — funds the Champions Pool. */
 export const CHALLENGE_RAKE_PCT = 0.02;
 /** Hard cap of participants on a single stake challenge (inviter + 5). */
@@ -284,7 +288,22 @@ async function loadPlayer(): Promise<PlayerState> {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_PLAYER;
     const parsed = JSON.parse(raw) as Partial<PlayerState>;
-    return { ...DEFAULT_PLAYER, ...parsed };
+    const merged: PlayerState = { ...DEFAULT_PLAYER, ...parsed };
+    // v3 migration: convert any legacy brand-coin balances into Stride Coins so
+    // every burn lands in the raffle pool.
+    if (!merged.brandCoinsMigratedV3) {
+      let credit = 0;
+      const balances = merged.brandCoins ?? {};
+      for (const [brand, amount] of Object.entries(balances)) {
+        if (!amount || amount <= 0) continue;
+        const rate = EXCHANGE_RATES[brand] ?? 5;
+        credit += Math.max(1, Math.round(amount * rate));
+      }
+      merged.coins = (merged.coins ?? 0) + credit;
+      merged.brandCoins = {};
+      merged.brandCoinsMigratedV3 = true;
+    }
+    return merged;
   } catch (e) {
     console.log("[GameProvider] loadPlayer failed", e);
     return DEFAULT_PLAYER;
@@ -570,7 +589,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
       const entry: ClaimedVault = {
         id: vault.id,
         claimedAt: Date.now(),
-        coins: coinsPaid,
+        coins: cappedCoinsPaid,
         xp: xpPaid,
       };
 
@@ -583,15 +602,30 @@ export const [GameProvider, useGame] = createContextHook(() => {
         need = xpForLevel(newLevel);
       }
 
-      // Brand vaults also pay out brand-locked coins (tier-boosted as well).
+      // v3 (raffles-only era): branded vaults no longer mint brand-locked
+      // currency — the equivalent value is auto-converted into Stride Coins so
+      // every burn lands in the raffle pool. Brand chips on vault cards stay
+      // (they still steer foot traffic to partner stores).
+      let coinsAfterBrand = coinsPaid;
       const brandCoins = { ...current.brandCoins };
       if (vault.brand) {
         const brandFraction = plusActive
           ? PLUS.plusBrandCoinFraction
           : PLUS.freeBrandCoinFraction;
-        const grant = Math.max(1, Math.round(coinsPaid * brandFraction));
-        brandCoins[vault.brand] = (brandCoins[vault.brand] ?? 0) + grant;
+        const brandEquivalent = Math.max(1, Math.round(coinsPaid * brandFraction));
+        // Convert brand coins → stride at the exchange rate (default 5:1).
+        const rate = exchangeRate(vault.brand);
+        coinsAfterBrand += Math.max(1, Math.round(brandEquivalent * rate));
       }
+
+      // Daily coin soft-cap on claim payouts. Caps how many coins the player
+      // can earn from vault claims in a single calendar day. XP unaffected.
+      const coinsEarnedTodayBefore =
+        current.claimsTodayDate === tk ? current.coinsFromClaimsToday ?? 0 : 0;
+      const dailyCoinCap = plusActive ? DAILY_COIN_CAP_PLUS : DAILY_COIN_CAP_FREE;
+      const remainingBudget = Math.max(0, dailyCoinCap - coinsEarnedTodayBefore);
+      const cappedCoinsPaid = Math.min(coinsAfterBrand, remainingBudget);
+      const hitDailyCoinCap = cappedCoinsPaid < coinsAfterBrand;
 
       // ── Streak update ─────────────────────────────────────────────────────
       let streakDays = current.streakDays;
@@ -626,7 +660,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
 
       const next: PlayerState = {
         ...current,
-        coins: current.coins + coinsPaid,
+        coins: current.coins + cappedCoinsPaid,
         xp: newXp,
         level: newLevel,
         claimed: [entry, ...current.claimed],
@@ -634,6 +668,8 @@ export const [GameProvider, useGame] = createContextHook(() => {
         stepsAtLastClaim: current.steps,
         claimsToday: claimsTodayBefore + 1,
         claimsTodayDate: tk,
+        coinsFromClaimsToday: coinsEarnedTodayBefore + cappedCoinsPaid,
+        hitDailyCoinCapOn: hitDailyCoinCap ? tk : current.hitDailyCoinCapOn,
         streakDays,
         streakFreezes,
         lastClaimDate: tk,

@@ -308,7 +308,7 @@ function BrowseSection({
 
   return (
     <>
-      {/* HERO — Stride balance */}
+      {/* HERO — Stride balance + raffles-only CTA */}
       <View style={styles.heroCard}>
         <LinearGradient
           colors={["rgba(244,208,63,0.20)", "rgba(212,175,55,0.06)", "rgba(6,7,13,0)"]}
@@ -319,14 +319,27 @@ function BrowseSection({
           <View style={{ flex: 1 }}>
             <Text style={styles.heroLabel}>STRIDE COINS</Text>
             <Text style={styles.heroBalance}>{player.coins.toLocaleString()}</Text>
-            <Text style={styles.heroSub}>Spend on rewards · Enter raffles · Convert to brand</Text>
+            <Text style={styles.heroSub}>Burn them on live raffles — every coin lands in the prize pool.</Text>
           </View>
         </View>
+        {liveRaffles.length > 0 ? (
+          <Pressable
+            onPress={() => onOpenRaffle(liveRaffles[0])}
+            style={({ pressed }) => [styles.heroCta, pressed && { transform: [{ scale: 0.99 }] }]}
+          >
+            <Trophy size={14} color="#1A0A00" />
+            <Text style={styles.heroCtaText}>
+              ENTER · {liveRaffles.length} LIVE RAFFLE{liveRaffles.length === 1 ? "" : "S"}
+            </Text>
+            <ArrowRight size={14} color="#1A0A00" />
+          </Pressable>
+        ) : null}
       </View>
 
-      {/* WALLETS — brand balances. Hidden entirely when there are no brand
-          partners, full-width when there's only one, horizontal scroll for many. */}
-      {hasBrands ? (
+      {/* WALLETS — brand balances. v3 raffles-only era: brand coins are auto-converted
+          to Stride at claim time, so this whole section is hidden. Restore once partners
+          go live again. */}
+      {false && hasBrands ? (
         <>
           <Text style={styles.sectionTitle}>YOUR COINS</Text>
           {activeBrands.length === 1 ? (
@@ -400,8 +413,9 @@ function BrowseSection({
         </>
       ) : null}
 
-      {/* EXCHANGE — dynamic per brand. Hidden if there are no partners. */}
-      {hasBrands && exchangeMeta ? (
+      {/* EXCHANGE — v3 raffles-only era: brand coins auto-convert at claim time so
+          a manual exchange surface is unnecessary. */}
+      {false && hasBrands && exchangeMeta ? (
         <>
           <Text style={styles.sectionTitle}>EXCHANGE COINS</Text>
           <View style={styles.exchangeCard}>
@@ -460,10 +474,18 @@ function BrowseSection({
         </>
       ) : null}
 
-      {/* INSTANT REWARDS — filter chips driven by the live brand list. Chips
-          for brands collapse when there are none; STRIDE-only deploys still
-          look clean. */}
-      <Text style={styles.sectionTitle}>INSTANT REWARDS</Text>
+      {/* INSTANT REWARDS — v3 raffles-only era: catalogue stays visible as a
+          "Coming soon" preview so users see what their coins will buy, but
+          tap-through is locked until brand partners go live. */}
+      <View style={styles.comingSoonHeader}>
+        <View>
+          <Text style={styles.sectionTitle}>COMING SOON · INSTANT REWARDS</Text>
+          <Text style={styles.comingSoonExplain}>
+            We're starting with raffles so every coin you spend lands in the prize pool.
+            Vouchers & brand perks unlock as we onboard partners.
+          </Text>
+        </View>
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -482,7 +504,7 @@ function BrowseSection({
         ))}
       </ScrollView>
 
-      <View style={{ paddingHorizontal: 16, gap: 10 }}>
+      <View pointerEvents="none" style={{ paddingHorizontal: 16, gap: 10, opacity: 0.55 }}>
         {filtered.length === 0 ? (
           <View style={styles.emptyCard}>
             <View style={styles.emptyIcon}>
@@ -502,7 +524,8 @@ function BrowseSection({
               reward={r}
               strideBal={player.coins}
               brandBal={r.brand ? player.brandCoins[r.brand] ?? 0 : 0}
-              onPress={() => onOpenReward(r)}
+              onPress={() => { /* locked in raffles-only era */ }}
+              locked
             />
           ))
         )}
@@ -922,11 +945,13 @@ function RewardRow({
   strideBal,
   brandBal,
   onPress,
+  locked,
 }: {
   reward: Reward;
   strideBal: number;
   brandBal: number;
   onPress: () => void;
+  locked?: boolean;
 }) {
   const meta = getBrand(reward.brand);
   const isBrand = !!reward.brand;
@@ -965,7 +990,14 @@ function RewardRow({
               <Text style={[styles.brandPillText, { color: "#1A1300" }]}>STRIDE</Text>
             </View>
           )}
-          <Text style={styles.rowBadge}>{reward.badge}</Text>
+          {locked ? (
+            <View style={styles.comingSoonChip}>
+              <Lock size={9} color={theme.goldBright} />
+              <Text style={styles.comingSoonChipText}>COMING SOON</Text>
+            </View>
+          ) : (
+            <Text style={styles.rowBadge}>{reward.badge}</Text>
+          )}
         </View>
         <Text style={styles.rowTitle} numberOfLines={1}>{reward.title}</Text>
         <Text style={styles.rowSub} numberOfLines={1}>{reward.subtitle}</Text>
@@ -1238,6 +1270,38 @@ const styles = StyleSheet.create({
   heroLabel: { color: theme.textMuted, fontSize: 10, fontWeight: "800" as const, letterSpacing: 1.6 },
   heroBalance: { color: theme.goldBright, fontSize: 36, fontWeight: "900" as const, marginTop: 2 },
   heroSub: { color: theme.textDim, fontSize: 11, fontWeight: "600" as const, marginTop: 2 },
+  heroCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: theme.goldBright,
+  },
+  heroCtaText: { color: "#1A0A00", fontSize: 12, fontWeight: "900" as const, letterSpacing: 1.4 },
+  comingSoonHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
+  comingSoonExplain: {
+    color: theme.textDim,
+    fontSize: 11,
+    lineHeight: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    marginTop: -6,
+  },
+  comingSoonChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.gold + "77",
+    backgroundColor: theme.gold + "1A",
+  },
+  comingSoonChipText: { color: theme.goldBright, fontSize: 9, fontWeight: "900" as const, letterSpacing: 1 },
   sectionTitle: {
     color: theme.text,
     fontSize: 13,

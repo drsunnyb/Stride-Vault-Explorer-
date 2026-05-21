@@ -64,13 +64,14 @@ nonisolated enum RetentionEngine {
             pool.removeAll { abs($0.hour - h) < 2 }
         }
         picks.sort()
-        let threeXIdx: Int = picks.count > 1 ? Int(rng.next() * Double(picks.count)) : -1
-        return picks.enumerated().map { (i, hour) in
+        // v3 (raffles-only era): Power Hour capped at 2× — retired the 3× mega-window.
+        _ = rng
+        return picks.map { hour in
             let start = dayStart.addingTimeInterval(TimeInterval(hour) * 3600)
             return PowerHour(
                 startsAt: start,
                 endsAt: start.addingTimeInterval(3600),
-                multiplier: i == threeXIdx ? 3 : 2
+                multiplier: 2
             )
         }
     }
@@ -125,7 +126,8 @@ nonisolated enum RetentionEngine {
 
     // ── HOT VAULTS ──────────────────────────────────────────────────────────
     static let hotVaultCount: Int = 5
-    static let hotVaultMultiplier: Double = 5
+    /// v3 (raffles-only era): tightened from 5× to 3×.
+    static let hotVaultMultiplier: Double = 3
     static let hotVaultResetHour: Int = 6
 
     static func hotVaultWindowStart(_ now: Date = Date()) -> Date {
@@ -241,7 +243,8 @@ nonisolated enum RetentionEngine {
     }
 
     // ── COMBINED MULTIPLIER ─────────────────────────────────────────────────
-    static let maxTotalMultiplier: Double = 20
+    /// v3 (raffles-only era): tightened from 20× to 10×.
+    static let maxTotalMultiplier: Double = 10
 
     struct MultiplierBreakdown: Sendable {
         let base: Double

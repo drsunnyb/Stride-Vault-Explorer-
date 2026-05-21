@@ -31,6 +31,9 @@ nonisolated struct PersistedPlayer: Codable, Sendable {
     var brandCoins: [String: Int] = ["nike": 0, "apple": 0, "lulu": 0]
     var brandExchangedTodayBy: [String: Int] = [:]
     var brandExchangedDay: String?
+    /// v3 raffles-only era: true once any legacy brand-coin balance has been
+    /// auto-converted into Stride Coins on first launch.
+    var brandCoinsMigratedV3: Bool = false
 
     var ownedRewards: [String] = []
     var redemptionHistory: [Redemption] = []

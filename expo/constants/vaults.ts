@@ -22,15 +22,15 @@ export function respawnMs(vault: Vault): number {
 }
 
 /**
- * Tokenomics v2 — rebalanced for the 1,100-vault London deployment.
- * Numbers are *intentionally* lower than the original 40-vault economy so a
- * single big walk doesn't mint a MacBook. Spending side is unchanged.
+ * Tokenomics v3 — raffles-only burn era.
+ * Cut ~25% across tiers from v2 so weekly coin supply is roughly absorbed by
+ * £500–£1,500 of raffle prizes. XP unchanged — only £-relevant coin yield.
  */
 const TIER_REWARD: Record<Tier, { coins: [number, number]; xp: [number, number] }> = {
-  bronze: { coins: [35, 50], xp: [25, 40] },
-  silver: { coins: [70, 95], xp: [55, 75] },
-  gold: { coins: [140, 200], xp: [110, 160] },
-  platinum: { coins: [320, 420], xp: [230, 310] },
+  bronze: { coins: [26, 38], xp: [25, 40] },
+  silver: { coins: [52, 71], xp: [55, 75] },
+  gold: { coins: [105, 150], xp: [110, 160] },
+  platinum: { coins: [240, 315], xp: [230, 310] },
 };
 
 // ── Deterministic PRNG so 1,100 vaults are stable across reloads ───────────

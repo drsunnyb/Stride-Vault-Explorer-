@@ -178,6 +178,12 @@ export interface PlayerState {
   claimsToday: number;
   /** ISO date string (YYYY-MM-DD) for claimsToday rollover. */
   claimsTodayDate?: string;
+  /** Coins paid from vault claims today (post-multiplier). Drives v3 soft cap. */
+  coinsFromClaimsToday?: number;
+  /** YYYY-MM-DD when the daily coin soft cap was last hit (used to surface a toast). */
+  hitDailyCoinCapOn?: string;
+  /** True once the v3 brand-coin auto-conversion migration has run. */
+  brandCoinsMigratedV3?: boolean;
   /** Has the user seen the v2 rebalance note. */
   seenRebalanceV2?: boolean;
   /** Stride+ subscription state. Absent = never subscribed. */

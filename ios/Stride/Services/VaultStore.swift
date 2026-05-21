@@ -28,6 +28,22 @@ final class VaultStore {
     init() {
         wireSteps()
         settleOverdue()
+        migrateBrandCoinsToStrideV3()
+    }
+
+    /// v3 (raffles-only era): convert any legacy brand-coin balances into
+    /// Stride Coins on first launch so every burn lands in the raffle pool.
+    private func migrateBrandCoinsToStrideV3() {
+        guard !state.brandCoinsMigratedV3 else { return }
+        var credit = 0
+        for (brandId, amount) in state.brandCoins where amount > 0 {
+            let rate = Self.exchangeRates[brandId] ?? Self.defaultExchangeRate
+            credit += max(1, Int((Double(amount) * Double(rate)).rounded()))
+        }
+        state.coins += credit
+        state.brandCoins = [:]
+        state.brandCoinsMigratedV3 = true
+        save()
     }
 
     // ── Catalogue helpers ───────────────────────────────────────────────────
@@ -630,11 +646,16 @@ final class VaultStore {
         state.xp = newXp
         state.level = newLevel
 
-        // Brand coins (Plus boosts the share).
+        // v3 (raffles-only era): branded vaults no longer mint brand-locked
+        // currency. Convert the equivalent value into Stride Coins so every
+        // burn lands in the raffle pool. Brand chip on vault cards stays.
+        var bonusFromBrand = 0
         if let brandId = vault.brandId {
             let frac = isPlus ? PlusConfig.plusBrandCoinFraction : PlusConfig.freeBrandCoinFraction
-            let grant = max(1, Int((Double(coinsPaid) * frac).rounded()))
-            state.brandCoins[brandId, default: 0] += grant
+            let brandEquivalent = max(1, Int((Double(coinsPaid) * frac).rounded()))
+            let rate = Self.exchangeRates[brandId] ?? Self.defaultExchangeRate
+            bonusFromBrand = max(1, brandEquivalent * rate)
+            state.coins += bonusFromBrand
         }
 
         // Claim records.
@@ -674,10 +695,9 @@ final class VaultStore {
             }
         }
 
-        return VaultReward(coins: coinsPaid, xp: xpPaid,
+        return VaultReward(coins: coinsPaid + bonusFromBrand, xp: xpPaid,
                            brandId: vault.brandId,
-                           brandCoins: vault.brandId == nil ? 0 : Int(Double(coinsPaid) *
-                            (isPlus ? PlusConfig.plusBrandCoinFraction : PlusConfig.freeBrandCoinFraction)))
+                           brandCoins: 0)
     }
 
     func isClaimed(_ vault: Vault) -> Bool { state.claimedIDs.contains(vault.id) }
