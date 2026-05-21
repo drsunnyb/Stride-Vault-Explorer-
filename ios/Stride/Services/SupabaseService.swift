@@ -25,6 +25,9 @@ final class SupabaseService {
     private(set) var powerHourOverride: PowerHourOverride?
     private(set) var waitlistMembership: WaitlistMembership?
 
+    /// Admin-curated weekly challenges every player sees in the Friends tab.
+    private(set) var featuredChallenges: [FeaturedChallenge] = []
+
     private var hasSupabase: Bool {
         !Config.EXPO_PUBLIC_SUPABASE_URL.isEmpty
             && !Config.EXPO_PUBLIC_SUPABASE_ANON_KEY.isEmpty
@@ -127,8 +130,86 @@ final class SupabaseService {
         // Parse JSON-valued live overrides via a raw JSON path so we don't
         // have to flatten arbitrary structures through Decodable.
         await refreshLiveOverrides()
+        await refreshFeaturedChallenges()
 
         lastSyncedAt = Date()
+    }
+
+    /// Pull admin-curated featured challenges.
+    private func refreshFeaturedChallenges() async {
+        let rows: [FeaturedChallengeRow] = await fetch(
+            "featured_challenges?active=eq.true&order=sort_order.asc,ends_at.asc"
+        )
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let isoBasic = ISO8601DateFormatter()
+        featuredChallenges = rows.map { row in
+            let starts = iso.date(from: row.starts_at) ?? isoBasic.date(from: row.starts_at) ?? Date()
+            let ends = iso.date(from: row.ends_at) ?? isoBasic.date(from: row.ends_at) ?? Date().addingTimeInterval(7 * 86400)
+            return FeaturedChallenge(
+                id: row.id,
+                title: row.title,
+                subtitle: row.subtitle ?? "",
+                metric: ChallengeMetric(rawValue: row.metric) ?? .steps,
+                durationDays: row.duration_days ?? 7,
+                prizePoolCoins: row.prize_pool_coins ?? 5000,
+                entryCostCoins: row.entry_cost_coins ?? 0,
+                cohortSize: row.cohort_size ?? 100,
+                heroEmoji: row.hero_emoji ?? "🏆",
+                startsAt: starts,
+                endsAt: ends,
+                plusOnly: row.plus_only ?? false,
+                sortOrder: row.sort_order ?? 0
+            )
+        }
+    }
+
+    /// Fire-and-forget mirror of a peer stake challenge to the admin dashboard.
+    func pushStakeChallenge(_ ch: PersistedStakeChallenge,
+                            createdByUsername: String?,
+                            homeCity: String?) {
+        guard hasSupabase,
+              let url = URL(string: "\(Config.EXPO_PUBLIC_SUPABASE_URL)/rest/v1/stake_challenges")
+        else { return }
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime]
+        let participants: [[String: Any]] = ch.participants.map {
+            [
+                "playerId": $0.playerId,
+                "displayName": $0.displayName,
+                "state": $0.state == .joined ? "in" : $0.state.rawValue,
+                "baseline": $0.baseline,
+                "current": $0.current,
+            ]
+        }
+        let body: [String: Any] = [
+            "id": ch.id,
+            "title": ch.title,
+            "created_by": ch.createdBy,
+            "created_by_username": createdByUsername ?? NSNull(),
+            "home_city": homeCity ?? NSNull(),
+            "stake": ch.stake,
+            "metric": ch.metric.rawValue,
+            "status": ch.status.rawValue,
+            "participants": participants,
+            "created_at": iso.string(from: ch.createdAt),
+            "starts_at": iso.string(from: ch.startsAt),
+            "ends_at": iso.string(from: ch.endsAt),
+            "winner_id": ch.winnerId ?? NSNull(),
+            "payout": ch.payout ?? NSNull(),
+            "updated_at": iso.string(from: Date()),
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: body) else { return }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue(Config.EXPO_PUBLIC_SUPABASE_ANON_KEY, forHTTPHeaderField: "apikey")
+        req.setValue("Bearer \(Config.EXPO_PUBLIC_SUPABASE_ANON_KEY)", forHTTPHeaderField: "Authorization")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
+        req.httpBody = data
+        Task.detached {
+            _ = try? await URLSession.shared.data(for: req)
+        }
     }
 
     /// Pull the JSON-valued override rows and decode into typed structs.
@@ -359,6 +440,40 @@ nonisolated struct AnyDecodable: Decodable, Sendable {
         if let s = try? c.decode(String.self) { value = s; return }
         value = NSNull()
     }
+}
+
+// MARK: - Featured challenges
+
+nonisolated struct FeaturedChallenge: Identifiable, Hashable, Sendable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let metric: ChallengeMetric
+    let durationDays: Int
+    let prizePoolCoins: Int
+    let entryCostCoins: Int
+    let cohortSize: Int
+    let heroEmoji: String
+    let startsAt: Date
+    let endsAt: Date
+    let plusOnly: Bool
+    let sortOrder: Int
+}
+
+nonisolated struct FeaturedChallengeRow: Decodable, Sendable {
+    let id: String
+    let title: String
+    let subtitle: String?
+    let metric: String
+    let duration_days: Int?
+    let prize_pool_coins: Int?
+    let entry_cost_coins: Int?
+    let cohort_size: Int?
+    let hero_emoji: String?
+    let starts_at: String
+    let ends_at: String
+    let plus_only: Bool?
+    let sort_order: Int?
 }
 
 extension ConfigRow {

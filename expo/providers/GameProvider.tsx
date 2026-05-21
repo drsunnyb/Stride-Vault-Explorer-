@@ -52,7 +52,16 @@ import { findRaffle } from "@/constants/raffles";
 import { exchangeRate, registerBrands, REWARDS, makeRedemptionCode, EXCHANGE_RATES, type BrandMeta } from "@/constants/rewards";
 import { getStrideStatus } from "@/constants/status";
 import { DEFAULT_PLAYER_POS, VAULTS, CLAIM_RADIUS_METERS, respawnMs } from "@/constants/vaults";
-import { fetchBrands, fetchLiveConfig, fetchRaffles, fetchRewards, type LiveConfig } from "@/lib/backend";
+import {
+  fetchBrands,
+  fetchFeaturedChallenges,
+  fetchLiveConfig,
+  fetchRaffles,
+  fetchRewards,
+  pushStakeChallenge,
+  type FeaturedChallenge,
+  type LiveConfig,
+} from "@/lib/backend";
 import { distanceMeters } from "@/lib/geo";
 import {
   cancelAllStrideNotifications,
@@ -374,6 +383,14 @@ export const [GameProvider, useGame] = createContextHook(() => {
     queryFn: fetchLiveConfig,
     refetchInterval: 60 * 1000,
     initialData: { hotVaults: null, powerHour: null, membership: null },
+  });
+
+  /** Admin-curated weekly challenges shown in the Friends tab. */
+  const featuredChallengesQuery = useQuery<FeaturedChallenge[]>({
+    queryKey: ["featured-challenges"],
+    queryFn: fetchFeaturedChallenges,
+    refetchInterval: 5 * 60 * 1000,
+    initialData: [],
   });
   const liveConfig = liveConfigQuery.data ?? { hotVaults: null, powerHour: null, membership: null };
 
@@ -1190,6 +1207,11 @@ export const [GameProvider, useGame] = createContextHook(() => {
         challenges: [ch, ...(cur.challenges ?? [])],
         lockedCoins: (cur.lockedCoins ?? 0) + input.stake,
       });
+      // Best-effort: mirror to admin dashboard.
+      pushStakeChallenge(ch, {
+        createdByUsername: cur.username,
+        homeCity: cur.homeCityId,
+      }).catch(() => {});
       return { ok: true as const, challenge: ch };
     },
     [qc, setPlayer, metricValue]
@@ -1223,6 +1245,10 @@ export const [GameProvider, useGame] = createContextHook(() => {
         challenges: chs.map((c) => (c.id === challengeId ? next : c)),
         lockedCoins: (cur.lockedCoins ?? 0) + ch.stake,
       });
+      pushStakeChallenge(next, {
+        createdByUsername: cur.username,
+        homeCity: cur.homeCityId,
+      }).catch(() => {});
       return { ok: true as const };
     },
     [qc, setPlayer, metricValue]
@@ -1294,6 +1320,15 @@ export const [GameProvider, useGame] = createContextHook(() => {
       coins,
       lockedCoins: Math.max(0, locked),
     }).catch(() => {});
+    // Mirror settled / cancelled to admin.
+    for (const c of updated) {
+      if (due.find((d) => d.id === c.id)) {
+        pushStakeChallenge(c, {
+          createdByUsername: cur.username,
+          homeCity: cur.homeCityId,
+        }).catch(() => {});
+      }
+    }
   }, [now, qc, setPlayer, metricValue]);
 
   // ── Period coin earnings + ladder ──────────────────────────────────────────
@@ -1839,6 +1874,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
       // Friends + challenges + ladder
       friends: player.friends ?? [],
       challenges: player.challenges ?? [],
+      featuredChallenges: featuredChallengesQuery.data ?? [],
       lockedCoins: player.lockedCoins ?? 0,
       spendableCoins: Math.max(0, player.coins - (player.lockedCoins ?? 0)),
       championBadges: player.championBadges ?? [],

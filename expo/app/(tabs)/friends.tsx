@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Copy, Share2, Sword, Trophy, UserPlus, UserX, Users } from "lucide-react-native";
+import { Copy, Share2, Sword, Sparkles, Trophy, UserPlus, UserX, Users } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -13,7 +13,7 @@ import { useGame } from "@/providers/GameProvider";
 import type { StakeChallenge } from "@/types/game";
 
 export default function FriendsScreen() {
-  const { player, friends, challenges, now, addFriend, removeFriend } = useGame();
+  const { player, friends, challenges, featuredChallenges, now, addFriend, removeFriend } = useGame();
   const [query, setQuery] = useState<string>("");
   const [busy, setBusy] = useState<boolean>(false);
 
@@ -98,6 +98,21 @@ export default function FriendsScreen() {
         </Pressable>
       </View>
       <Text style={styles.searchHint}>Try @kai.mercer, @sable, @junopark, @rune, @novavance…</Text>
+
+      {/* Featured challenges (admin-curated) */}
+      {featuredChallenges && featuredChallenges.length > 0 ? (
+        <>
+          <Text style={styles.section}>FEATURED THIS WEEK</Text>
+          <View style={{ gap: 10, paddingHorizontal: 16 }}>
+            {featuredChallenges
+              .filter((c) => c.endsAt > now)
+              .slice(0, 4)
+              .map((c) => (
+                <FeaturedCard key={c.id} challenge={c} now={now} />
+              ))}
+          </View>
+        </>
+      ) : null}
 
       {/* Stake CTA */}
       <Pressable style={styles.stakeCta} onPress={() => router.push("/challenge/new")}>
@@ -186,6 +201,76 @@ export default function FriendsScreen() {
   );
 }
 
+function FeaturedCard({
+  challenge,
+  now,
+}: {
+  challenge: import("@/lib/backend").FeaturedChallenge;
+  now: number;
+}) {
+  const remaining = challenge.endsAt - now;
+  const metricLabel =
+    challenge.metric === "steps" ? "STEPS" : challenge.metric === "vaults" ? "VAULTS" : "COINS";
+  return (
+    <View style={featuredStyles.card}>
+      <LinearGradient
+        colors={["rgba(16,185,129,0.20)", "rgba(244,208,63,0.04)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={featuredStyles.headerRow}>
+        <Text style={featuredStyles.emoji}>{challenge.heroEmoji}</Text>
+        <View style={{ flex: 1 }}>
+          <View style={featuredStyles.chipRow}>
+            <View style={featuredStyles.featuredChip}>
+              <Sparkles size={9} color={theme.emeraldBright} />
+              <Text style={featuredStyles.featuredChipText}>FEATURED</Text>
+            </View>
+            <View style={featuredStyles.metricChip}>
+              <Text style={featuredStyles.metricChipText}>{metricLabel}</Text>
+            </View>
+            {challenge.plusOnly ? (
+              <View style={featuredStyles.plusChip}>
+                <Text style={featuredStyles.plusChipText}>STRIDE+</Text>
+              </View>
+            ) : null}
+          </View>
+          <Text style={featuredStyles.title} numberOfLines={1}>
+            {challenge.title}
+          </Text>
+          {challenge.subtitle ? (
+            <Text style={featuredStyles.subtitle} numberOfLines={2}>
+              {challenge.subtitle}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      <View style={featuredStyles.statsRow}>
+        <View>
+          <Text style={featuredStyles.statLabel}>PRIZE POOL</Text>
+          <Text style={featuredStyles.statValue}>{challenge.prizePoolCoins.toLocaleString()}c</Text>
+        </View>
+        <View>
+          <Text style={featuredStyles.statLabel}>COHORT</Text>
+          <Text style={featuredStyles.statValueDim}>{challenge.cohortSize.toLocaleString()}</Text>
+        </View>
+        <View>
+          <Text style={featuredStyles.statLabel}>ENDS IN</Text>
+          <Text style={featuredStyles.statValueDim}>{formatRemaining(challenge.endsAt, now)}</Text>
+        </View>
+        <View style={{ flex: 1 }} />
+        <Text style={featuredStyles.cta}>
+          {challenge.entryCostCoins > 0 ? `${challenge.entryCostCoins}c TO JOIN →` : "FREE →"}
+        </Text>
+      </View>
+      <View pointerEvents="none" style={{ opacity: 0 }}>
+        <Text>{remaining}</Text>
+      </View>
+    </View>
+  );
+}
+
 function ChallengeTicket({ challenge, now }: { challenge: StakeChallenge; now: number }) {
   const joined = challenge.participants.filter((p) => p.state !== "out");
   const pot = challenge.stake * joined.length;
@@ -250,6 +335,59 @@ function ChallengeTicket({ challenge, now }: { challenge: StakeChallenge; now: n
     </Pressable>
   );
 }
+
+const featuredStyles = StyleSheet.create({
+  card: {
+    padding: 14,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.bgCard,
+    borderWidth: 1,
+    borderColor: theme.emerald + "66",
+    overflow: "hidden",
+    gap: 12,
+  },
+  headerRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  emoji: { fontSize: 32 },
+  chipRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  featuredChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    backgroundColor: "rgba(16,185,129,0.15)",
+    borderRadius: 4,
+  },
+  featuredChipText: {
+    color: theme.emeraldBright,
+    fontSize: 8,
+    fontWeight: "900" as const,
+    letterSpacing: 1.2,
+  },
+  metricChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    backgroundColor: theme.surface,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  metricChipText: { color: theme.textMuted, fontSize: 8, fontWeight: "900" as const, letterSpacing: 1 },
+  plusChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    backgroundColor: theme.gold + "22",
+    borderRadius: 4,
+  },
+  plusChipText: { color: theme.goldBright, fontSize: 8, fontWeight: "900" as const, letterSpacing: 1 },
+  title: { color: theme.text, fontSize: 15, fontWeight: "900" as const },
+  subtitle: { color: theme.textMuted, fontSize: 11, marginTop: 2 },
+  statsRow: { flexDirection: "row", alignItems: "flex-end", gap: 14 },
+  statLabel: { color: theme.textDim, fontSize: 8, fontWeight: "900" as const, letterSpacing: 1 },
+  statValue: { color: theme.goldBright, fontSize: 18, fontWeight: "900" as const, marginTop: 2 },
+  statValueDim: { color: theme.text, fontSize: 13, fontWeight: "800" as const, marginTop: 2 },
+  cta: { color: theme.emeraldBright, fontSize: 11, fontWeight: "900" as const, letterSpacing: 1 },
+});
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.bg },

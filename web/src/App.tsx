@@ -16,6 +16,8 @@ import { ConfigPage } from "@/pages/Config";
 import { DashboardPage } from "@/pages/Dashboard";
 import { LiveEventsPage } from "@/pages/LiveEvents";
 import { MembershipsPage } from "@/pages/Memberships";
+import { FeaturedChallengesPage } from "@/pages/FeaturedChallenges";
+import { StakeChallengesPage } from "@/pages/StakeChallenges";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +51,8 @@ function App() {
                 <Route path="/cities" element={<CitiesPage />} />
                 <Route path="/live" element={<LiveEventsPage />} />
                 <Route path="/memberships" element={<MembershipsPage />} />
+                <Route path="/featured-challenges" element={<FeaturedChallengesPage />} />
+                <Route path="/stake-challenges" element={<StakeChallengesPage />} />
                 <Route path="/config" element={<ConfigPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

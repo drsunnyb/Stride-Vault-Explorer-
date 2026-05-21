@@ -236,6 +236,9 @@ final class VaultStore {
         state.stakeChallenges.insert(ch, at: 0)
         state.lockedCoins += stake
         save(); Haptics.success()
+        SupabaseService.shared.pushStakeChallenge(
+            ch, createdByUsername: state.handle, homeCity: state.homeCityId
+        )
         return .success(ch)
     }
 
@@ -252,6 +255,9 @@ final class VaultStore {
         state.stakeChallenges[idx] = ch
         state.lockedCoins += ch.stake
         save(); Haptics.success()
+        SupabaseService.shared.pushStakeChallenge(
+            ch, createdByUsername: state.handle, homeCity: state.homeCityId
+        )
         return true
     }
 
@@ -370,7 +376,8 @@ final class VaultStore {
                 }
             }
             // Settle?
-            if now >= ch.endsAt {
+            let willSettle = now >= ch.endsAt
+            if willSettle {
                 let joined = ch.participants.filter { $0.state == .joined }
                 let pot = ch.stake * joined.count
                 let rake = Int(Double(pot) * Self.challengeRakePct)
@@ -394,6 +401,11 @@ final class VaultStore {
             }
             state.stakeChallenges[i] = ch
             dirty = true
+            if willSettle {
+                SupabaseService.shared.pushStakeChallenge(
+                    ch, createdByUsername: state.handle, homeCity: state.homeCityId
+                )
+            }
         }
         if dirty { save() }
     }

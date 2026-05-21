@@ -1,6 +1,54 @@
 import { DEFAULT_BRANDS, REWARDS, type BrandMeta } from "@/constants/rewards";
 import { RAFFLES } from "@/constants/raffles";
-import type { Raffle, Reward } from "@/types/game";
+import type { Raffle, Reward, StakeChallenge } from "@/types/game";
+
+/**
+ * Admin-curated weekly challenges (`featured_challenges` table). Different from
+ * P2P stake challenges — these are pushed by the founder to give every player
+ * a server-side cohort goal (e.g. "Walk 70k steps in 7 days, prize pool 50,000
+ * Stride Coins split between top 10"). Schema:
+ *
+ *   create table featured_challenges (
+ *     id text primary key,
+ *     title text not null,
+ *     subtitle text,
+ *     metric text not null,            -- 'steps'|'vaults'|'coins'
+ *     duration_days int default 7,
+ *     prize_pool_coins int default 5000,
+ *     entry_cost_coins int default 0,
+ *     cohort_size int default 100,
+ *     hero_emoji text default '🏆',
+ *     starts_at timestamptz default now(),
+ *     ends_at timestamptz not null,
+ *     plus_only bool default false,
+ *     active bool default true,
+ *     sort_order int default 0,
+ *     updated_at timestamptz default now()
+ *   );
+ *
+ * And the read-only stake-challenge mirror (mobile pushes, admin reads):
+ *
+ *   create table stake_challenges (
+ *     id text primary key,
+ *     title text not null,
+ *     created_by text,
+ *     created_by_username text,
+ *     home_city text,
+ *     stake int not null,
+ *     metric text not null,
+ *     status text not null,
+ *     participants jsonb not null default '[]',
+ *     created_at timestamptz,
+ *     starts_at timestamptz,
+ *     ends_at timestamptz,
+ *     winner_id text,
+ *     payout int,
+ *     updated_at timestamptz default now()
+ *   );
+ *
+ * RLS: enable `select for anon` on featured_challenges, `insert/update for anon`
+ * on stake_challenges (or use an edge function with the service role later).
+ */
 
 /**
  * Lightweight Supabase REST client. We don't pull in @supabase/supabase-js to
@@ -270,6 +318,111 @@ export async function fetchLiveConfig(): Promise<LiveConfig> {
     else if (r.key === "waitlist_membership") out.membership = (r.value as WaitlistMembership) ?? null;
   }
   return out;
+}
+
+// ── Featured (admin-curated) challenges ───────────────────────────────────────
+
+export interface FeaturedChallenge {
+  id: string;
+  title: string;
+  subtitle: string;
+  metric: "steps" | "vaults" | "coins";
+  durationDays: number;
+  prizePoolCoins: number;
+  entryCostCoins: number;
+  cohortSize: number;
+  heroEmoji: string;
+  startsAt: number;
+  endsAt: number;
+  plusOnly: boolean;
+  sortOrder: number;
+}
+
+interface FeaturedChallengeRow {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  metric: "steps" | "vaults" | "coins";
+  duration_days?: number;
+  prize_pool_coins?: number;
+  entry_cost_coins?: number;
+  cohort_size?: number;
+  hero_emoji?: string | null;
+  starts_at: string;
+  ends_at: string;
+  plus_only?: boolean;
+  sort_order?: number;
+}
+
+/** Fetch the curated featured-challenge slate. Empty array on failure. */
+export async function fetchFeaturedChallenges(): Promise<FeaturedChallenge[]> {
+  const rows = await rest<FeaturedChallengeRow[]>(
+    "featured_challenges?active=eq.true&order=sort_order.asc,ends_at.asc"
+  );
+  if (!rows) return [];
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    subtitle: r.subtitle ?? "",
+    metric: r.metric,
+    durationDays: r.duration_days ?? 7,
+    prizePoolCoins: r.prize_pool_coins ?? 5000,
+    entryCostCoins: r.entry_cost_coins ?? 0,
+    cohortSize: r.cohort_size ?? 100,
+    heroEmoji: r.hero_emoji ?? "🏆",
+    startsAt: new Date(r.starts_at).getTime(),
+    endsAt: new Date(r.ends_at).getTime(),
+    plusOnly: !!r.plus_only,
+    sortOrder: r.sort_order ?? 0,
+  }));
+}
+
+// ── Stake-challenge mirror (best-effort upsert from mobile) ────────────────
+
+/**
+ * Push a single P2P stake challenge to the admin mirror table. Fire-and-forget
+ * — errors are logged but never thrown so a flaky network can't block the
+ * gameplay loop. Called from `GameProvider` on create / accept / settle.
+ */
+export async function pushStakeChallenge(
+  c: StakeChallenge,
+  meta: { createdByUsername?: string; homeCity?: string }
+): Promise<void> {
+  if (!hasSupabase()) return;
+  try {
+    const body = {
+      id: c.id,
+      title: c.title,
+      created_by: c.createdBy,
+      created_by_username: meta.createdByUsername ?? null,
+      home_city: meta.homeCity ?? null,
+      stake: c.stake,
+      metric: c.metric,
+      status: c.status,
+      participants: c.participants,
+      created_at: new Date(c.createdAt).toISOString(),
+      starts_at: new Date(c.startsAt).toISOString(),
+      ends_at: new Date(c.endsAt).toISOString(),
+      winner_id: c.winnerId ?? null,
+      payout: c.payout ?? null,
+      updated_at: new Date().toISOString(),
+    };
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/stake_challenges`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY ?? "",
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      console.log("[backend] pushStakeChallenge failed", res.status);
+    }
+  } catch (e) {
+    console.log("[backend] pushStakeChallenge error", e);
+  }
 }
 
 export const BACKEND_CONNECTED = hasSupabase();
