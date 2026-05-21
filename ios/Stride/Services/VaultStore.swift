@@ -454,13 +454,29 @@ final class VaultStore {
         let tierMult = tierPayoutMultiplier(for: state.claimedIDs.count)
         let plusMult = plusActive ? 1 + PlusConfig.payoutBonus : 1
 
-        let hotIds = RetentionEngine.hotVaultIdsForWindow(vaults.map(\.id), now: now)
+        // Hot vaults — admin override beats the deterministic daily rotation.
+        let hotIds: [String]
+        let hotMultiplier: Double
+        if let ov = SupabaseService.shared.activeHotVaultsOverride(now) {
+            hotIds = ov.vaultIds
+            hotMultiplier = ov.multiplier
+        } else {
+            hotIds = RetentionEngine.hotVaultIdsForWindow(vaults.map(\.id), now: now)
+            hotMultiplier = RetentionEngine.hotVaultMultiplier
+        }
         let lockedHotId = state.hotVaultClaims[dayKey]
         let isHot = hotIds.contains(vault.id) && (lockedHotId == nil || lockedHotId == vault.id)
-        let hotMult: Double = isHot ? RetentionEngine.hotVaultMultiplier : 1
+        let hotMult: Double = isHot ? hotMultiplier : 1
 
-        let ph = RetentionEngine.activePowerHour(now)
-        let powerMult: Double = ph.map { Double($0.multiplier) } ?? 1
+        // Power hour — admin override beats the deterministic schedule.
+        let powerMult: Double
+        if let ov = SupabaseService.shared.activePowerHourOverride(now) {
+            powerMult = ov.multiplier
+        } else if let ph = RetentionEngine.activePowerHour(now) {
+            powerMult = Double(ph.multiplier)
+        } else {
+            powerMult = 1
+        }
         let finalMult: Double = RetentionEngine.inFinalHour(now) ? RetentionEngine.finalHourMultiplier : 1
         let comebackActive = state.comebackClaimsRemaining > 0
         let comebackMult: Double = comebackActive ? RetentionEngine.comebackMultiplier : 1
@@ -549,9 +565,10 @@ final class VaultStore {
             state.lastActiveDay = todayKey
         }
 
-        // Hot vault lock-in.
-        let hotIds = RetentionEngine.hotVaultIdsForWindow(vaults.map(\.id), now: now)
-        if hotIds.contains(vault.id), state.hotVaultClaims[todayKey] == nil {
+        // Hot vault lock-in — honour admin override if active.
+        let lockHotIds: [String] = SupabaseService.shared.activeHotVaultsOverride(now)?.vaultIds
+            ?? RetentionEngine.hotVaultIdsForWindow(vaults.map(\.id), now: now)
+        if lockHotIds.contains(vault.id), state.hotVaultClaims[todayKey] == nil {
             state.hotVaultClaims[todayKey] = vault.id
         }
 

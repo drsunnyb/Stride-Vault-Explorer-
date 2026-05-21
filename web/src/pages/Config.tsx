@@ -18,6 +18,9 @@ const KNOWN: { key: string; label: string; hint: string }[] = [
   { key: "plus_monthly_price_gbp", label: "Plus monthly price (£)", hint: "Stride+ monthly subscription price" },
   { key: "plus_yearly_price_gbp", label: "Plus yearly price (£)", hint: "Stride+ annual subscription price" },
   { key: "plus_trial_days", label: "Plus trial days", hint: "Free-trial length for new Plus subscribers" },
+  { key: "live_hot_vaults", label: "Live hot vaults override", hint: "Managed via Live Events page (JSON)" },
+  { key: "live_power_hour", label: "Live power hour override", hint: "Managed via Live Events page (JSON)" },
+  { key: "waitlist_membership", label: "Waitlist membership", hint: "Managed via Memberships page (JSON)" },
 ];
 
 export function ConfigPage() {

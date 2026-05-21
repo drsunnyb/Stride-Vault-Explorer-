@@ -14,6 +14,8 @@ import { RafflesPage } from "@/pages/Raffles";
 import { CitiesPage } from "@/pages/Cities";
 import { ConfigPage } from "@/pages/Config";
 import { DashboardPage } from "@/pages/Dashboard";
+import { LiveEventsPage } from "@/pages/LiveEvents";
+import { MembershipsPage } from "@/pages/Memberships";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +47,8 @@ function App() {
                 <Route path="/rewards" element={<RewardsPage />} />
                 <Route path="/raffles" element={<RafflesPage />} />
                 <Route path="/cities" element={<CitiesPage />} />
+                <Route path="/live" element={<LiveEventsPage />} />
+                <Route path="/memberships" element={<MembershipsPage />} />
                 <Route path="/config" element={<ConfigPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

@@ -4,7 +4,10 @@
 
 - [x] Admin allowlist gate added to login (`web/src/pages/Login.tsx`)
   - Allowlist: `dr.sb1@me.com`
-- [x] Production build produced (`web/dist/`)
+- [x] Production build produced (`web/dist/` + `web/stride-admin-dist.zip`)
+- [x] Live Events admin page (hot vaults + power hour overrides) — `web/src/pages/LiveEvents.tsx`
+- [x] Memberships admin page (waitlist Stride+ perks) — `web/src/pages/Memberships.tsx`
+- [x] Expo + iOS apps read live overrides from `app_config` (60s refresh)
 - [ ] User drag-drops `web/dist` to Cloudflare Pages → live URL
 - [ ] (Future) Replace service-key login with Supabase Auth magic links + edge function for writes
 
@@ -12,7 +15,7 @@
 
 1. Visit the URL → enter your allowlisted email (`dr.sb1@me.com`) → Continue.
 2. Paste your Supabase `service_role` key (stays in your browser only).
-3. You're in — edit brands, rewards, raffles, cities, config.
+3. You're in — edit brands, rewards, raffles, cities, **Live Events** (hot vaults + power hour), **Memberships**, and config.
 4. Changes are live in iOS + Expo apps within seconds.
 
 ## Drag-and-drop deploy steps

@@ -213,4 +213,63 @@ export async function fetchBrands(): Promise<BrandsResult> {
   return { brands, exchangeRates };
 }
 
+// ── Live admin config (hot vaults, power hour, memberships) ─────────────────
+
+/**
+ * JSON shapes for the admin-pushed live overrides. Keys live in `app_config`
+ * and are managed via the web admin (`/live` and `/memberships`).
+ */
+export interface HotVaultsOverride {
+  vaultIds: string[];
+  multiplier: number;
+  endsAt: number;
+  note?: string;
+}
+export interface PowerHourOverride {
+  multiplier: number;
+  startsAt: number;
+  endsAt: number;
+  note?: string;
+}
+export interface WaitlistMembership {
+  enabled: boolean;
+  monthly_gbp: number;
+  annual_gbp: number;
+  trial_days: number;
+  vote_multiplier: number;
+  step_value_multiplier: number;
+  weekly_free_votes: number;
+  headline?: string;
+  benefits?: string[];
+}
+
+export interface LiveConfig {
+  hotVaults: HotVaultsOverride | null;
+  powerHour: PowerHourOverride | null;
+  membership: WaitlistMembership | null;
+}
+
+interface ConfigRow {
+  key: string;
+  value: unknown;
+}
+
+/**
+ * Fetch live admin overrides. Safe to call frequently — returns nulls when
+ * Supabase isn't configured or rows are missing.
+ */
+export async function fetchLiveConfig(): Promise<LiveConfig> {
+  const rows = await rest<ConfigRow[]>(
+    "app_config?key=in.(live_hot_vaults,live_power_hour,waitlist_membership)"
+  );
+  const out: LiveConfig = { hotVaults: null, powerHour: null, membership: null };
+  if (!rows) return out;
+  for (const r of rows) {
+    if (r.key === "live_hot_vaults") out.hotVaults = (r.value as HotVaultsOverride) ?? null;
+    else if (r.key === "live_power_hour") out.powerHour = (r.value as PowerHourOverride) ?? null;
+    else if (r.key === "waitlist_membership") out.membership = (r.value as WaitlistMembership) ?? null;
+  }
+  return out;
+}
+
 export const BACKEND_CONNECTED = hasSupabase();

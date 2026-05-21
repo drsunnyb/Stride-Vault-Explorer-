@@ -20,6 +20,11 @@ final class SupabaseService {
     private(set) var config: [String: Any] = [:]
     private(set) var lastSyncedAt: Date?
 
+    // ── Admin-pushed live overrides ─────────────────────────────────────────
+    private(set) var hotVaultsOverride: HotVaultsOverride?
+    private(set) var powerHourOverride: PowerHourOverride?
+    private(set) var waitlistMembership: WaitlistMembership?
+
     private var hasSupabase: Bool {
         !Config.EXPO_PUBLIC_SUPABASE_URL.isEmpty
             && !Config.EXPO_PUBLIC_SUPABASE_ANON_KEY.isEmpty
@@ -119,7 +124,97 @@ final class SupabaseService {
             config = map
         }
 
+        // Parse JSON-valued live overrides via a raw JSON path so we don't
+        // have to flatten arbitrary structures through Decodable.
+        await refreshLiveOverrides()
+
         lastSyncedAt = Date()
+    }
+
+    /// Pull the JSON-valued override rows and decode into typed structs.
+    private func refreshLiveOverrides() async {
+        guard hasSupabase,
+              let url = URL(string: "\(Config.EXPO_PUBLIC_SUPABASE_URL)/rest/v1/app_config?key=in.(live_hot_vaults,live_power_hour,waitlist_membership)")
+        else { return }
+        var req = URLRequest(url: url)
+        req.setValue(Config.EXPO_PUBLIC_SUPABASE_ANON_KEY, forHTTPHeaderField: "apikey")
+        req.setValue("Bearer \(Config.EXPO_PUBLIC_SUPABASE_ANON_KEY)", forHTTPHeaderField: "Authorization")
+        do {
+            let (data, resp) = try await URLSession.shared.data(for: req)
+            guard let http = resp as? HTTPURLResponse, http.statusCode == 200,
+                  let arr = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+            else { return }
+            var hot: HotVaultsOverride?
+            var power: PowerHourOverride?
+            var member: WaitlistMembership?
+            for row in arr {
+                guard let key = row["key"] as? String, let value = row["value"] else { continue }
+                switch key {
+                case "live_hot_vaults":
+                    if let v = value as? [String: Any],
+                       let ids = v["vaultIds"] as? [String],
+                       let mult = (v["multiplier"] as? NSNumber)?.doubleValue,
+                       let ends = (v["endsAt"] as? NSNumber)?.doubleValue {
+                        let endDate = Date(timeIntervalSince1970: ends / 1000)
+                        if endDate > Date() {
+                            hot = HotVaultsOverride(vaultIds: ids, multiplier: mult, endsAt: endDate)
+                        }
+                    }
+                case "live_power_hour":
+                    if let v = value as? [String: Any],
+                       let mult = (v["multiplier"] as? NSNumber)?.doubleValue,
+                       let starts = (v["startsAt"] as? NSNumber)?.doubleValue,
+                       let ends = (v["endsAt"] as? NSNumber)?.doubleValue {
+                        let endDate = Date(timeIntervalSince1970: ends / 1000)
+                        if endDate > Date() {
+                            power = PowerHourOverride(
+                                multiplier: mult,
+                                startsAt: Date(timeIntervalSince1970: starts / 1000),
+                                endsAt: endDate
+                            )
+                        }
+                    }
+                case "waitlist_membership":
+                    if let v = value as? [String: Any] {
+                        member = WaitlistMembership(
+                            enabled: (v["enabled"] as? Bool) ?? true,
+                            monthlyGbp: (v["monthly_gbp"] as? NSNumber)?.doubleValue ?? 4.99,
+                            annualGbp: (v["annual_gbp"] as? NSNumber)?.doubleValue ?? 39,
+                            trialDays: (v["trial_days"] as? NSNumber)?.intValue ?? 7,
+                            voteMultiplier: (v["vote_multiplier"] as? NSNumber)?.doubleValue ?? 3,
+                            stepValueMultiplier: (v["step_value_multiplier"] as? NSNumber)?.doubleValue ?? 1.5,
+                            weeklyFreeVotes: (v["weekly_free_votes"] as? NSNumber)?.intValue ?? 25,
+                            headline: (v["headline"] as? String) ?? "",
+                            benefits: (v["benefits"] as? [String]) ?? []
+                        )
+                    }
+                default: break
+                }
+            }
+            hotVaultsOverride = hot
+            powerHourOverride = power
+            waitlistMembership = member
+        } catch {
+            // Silent; fall back to defaults.
+        }
+    }
+
+    /// Active hot-vault override (`nil` if expired or unset).
+    func activeHotVaultsOverride(_ now: Date = Date()) -> HotVaultsOverride? {
+        guard let ov = hotVaultsOverride, ov.endsAt > now, !ov.vaultIds.isEmpty else { return nil }
+        return ov
+    }
+
+    /// Currently-firing power-hour override.
+    func activePowerHourOverride(_ now: Date = Date()) -> PowerHourOverride? {
+        guard let ov = powerHourOverride, ov.startsAt <= now, ov.endsAt > now else { return nil }
+        return ov
+    }
+
+    /// Upcoming (scheduled-for-the-future) power-hour override.
+    func upcomingPowerHourOverride(_ now: Date = Date()) -> PowerHourOverride? {
+        guard let ov = powerHourOverride, ov.startsAt > now else { return nil }
+        return ov
     }
 
     /// Integer value from `app_config` (admin-controlled tunables).
@@ -224,6 +319,32 @@ nonisolated struct ConfigRow: Decodable, Sendable {
     let value: AnyDecodable
 
     var rawValue: Any { value.value }
+}
+
+// MARK: - Live overrides (admin-pushed)
+
+nonisolated struct HotVaultsOverride: Sendable {
+    let vaultIds: [String]
+    let multiplier: Double
+    let endsAt: Date
+}
+
+nonisolated struct PowerHourOverride: Sendable {
+    let multiplier: Double
+    let startsAt: Date
+    let endsAt: Date
+}
+
+nonisolated struct WaitlistMembership: Sendable {
+    let enabled: Bool
+    let monthlyGbp: Double
+    let annualGbp: Double
+    let trialDays: Int
+    let voteMultiplier: Double
+    let stepValueMultiplier: Double
+    let weeklyFreeVotes: Int
+    let headline: String
+    let benefits: [String]
 }
 
 /// Tiny `Decodable` wrapper that captures any JSON scalar.

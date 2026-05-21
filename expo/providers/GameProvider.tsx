@@ -52,7 +52,7 @@ import { findRaffle } from "@/constants/raffles";
 import { exchangeRate, registerBrands, REWARDS, makeRedemptionCode, EXCHANGE_RATES, type BrandMeta } from "@/constants/rewards";
 import { getStrideStatus } from "@/constants/status";
 import { DEFAULT_PLAYER_POS, VAULTS, CLAIM_RADIUS_METERS, respawnMs } from "@/constants/vaults";
-import { fetchBrands, fetchRaffles, fetchRewards } from "@/lib/backend";
+import { fetchBrands, fetchLiveConfig, fetchRaffles, fetchRewards, type LiveConfig } from "@/lib/backend";
 import { distanceMeters } from "@/lib/geo";
 import {
   cancelAllStrideNotifications,
@@ -260,6 +260,53 @@ export const [GameProvider, useGame] = createContextHook(() => {
     staleTime: 5 * 60 * 1000,
   });
 
+  /**
+   * Live admin-pushed overrides (hot vaults, power hour, waitlist membership
+   * perks). Refetched every 60s so admin edits propagate to players quickly
+   * without a relaunch.
+   */
+  const liveConfigQuery = useQuery<LiveConfig>({
+    queryKey: ["live-config"],
+    queryFn: fetchLiveConfig,
+    refetchInterval: 60 * 1000,
+    initialData: { hotVaults: null, powerHour: null, membership: null },
+  });
+  const liveConfig = liveConfigQuery.data ?? { hotVaults: null, powerHour: null, membership: null };
+
+  /**
+   * Hot-vault override resolver. Returns admin-pinned IDs while the override
+   * is live, otherwise falls back to the deterministic daily rotation.
+   */
+  const resolveHotVaultIds = useCallback((nowMs: number, vaultIds: string[]): string[] => {
+    const ov = liveConfig.hotVaults;
+    if (ov && ov.endsAt > nowMs && ov.vaultIds.length > 0) return ov.vaultIds;
+    return hotVaultIdsForWindow(vaultIds, nowMs);
+  }, [liveConfig.hotVaults]);
+
+  /** Active hot-vault multiplier (admin override beats default). */
+  const resolveHotMultiplier = useCallback((nowMs: number): number => {
+    const ov = liveConfig.hotVaults;
+    if (ov && ov.endsAt > nowMs) return ov.multiplier;
+    return HOT_VAULT_MULTIPLIER;
+  }, [liveConfig.hotVaults]);
+
+  /** Power-hour resolver: admin override beats deterministic schedule. */
+  const resolveActivePowerHour = useCallback((nowMs: number) => {
+    const ov = liveConfig.powerHour;
+    if (ov && ov.startsAt <= nowMs && ov.endsAt > nowMs) {
+      return { startsAt: ov.startsAt, endsAt: ov.endsAt, multiplier: ov.multiplier as 2 | 3 };
+    }
+    return activePowerHour(nowMs);
+  }, [liveConfig.powerHour]);
+
+  const resolveNextPowerHour = useCallback((nowMs: number) => {
+    const ov = liveConfig.powerHour;
+    if (ov && ov.startsAt > nowMs) {
+      return { startsAt: ov.startsAt, endsAt: ov.endsAt, multiplier: ov.multiplier as 2 | 3 };
+    }
+    return nextPowerHour(nowMs);
+  }, [liveConfig.powerHour]);
+
   useEffect(() => {
     const data = brandsQuery.data;
     if (!data) return;
@@ -398,18 +445,15 @@ export const [GameProvider, useGame] = createContextHook(() => {
       // ── Retention engine multipliers ──────────────────────────────────────
       const streakMult = streakMultiplier(current.streakDays);
       const dayK = dayKey(Date.now());
-      const hotIds = hotVaultIdsForWindow(
-        VAULTS.map((v) => v.id),
-        Date.now()
-      );
+      const hotIds = resolveHotVaultIds(Date.now(), VAULTS.map((v) => v.id));
       // Hot vault is honoured only if no one in this player's session has
       // already locked another hot vault this window (one-per-day rule).
       const alreadyLockedHotId = (current.hotVaultClaims ?? {})[dayK];
       const isHot =
         hotIds.includes(vault.id) &&
         (!alreadyLockedHotId || alreadyLockedHotId === vault.id);
-      const hotMult = isHot ? HOT_VAULT_MULTIPLIER : 1;
-      const ph = activePowerHour(Date.now());
+      const hotMult = isHot ? resolveHotMultiplier(Date.now()) : 1;
+      const ph = resolveActivePowerHour(Date.now());
       const powerMult = ph ? ph.multiplier : 1;
       const finalMult = inFinalHour("week", Date.now()) ? FINAL_HOUR_MULTIPLIER : 1;
       const comebackActive = (current.comebackClaimsRemaining ?? 0) > 0;
@@ -1280,11 +1324,11 @@ export const [GameProvider, useGame] = createContextHook(() => {
   const strideStatus = useMemo(() => getStrideStatus(player.claimed.length), [player.claimed.length]);
 
   // ── Retention engine derived state ───────────────────────────────────────
-  const powerHour = useMemo(() => activePowerHour(now), [now]);
-  const nextPower = useMemo(() => nextPowerHour(now), [now]);
+  const powerHour = useMemo(() => resolveActivePowerHour(now), [now, resolveActivePowerHour]);
+  const nextPower = useMemo(() => resolveNextPowerHour(now), [now, resolveNextPowerHour]);
   const hotVaultIds = useMemo(
-    () => new Set(hotVaultIdsForWindow(VAULTS.map((v) => v.id), now)),
-    [now]
+    () => new Set(resolveHotVaultIds(now, VAULTS.map((v) => v.id))),
+    [now, resolveHotVaultIds]
   );
   const finalHourWeek = useMemo(() => inFinalHour("week", now), [now]);
   const finalHourMonth = useMemo(() => inFinalHour("month", now), [now]);
