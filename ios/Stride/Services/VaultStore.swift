@@ -575,7 +575,11 @@ final class VaultStore {
             hotMultiplier = ov.multiplier
         } else {
             hotIds = RetentionEngine.hotVaultIdsForWindow(vaults.map(\.id), now: now)
-            hotMultiplier = RetentionEngine.hotVaultMultiplier
+            // Admin-tunable hot-vault multiplier (Supabase `app_config`).
+            hotMultiplier = SupabaseService.shared.configDouble(
+                "hot_vault_multiplier",
+                default: RetentionEngine.hotVaultMultiplier
+            )
         }
         let lockedHotId = state.hotVaultClaims[dayKey]
         let isHot = hotIds.contains(vault.id) && (lockedHotId == nil || lockedHotId == vault.id)
@@ -590,7 +594,12 @@ final class VaultStore {
         } else {
             powerMult = 1
         }
-        let finalMult: Double = RetentionEngine.inFinalHour(now) ? RetentionEngine.finalHourMultiplier : 1
+        // Admin-tunable final-hour multiplier (`final_hour_multiplier`).
+        let finalHourMult = SupabaseService.shared.configDouble(
+            "final_hour_multiplier",
+            default: RetentionEngine.finalHourMultiplier
+        )
+        let finalMult: Double = RetentionEngine.inFinalHour(now) ? finalHourMult : 1
         let comebackActive = state.comebackClaimsRemaining > 0
         let comebackMult: Double = comebackActive ? RetentionEngine.comebackMultiplier : 1
         // Tribe boost: both winners and losers of the prior derby get +10%

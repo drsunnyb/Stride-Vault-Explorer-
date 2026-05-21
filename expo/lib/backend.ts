@@ -425,4 +425,64 @@ export async function pushStakeChallenge(
   }
 }
 
+// ── Tokenomics tunables (admin-editable scalars in app_config) ─────────
+
+/**
+ * Scalar tunables pulled from `app_config`. Every field is optional —
+ * the client falls back to its baked-in constant when the key is unset.
+ */
+export interface Tokenomics {
+  dailyCoinCapFree?: number;
+  dailyCoinCapPlus?: number;
+  maxTotalMultiplier?: number;
+  hotVaultMultiplier?: number;
+  finalHourMultiplier?: number;
+  shareRewardCoins?: number;
+  referralBonusCoins?: number;
+  challengeRakePct?: number;
+  dailyStepBonusCoins?: number;
+}
+
+const TOKENOMICS_KEYS = [
+  "daily_coin_cap_free",
+  "daily_coin_cap_plus",
+  "max_total_multiplier",
+  "hot_vault_multiplier",
+  "final_hour_multiplier",
+  "share_reward_coins",
+  "referral_bonus_coins",
+  "challenge_rake_pct",
+  "daily_step_bonus_coins",
+] as const;
+
+function toNumber(v: unknown): number | undefined {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return undefined;
+}
+
+/** Fetch admin-tuned tokenomics scalars. Returns `{}` on failure. */
+export async function fetchTokenomics(): Promise<Tokenomics> {
+  const rows = await rest<ConfigRow[]>(
+    `app_config?key=in.(${TOKENOMICS_KEYS.join(",")})`
+  );
+  const out: Tokenomics = {};
+  if (!rows) return out;
+  const map: Record<string, unknown> = {};
+  for (const r of rows) map[r.key] = r.value;
+  out.dailyCoinCapFree = toNumber(map.daily_coin_cap_free);
+  out.dailyCoinCapPlus = toNumber(map.daily_coin_cap_plus);
+  out.maxTotalMultiplier = toNumber(map.max_total_multiplier);
+  out.hotVaultMultiplier = toNumber(map.hot_vault_multiplier);
+  out.finalHourMultiplier = toNumber(map.final_hour_multiplier);
+  out.shareRewardCoins = toNumber(map.share_reward_coins);
+  out.referralBonusCoins = toNumber(map.referral_bonus_coins);
+  out.challengeRakePct = toNumber(map.challenge_rake_pct);
+  out.dailyStepBonusCoins = toNumber(map.daily_step_bonus_coins);
+  return out;
+}
+
 export const BACKEND_CONNECTED = hasSupabase();

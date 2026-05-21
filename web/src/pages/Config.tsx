@@ -9,18 +9,33 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { ConfigRow } from "@/lib/types";
 
-const KNOWN: { key: string; label: string; hint: string }[] = [
-  { key: "steps_per_city_vote", label: "Steps per city vote", hint: "How many steps mint 1 vote toward home city" },
-  { key: "share_city_vote_bonus", label: "Vote bonus / share", hint: "Bonus votes for each share" },
-  { key: "referral_city_vote_bonus", label: "Vote bonus / referral", hint: "Votes credited when a referred friend signs up" },
-  { key: "default_exchange_rate", label: "Default exchange rate", hint: "Stride coins → brand coin (when not overridden)" },
-  { key: "claim_radius_meters", label: "Claim radius (meters)", hint: "How close a player must be to claim a vault" },
-  { key: "plus_monthly_price_gbp", label: "Plus monthly price (£)", hint: "Stride+ monthly subscription price" },
-  { key: "plus_yearly_price_gbp", label: "Plus yearly price (£)", hint: "Stride+ annual subscription price" },
-  { key: "plus_trial_days", label: "Plus trial days", hint: "Free-trial length for new Plus subscribers" },
-  { key: "live_hot_vaults", label: "Live hot vaults override", hint: "Managed via Live Events page (JSON)" },
-  { key: "live_power_hour", label: "Live power hour override", hint: "Managed via Live Events page (JSON)" },
-  { key: "waitlist_membership", label: "Waitlist membership", hint: "Managed via Memberships page (JSON)" },
+interface KnownKey { key: string; label: string; hint: string; group: string }
+
+const KNOWN: KnownKey[] = [
+  // ── Tokenomics (v3 raffles-only era) ─────────────────────────────────────
+  { key: "daily_coin_cap_free", label: "Daily coin cap — free", hint: "Max coins from vault claims per day (free tier). Default 3,000", group: "Tokenomics" },
+  { key: "daily_coin_cap_plus", label: "Daily coin cap — Stride+", hint: "Max coins from vault claims per day (Plus). Default 5,000", group: "Tokenomics" },
+  { key: "max_total_multiplier", label: "Max stacked multiplier", hint: "Hard cap on a single claim's combined multiplier. Default 10", group: "Tokenomics" },
+  { key: "hot_vault_multiplier", label: "Hot vault multiplier", hint: "Coin multiplier on a hot-vault claim. Default 3", group: "Tokenomics" },
+  { key: "final_hour_multiplier", label: "Final hour multiplier", hint: "Coin multiplier in last hour of the week. Default 2", group: "Tokenomics" },
+  { key: "share_reward_coins", label: "Coins per share", hint: "Coins paid per social share. Default 30", group: "Tokenomics" },
+  { key: "referral_bonus_coins", label: "Referral bonus coins", hint: "Coins paid to BOTH players on a successful referral. Default 500", group: "Tokenomics" },
+  { key: "challenge_rake_pct", label: "Stake challenge rake %", hint: "Cut of each settled stake pot (0.02 = 2%). Funds the Champions Pool", group: "Tokenomics" },
+  { key: "daily_step_bonus_coins", label: "Daily step-goal bonus", hint: "Coins awarded for hitting the 5,000 step goal. Default 50", group: "Tokenomics" },
+  // ── Cities & exchange ───────────────────────────────────────────────────
+  { key: "steps_per_city_vote", label: "Steps per city vote", hint: "How many steps mint 1 vote toward home city", group: "Cities" },
+  { key: "share_city_vote_bonus", label: "Vote bonus / share", hint: "Bonus votes for each share", group: "Cities" },
+  { key: "referral_city_vote_bonus", label: "Vote bonus / referral", hint: "Votes credited when a referred friend signs up", group: "Cities" },
+  { key: "default_exchange_rate", label: "Default exchange rate", hint: "Stride coins → brand coin (when not overridden)", group: "Cities" },
+  { key: "claim_radius_meters", label: "Claim radius (meters)", hint: "How close a player must be to claim a vault", group: "Cities" },
+  // ── Stride+ ──────────────────────────────────────────────────────────────
+  { key: "plus_monthly_price_gbp", label: "Plus monthly price (£)", hint: "Stride+ monthly subscription price", group: "Stride+" },
+  { key: "plus_yearly_price_gbp", label: "Plus yearly price (£)", hint: "Stride+ annual subscription price", group: "Stride+" },
+  { key: "plus_trial_days", label: "Plus trial days", hint: "Free-trial length for new Plus subscribers", group: "Stride+" },
+  // ── Managed elsewhere (JSON) ────────────────────────────────────────────
+  { key: "live_hot_vaults", label: "Live hot vaults override", hint: "Managed via Live Events page (JSON)", group: "Live (JSON)" },
+  { key: "live_power_hour", label: "Live power hour override", hint: "Managed via Live Events page (JSON)", group: "Live (JSON)" },
+  { key: "waitlist_membership", label: "Waitlist membership", hint: "Managed via Memberships page (JSON)", group: "Live (JSON)" },
 ];
 
 export function ConfigPage() {
@@ -85,6 +100,11 @@ export function ConfigPage() {
     const row = rows.find((r) => r.key === k.key);
     return { ...k, value: row?.value };
   });
+  const grouped: Record<string, typeof knownEntries> = {};
+  for (const e of knownEntries) {
+    if (!grouped[e.group]) grouped[e.group] = [];
+    grouped[e.group].push(e);
+  }
   const customRows = rows.filter((r) => !KNOWN.some((k) => k.key === r.key));
 
   return (
@@ -109,26 +129,37 @@ export function ConfigPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-zinc-900 bg-zinc-950/30 divide-y divide-zinc-900">
-        {isLoading && <div className="p-6 text-zinc-600">Loading…</div>}
-        {knownEntries.map((k) => (
-          <div key={k.key} className="p-5 grid grid-cols-12 gap-4 items-center">
-            <div className="col-span-5">
-              <div className="font-semibold text-sm">{k.label}</div>
-              <div className="text-xs text-zinc-500 mt-0.5">{k.hint}</div>
-              <code className="text-[10px] text-zinc-600 font-mono">{k.key}</code>
-            </div>
-            <div className="col-span-7">
-              <Input
-                value={edits[k.key] ?? stringifyValue(k.value)}
-                onChange={(e) => setEdits({ ...edits, [k.key]: e.target.value })}
-                placeholder="value (number, string, or JSON)"
-                className="bg-zinc-950 border-zinc-800 font-mono"
-              />
-            </div>
-          </div>
-        ))}
+      {isLoading && <div className="rounded-2xl border border-zinc-900 bg-zinc-950/30 p-6 text-zinc-600">Loading…</div>}
 
+      {Object.entries(grouped).map(([group, entries]) => (
+        <div key={group} className="rounded-2xl border border-zinc-900 bg-zinc-950/30">
+          <div className="px-5 pt-4 pb-2 text-xs font-bold uppercase tracking-wider text-amber-400">{group}</div>
+          <div className="divide-y divide-zinc-900">
+            {entries.map((k) => (
+              <div key={k.key} className="p-5 grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-5">
+                  <div className="font-semibold text-sm">{k.label}</div>
+                  <div className="text-xs text-zinc-500 mt-0.5">{k.hint}</div>
+                  <code className="text-[10px] text-zinc-600 font-mono">{k.key}</code>
+                </div>
+                <div className="col-span-7">
+                  <Input
+                    value={edits[k.key] ?? stringifyValue(k.value)}
+                    onChange={(e) => setEdits({ ...edits, [k.key]: e.target.value })}
+                    placeholder="value (number, string, or JSON)"
+                    className="bg-zinc-950 border-zinc-800 font-mono"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div className="rounded-2xl border border-zinc-900 bg-zinc-950/30 divide-y divide-zinc-900">
+        {customRows.length > 0 && (
+          <div className="px-5 pt-4 pb-2 text-xs font-bold uppercase tracking-wider text-zinc-500">Custom</div>
+        )}
         {customRows.map((r) => (
           <div key={r.key} className="p-5 grid grid-cols-12 gap-4 items-center">
             <div className="col-span-5">

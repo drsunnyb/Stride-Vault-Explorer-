@@ -385,6 +385,15 @@ export const [GameProvider, useGame] = createContextHook(() => {
     initialData: { hotVaults: null, powerHour: null, membership: null },
   });
 
+  /** Admin-tuned tokenomics scalars from `app_config`. */
+  const tokenomicsQuery = useQuery({
+    queryKey: ["tokenomics"],
+    queryFn: fetchTokenomics,
+    refetchInterval: 60 * 1000,
+    initialData: {},
+  });
+  const tokenomics = tokenomicsQuery.data ?? {};
+
   /** Admin-curated weekly challenges shown in the Friends tab. */
   const featuredChallengesQuery = useQuery<FeaturedChallenge[]>({
     queryKey: ["featured-challenges"],
@@ -404,12 +413,12 @@ export const [GameProvider, useGame] = createContextHook(() => {
     return hotVaultIdsForWindow(vaultIds, nowMs);
   }, [liveConfig.hotVaults]);
 
-  /** Active hot-vault multiplier (admin override beats default). */
+  /** Active hot-vault multiplier (admin override beats default; tokenomics default beats constant). */
   const resolveHotMultiplier = useCallback((nowMs: number): number => {
     const ov = liveConfig.hotVaults;
     if (ov && ov.endsAt > nowMs) return ov.multiplier;
-    return HOT_VAULT_MULTIPLIER;
-  }, [liveConfig.hotVaults]);
+    return tokenomics.hotVaultMultiplier ?? HOT_VAULT_MULTIPLIER;
+  }, [liveConfig.hotVaults, tokenomics.hotVaultMultiplier]);
 
   /** Power-hour resolver: admin override beats deterministic schedule. */
   const resolveActivePowerHour = useCallback((nowMs: number) => {
@@ -576,7 +585,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
       const hotMult = isHot ? resolveHotMultiplier(Date.now()) : 1;
       const ph = resolveActivePowerHour(Date.now());
       const powerMult = ph ? ph.multiplier : 1;
-      const finalMult = inFinalHour("week", Date.now()) ? FINAL_HOUR_MULTIPLIER : 1;
+      const finalMult = inFinalHour("week", Date.now()) ? (tokenomics.finalHourMultiplier ?? FINAL_HOUR_MULTIPLIER) : 1;
       const comebackActive = (current.comebackClaimsRemaining ?? 0) > 0;
       const comebackMult = comebackActive ? COMEBACK_MULTIPLIER : 1;
       // Tribe boost — both winners and losers of the prior derby get a quiet
@@ -639,7 +648,9 @@ export const [GameProvider, useGame] = createContextHook(() => {
       // can earn from vault claims in a single calendar day. XP unaffected.
       const coinsEarnedTodayBefore =
         current.claimsTodayDate === tk ? current.coinsFromClaimsToday ?? 0 : 0;
-      const dailyCoinCap = plusActive ? DAILY_COIN_CAP_PLUS : DAILY_COIN_CAP_FREE;
+      const dailyCoinCap = plusActive
+        ? (tokenomics.dailyCoinCapPlus ?? DAILY_COIN_CAP_PLUS)
+        : (tokenomics.dailyCoinCapFree ?? DAILY_COIN_CAP_FREE);
       const remainingBudget = Math.max(0, dailyCoinCap - coinsEarnedTodayBefore);
       const cappedCoinsPaid = Math.min(coinsAfterBrand, remainingBudget);
       const hitDailyCoinCap = cappedCoinsPaid < coinsAfterBrand;

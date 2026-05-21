@@ -51,5 +51,5 @@ A revamped **Raffles** page in the web admin with full CRUD:
 
 ## Notes
 
-- All numbers (earn caps, multipliers, raffle pricing) become **admin-editable** under the existing Config page, so you can re-tune without a redeploy.
-- A small "Economy preview" panel in the admin will show, per week: estimated coins minted vs coins burned vs £ outlay, so the burn loop stays balanced.
+- [x] All numbers (earn caps, multipliers, raffle pricing) become **admin-editable** under the existing Config page, so you can re-tune without a redeploy. Tokenomics group added with 9 tunables (`daily_coin_cap_free/plus`, `max_total_multiplier`, `hot_vault_multiplier`, `final_hour_multiplier`, `share_reward_coins`, `referral_bonus_coins`, `challenge_rake_pct`, `daily_step_bonus_coins`). Expo `GameProvider` + iOS `VaultStore` resolve these from `app_config` at runtime (60s refresh) with the baked-in constants as fallbacks.
+- [x] A small "Economy preview" panel in the admin shows, per week: estimated coins minted vs coins burned vs £ outlay, with a burn/mint ratio and traffic-light status, plus the current tunables read live from `app_config`.
