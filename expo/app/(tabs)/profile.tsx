@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Award, Bell, BellOff, ChevronRight, Check, Coins, Crown, Flame, Footprints, Globe2, Lock, RotateCcw, Settings, Share2, Snowflake, Sparkles, Target, Trophy } from "lucide-react-native";
+import { Award, Bell, BellOff, ChevronRight, Check, Coins, Crown, Flame, Footprints, Globe2, Inbox, Lock, RotateCcw, Settings, Share2, Snowflake, Sparkles, Target, Trophy } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -31,7 +31,16 @@ export default function ProfileScreen() {
     predictionHistory,
     homeCity,
     homeCityRank,
+    unreadNotifications,
+    pendingNotifications,
   } = useGame();
+  const inboxBadge = pendingNotifications > 0 ? pendingNotifications : unreadNotifications;
+  const inboxSubtitle =
+    pendingNotifications > 0
+      ? `${pendingNotifications} pending · friend requests & challenge invites`
+      : unreadNotifications > 0
+        ? `${unreadNotifications} unread`
+        : "All caught up";
   const sTier = streakTier(streakDays);
   const sNext = nextStreakTier(streakDays);
   const renewalLabel = useMemo(() => {
@@ -106,6 +115,26 @@ export default function ProfileScreen() {
           </Text>
         </View>
         <ChevronRight size={18} color={plusActive ? "#1A0A00" : theme.goldBright} />
+      </Pressable>
+
+      {/* Unified notifications inbox */}
+      <Pressable
+        onPress={() => router.push("/notifications")}
+        style={({ pressed }) => [styles.inboxCard, pressed && { transform: [{ scale: 0.99 }] }]}
+      >
+        <View style={styles.inboxIcon}>
+          <Inbox size={16} color={theme.goldBright} />
+          {inboxBadge > 0 ? (
+            <View style={styles.inboxBadgeDot}>
+              <Text style={styles.inboxBadgeText}>{inboxBadge > 9 ? "9+" : inboxBadge}</Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.inboxTitle}>NOTIFICATIONS</Text>
+          <Text style={styles.inboxSub} numberOfLines={1}>{inboxSubtitle}</Text>
+        </View>
+        <ChevronRight size={16} color={theme.textMuted} />
       </Pressable>
 
       <View style={styles.heroCard}>
@@ -607,4 +636,43 @@ const styles = StyleSheet.create({
   predictRow: { marginHorizontal: 16, padding: 14, flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: theme.bgCard, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.borderSoft },
   predictTitle: { color: theme.text, fontSize: 13, fontWeight: "800" as const },
   predictSub: { color: theme.textMuted, fontSize: 11, marginTop: 2 },
+  inboxCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: theme.bgCard,
+    borderRadius: theme.radius.lg,
+    borderWidth: 1,
+    borderColor: theme.gold + "55",
+  },
+  inboxIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(244,208,63,0.12)",
+    borderWidth: 1,
+    borderColor: theme.gold + "55",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  inboxBadgeDot: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    borderRadius: 9,
+    backgroundColor: theme.goldBright,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: theme.bgCard,
+  },
+  inboxBadgeText: { color: "#1A0A00", fontSize: 9, fontWeight: "900" as const },
+  inboxTitle: { color: theme.goldBright, fontSize: 11, fontWeight: "900" as const, letterSpacing: 1.4 },
+  inboxSub: { color: theme.textMuted, fontSize: 11, marginTop: 2 },
 });

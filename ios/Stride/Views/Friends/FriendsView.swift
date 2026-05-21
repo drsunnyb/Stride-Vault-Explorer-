@@ -10,8 +10,6 @@ struct FriendsView: View {
     @State private var showNewChallenge = false
     @State private var detailChallenge: PersistedStakeChallenge? = nil
     @State private var addError: String? = nil
-    @State private var showInbox = false
-
     private var stake: WeeklyStake { AppData.weeklyStake }
 
     private var friends: [PersistedFriend] {
@@ -33,7 +31,6 @@ struct FriendsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 18) {
-                inboxRow
                 inviteHero
                 searchAndAdd
                 stakeCTA
@@ -72,9 +69,6 @@ struct FriendsView: View {
         .sheet(item: $detailChallenge) { ch in
             StakeChallengeDetailView(store: store, challengeId: ch.id)
         }
-        .sheet(isPresented: $showInbox) {
-            NotificationsView(store: store)
-        }
         .alert("Add friend",
                isPresented: Binding(get: { addError != nil }, set: { if !$0 { addError = nil } })) {
             Button("OK", role: .cancel) {}
@@ -82,65 +76,6 @@ struct FriendsView: View {
     }
 
     // MARK: - Sections
-
-    private var inboxRow: some View {
-        Button {
-            Haptics.tap()
-            showInbox = true
-        } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle().fill(Theme.goldBright.opacity(0.14))
-                        .overlay(Circle().stroke(Theme.goldBright.opacity(0.55), lineWidth: 1))
-                    Image(systemName: "bell.fill")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(Theme.goldBright)
-                    if store.pendingNotificationCount > 0 || store.unreadNotificationCount > 0 {
-                        let n = store.pendingNotificationCount > 0
-                            ? store.pendingNotificationCount : store.unreadNotificationCount
-                        Text(n > 9 ? "9+" : "\(n)")
-                            .font(.system(size: 9, weight: .black, design: .rounded))
-                            .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
-                            .padding(.horizontal, 5).padding(.vertical, 1)
-                            .background(Theme.goldBright)
-                            .clipShape(Capsule())
-                            .overlay(Capsule().stroke(Theme.card, lineWidth: 2))
-                            .offset(x: 14, y: -14)
-                    }
-                }
-                .frame(width: 38, height: 38)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("NOTIFICATIONS")
-                        .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1.4)
-                        .foregroundStyle(Theme.goldBright)
-                    Text(inboxSubtitle)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Theme.textMuted)
-                        .lineLimit(1)
-                }
-                Spacer()
-                Text("OPEN →")
-                    .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1)
-                    .foregroundStyle(Theme.text)
-            }
-            .padding(12)
-            .background(Theme.card)
-            .clipShape(.rect(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.goldBright.opacity(0.55), lineWidth: 1))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var inboxSubtitle: String {
-        if store.pendingNotificationCount > 0 {
-            return "\(store.pendingNotificationCount) pending · friend requests & invites"
-        }
-        if store.unreadNotificationCount > 0 {
-            return "\(store.unreadNotificationCount) unread"
-        }
-        return "All caught up"
-    }
 
     private var inviteHero: some View {
         VStack(alignment: .leading, spacing: 10) {

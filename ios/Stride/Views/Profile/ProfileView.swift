@@ -7,6 +7,7 @@ struct ProfileView: View {
     @State private var exchangeBrand: Brand?
     @State private var showStepGoal = false
     @State private var showNotifications = false
+    @State private var showInbox = false
     @State private var showPrivacy = false
     @State private var showHelp = false
     @State private var showSignOutConfirm = false
@@ -30,6 +31,7 @@ struct ProfileView: View {
                 achievementsCard
                 tribeCard
                 cityCard
+                inboxRow
                 settingsList
             }
             .padding(.horizontal, 16)
@@ -46,6 +48,9 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showNotifications) {
             NotificationsSheet(store: store).presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showInbox) {
+            NotificationsView(store: store)
         }
         .sheet(isPresented: $showPrivacy) {
             PrivacySheet().presentationDetents([.large])
@@ -456,9 +461,68 @@ struct ProfileView: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.border, lineWidth: 1))
     }
 
+    private var inboxRow: some View {
+        Button {
+            Haptics.tap()
+            showInbox = true
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(Theme.goldBright.opacity(0.14))
+                        .overlay(Circle().stroke(Theme.goldBright.opacity(0.55), lineWidth: 1))
+                    Image(systemName: "tray.fill")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Theme.goldBright)
+                    if store.pendingNotificationCount > 0 || store.unreadNotificationCount > 0 {
+                        let n = store.pendingNotificationCount > 0
+                            ? store.pendingNotificationCount : store.unreadNotificationCount
+                        Text(n > 9 ? "9+" : "\(n)")
+                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .foregroundStyle(Color(red: 26/255, green: 10/255, blue: 0/255))
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(Theme.goldBright)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Theme.card, lineWidth: 2))
+                            .offset(x: 14, y: -14)
+                    }
+                }
+                .frame(width: 38, height: 38)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("NOTIFICATIONS")
+                        .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1.4)
+                        .foregroundStyle(Theme.goldBright)
+                    Text(inboxSubtitle)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Theme.textMuted)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Theme.textMuted)
+            }
+            .padding(12)
+            .background(Theme.card)
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.goldBright.opacity(0.55), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var inboxSubtitle: String {
+        if store.pendingNotificationCount > 0 {
+            return "\(store.pendingNotificationCount) pending · friend requests & invites"
+        }
+        if store.unreadNotificationCount > 0 {
+            return "\(store.unreadNotificationCount) unread"
+        }
+        return "All caught up"
+    }
+
     private var settingsList: some View {
         VStack(spacing: 8) {
-            SettingsRow(icon: "bell.fill", label: "Notifications", tint: Theme.goldBright) {
+            SettingsRow(icon: "bell.fill", label: "Push reminders", tint: Theme.goldBright) {
                 showNotifications = true
             }
             SettingsRow(icon: "figure.walk", label: "Step Goal", value: "\(store.stepGoal)", tint: Theme.emerald) {
