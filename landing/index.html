@@ -357,20 +357,22 @@
       </div>
     </div>
 
-    <!-- Netlify form registration (hidden, never submitted by user) -->
-    <!-- This is detected at deploy time by Netlify's HTML post-processor and registers the "stride-quest-waitlist" form. -->
-    <form name="stride-quest-waitlist" netlify netlify-honeypot="bot-field" hidden>
-      <input type="email" name="email" />
-      <input type="text" name="referral_code" />
-      <input type="text" name="referral_valid" />
-      <input type="text" name="referrer_name" />
-      <input type="text" name="referrer_tier" />
-      <input type="text" name="cohort" />
-      <input type="text" name="user_code" />
-      <input type="text" name="user_share_link" />
-      <input type="text" name="page" />
-      <input type="text" name="ts" />
-      <input type="text" name="bot-field" />
+    <!-- Netlify form registration. Hidden via CSS (the `hidden` HTML attribute
+         is unreliable on mobile Safari when global input{} CSS overrides display).
+         Netlify only needs the form name + field names registered for its
+         post-processor to create the form schema. -->
+    <form name="stride-quest-waitlist" netlify netlify-honeypot="bot-field" style="position:absolute;left:-9999px;width:0;height:0;overflow:hidden;pointer-events:none;" aria-hidden="true" tabindex="-1">
+      <input type="email" name="email" tabindex="-1" />
+      <input type="text" name="referral_code" tabindex="-1" />
+      <input type="text" name="referral_valid" tabindex="-1" />
+      <input type="text" name="referrer_name" tabindex="-1" />
+      <input type="text" name="referrer_tier" tabindex="-1" />
+      <input type="text" name="cohort" tabindex="-1" />
+      <input type="text" name="user_code" tabindex="-1" />
+      <input type="text" name="user_share_link" tabindex="-1" />
+      <input type="text" name="page" tabindex="-1" />
+      <input type="text" name="ts" tabindex="-1" />
+      <input type="text" name="bot-field" tabindex="-1" />
     </form>
 
     <form id="waitlistForm" novalidate>
