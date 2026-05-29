@@ -387,9 +387,9 @@
       <button class="modal-close" id="modalClose">×</button>
       <h3 id="modalTitle">Claim a Founder Seat</h3>
       <div class="sub" id="modalSub">One of 100. Lifetime. Permanent.</div>
-      <div class="price-line"><span id="modalTierName">Founder Seat</span><span id="modalTierPrice">£99.00</span></div>
+      <div class="price-line"><span id="modalTierName">Founder Seat</span><span id="modalTierPrice">£99.00/yr</span></div>
       <div class="price-line"><span>Processing</span><span>£0.00</span></div>
-      <div class="price-line total"><span>Total today</span><span id="modalTotal">£99.00</span></div>
+      <div class="price-line total"><span>Total today</span><span id="modalTotal">£99.00/yr</span></div>
       <button class="modal-cta" id="modalCheckout">Continue to secure checkout →</button>
       <div class="modal-trust">Powered by Stripe · Full refund if Cohort 01 doesn't launch in 2026</div>
     </div>
@@ -425,7 +425,7 @@
       <!-- FOUNDER -->
       <div class="tier founder">
         <div class="tier-tag">FOUNDER 100 · LIFETIME</div>
-        <div class="tier-price"><span class="cur">£</span><span class="amt">99</span><span class="once">once</span></div>
+        <div class="tier-price"><span class="cur">£</span><span class="amt">99</span><span class="once">/yr</span></div>
         <div class="tier-name">Founder Seat</div>
         <div class="tier-bar">
           <div class="tier-bar-fill" id="founderFill" style="width:8%"></div>
@@ -446,10 +446,10 @@
       <!-- PRIORITY -->
       <div class="tier priority">
         <div class="tier-tag">PRIORITY · TOP 500</div>
-        <div class="tier-price"><span class="cur">£</span><span class="amt">29</span><span class="once">once</span></div>
-        <div class="tier-name">Priority Pass</div>
+        <div class="tier-price"><span class="cur">£</span><span class="amt">69</span><span class="once">/yr</span></div>
+        <div class="tier-name">Stride+</div>
         <div class="tier-bar"><div class="tier-bar-fill blue" style="width:34%"></div></div>
-        <div class="tier-bar-label"><strong>173</strong> Priority Passes claimed</div>
+        <div class="tier-bar-label"><strong>173</strong> Stride+ members</div>
         <ul class="tier-perks">
           <li><span class="tk blue">✦</span> Jump to the <strong>top 500</strong> on launch day</li>
           <li><span class="tk blue">✦</span> Launch-day starter chest</li>
@@ -457,7 +457,7 @@
           <li><span class="tk blue">✦</span> Weekly insider drop (boroughs · drops · bosses)</li>
           <li><span class="tk blue">✦</span> Priority badge in-app for 90 days</li>
         </ul>
-        <button class="tier-cta secondary" data-tier="priority">Get a Priority Pass →</button>
+        <button class="tier-cta secondary" data-tier="priority">Get Stride+ →</button>
         <div class="tier-fineprint">Refunded if Cohort 01 doesn't launch in 2026.</div>
       </div>
 
@@ -537,7 +537,7 @@
     </details>
     <details>
       <summary>What do paid tiers actually buy me?</summary>
-      <p><strong>Priority access only.</strong> The £29 Priority Pass jumps you to the top 500 on launch day. The £99 Founder Seat is one of only 100 ever — with a permanent badge, a lifetime 2× coin multiplier, and access to the Founders' Vault. Both come with a launch-day starter chest of in-app items. Paid tiers do <em>not</em> buy lottery entries or real-money rewards.</p>
+      <p><strong>Priority access only.</strong> <strong>Stride+</strong> (£69/yr) jumps you to the top 500 on launch day. The <strong>Founder Seat</strong> (£99/yr) is one of only 100 ever — with a permanent badge, a lifetime 2× coin multiplier, and access to the Founders' Vault. Both come with a launch-day starter chest of in-app items. Paid tiers do <em>not</em> buy lottery entries or real-money rewards.</p>
     </details>
     <details>
       <summary>What's in the Founders' Vault?</summary>
@@ -734,7 +734,7 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
   const boroughs = ["Hackney","Shoreditch","Brixton","Camden","Soho","Notting Hill","Peckham","Clapham","Islington","Dalston","Battersea","Bermondsey","Greenwich","Stratford","Holloway","Wandsworth","Marylebone","Kensington","Mile End","Bow","Hammersmith","Walthamstow"];
   const tiers = [
     { txt: "claimed a <strong>Founder Seat</strong>", weight: 1 },
-    { txt: "claimed a <strong>Priority Pass</strong>", weight: 4 },
+    { txt: "joined <strong>Stride+</strong>", weight: 4 },
     { txt: "joined Cohort 01 via creator code", weight: 12 },
     { txt: "joined the public waitlist", weight: 8 },
     { txt: "redeemed a creator code", weight: 6 },
@@ -789,8 +789,8 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
   const close = document.getElementById("modalClose");
   const checkout = document.getElementById("modalCheckout");
   const TIERS = {
-    founder: { name:"Founder Seat", price:"£99.00", title:"Claim a Founder Seat", sub:"One of 100. Lifetime. Permanent.", checkoutUrl:"#stripe-founder" },
-    priority:{ name:"Priority Pass", price:"£29.00", title:"Get a Priority Pass", sub:"Jump to the top 500 on launch day.", checkoutUrl:"#stripe-priority" }
+    founder: { name:"Founder Seat", price:"£99.00/yr", title:"Claim a Founder Seat", sub:"One of 100. £99/yr. Permanent badge.", checkoutUrl:"#stripe-founder" },
+    priority:{ name:"Stride+", price:"£69.00/yr", title:"Get Stride+", sub:"£69/yr. Jump to the top 500 on launch day.", checkoutUrl:"#stripe-stride-plus" }
   };
   document.querySelectorAll(".tier-cta[data-tier]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
