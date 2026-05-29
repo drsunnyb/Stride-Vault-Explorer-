@@ -357,6 +357,22 @@
       </div>
     </div>
 
+    <!-- Netlify form registration (hidden, never submitted by user) -->
+    <!-- This is detected at deploy time by Netlify's HTML post-processor and registers the "stride-quest-waitlist" form. -->
+    <form name="stride-quest-waitlist" netlify netlify-honeypot="bot-field" hidden>
+      <input type="email" name="email" />
+      <input type="text" name="referral_code" />
+      <input type="text" name="referral_valid" />
+      <input type="text" name="referrer_name" />
+      <input type="text" name="referrer_tier" />
+      <input type="text" name="cohort" />
+      <input type="text" name="user_code" />
+      <input type="text" name="user_share_link" />
+      <input type="text" name="page" />
+      <input type="text" name="ts" />
+      <input type="text" name="bot-field" />
+    </form>
+
     <form id="waitlistForm" novalidate>
       <input type="email" id="email" name="email" placeholder="your@email.com" required autocomplete="email" />
       <button type="submit" id="submitBtn">Request invite →</button>
@@ -581,7 +597,11 @@
 </div>
 
 <script>
-const FORM_ENDPOINT = "https://formspree.io/f/REPLACE_ME";
+// Netlify Forms — submissions land in the Netlify dashboard (Forms tab).
+// When Supabase is deployed, swap to FORM_ENDPOINT = "/rest/v1/rpc/join_waitlist"
+// and the existing JSON POST below will work against it.
+const NETLIFY_FORM_NAME = "stride-quest-waitlist";
+const FORM_ENDPOINT = "";  // empty = use Netlify Forms only; set to Supabase RPC URL later
 const SITE_ORIGIN = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
 
 const KNOWN_CREATORS = {
@@ -609,13 +629,24 @@ const formHint = document.getElementById("formHint");
 const submitBtn = document.getElementById("submitBtn");
 
 let isValidRef = false;
+let refSourceLabel = "";
 if (ref){
+  // Look up: hardcoded list first, then locally-generated creator codes from creators.html
+  let entry = KNOWN_CREATORS[ref];
+  if (!entry) {
+    try {
+      const local = JSON.parse(localStorage.getItem("sq_known_creators") || "{}");
+      if (local[ref]) { entry = local[ref]; refSourceLabel = " (local)"; }
+    } catch(e){ /* ignore parse errors */ }
+  }
+
   refPill.style.display = "inline-flex";
-  if (KNOWN_CREATORS[ref]){
+  if (entry){
     isValidRef = true;
+    KNOWN_CREATORS[ref] = entry; // hoist into runtime list for downstream lookups
     refPill.classList.add("valid");
     refLabel.textContent = "Invited by";
-    refCode.textContent  = KNOWN_CREATORS[ref].name + "  ·  /" + ref;
+    refCode.textContent  = entry.name + "  ·  /" + ref;
     refCheck.textContent = "✓";
     formHint.innerHTML = '<span class="priority">★ PRIORITY ACCESS · COHORT 01 · QUEUE-JUMPED</span>';
   } else {
@@ -665,8 +696,15 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
   };
 
   let ok = false;
+  // Dry-run mode: append ?dry=1 to URL to test the flow without actually submitting
+  const isDry = new URL(window.location.href).searchParams.get("dry") === "1";
+
   try {
-    if (FORM_ENDPOINT && !FORM_ENDPOINT.includes("REPLACE_ME")){
+    if (isDry){
+      console.log("[Stride Quest] DRY RUN — payload would be:", payload);
+      ok = true;
+    } else if (FORM_ENDPOINT){
+      // Production path: Supabase RPC (set FORM_ENDPOINT when Supabase is deployed)
       const r = await fetch(FORM_ENDPOINT, {
         method:"POST",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
@@ -674,8 +712,18 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
       });
       ok = r.ok;
     } else {
-      console.log("[Stride Quest] FORM_ENDPOINT not configured. Payload:", payload);
-      ok = true;
+      // Day-1 path: Netlify Forms. URL-encoded POST to the site root, intercepted by Netlify.
+      const formData = new URLSearchParams();
+      formData.append("form-name", NETLIFY_FORM_NAME);
+      Object.entries(payload).forEach(([k,v]) => formData.append(k, String(v)));
+      formData.append("bot-field", ""); // honeypot — must be empty
+      const r = await fetch("/", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: formData.toString()
+      });
+      ok = r.ok;
+      if (ok) console.log("[Stride Quest] Submitted to Netlify Forms:", payload);
     }
   } catch(err){ console.error(err); }
 

@@ -161,7 +161,14 @@
 </div>
 
 <script>
-const SITE = window.location.origin + window.location.pathname.replace(/creators\.html.*/,'') + 'index.html';
+// Build the share URL. Strip creators.html (or /creators with no extension)
+// from the current path so this works on Netlify clean URLs and direct .html alike.
+const SITE = (function(){
+  const origin = window.location.origin;
+  const path = window.location.pathname.replace(/(creators(\.html)?)$|(creators(\.html)?)\/?.*/i, '');
+  const base = path.endsWith('/') ? path : path + '/';
+  return origin + base;
+})();
 
 function clean(s){ return (s||'').trim().toLowerCase().replace(/[^a-z0-9_-]/g,''); }
 
@@ -169,6 +176,15 @@ document.getElementById('genBtn').addEventListener('click', () => {
   const h = clean(document.getElementById('handle').value);
   if (!h){ alert('Enter your handle.'); return; }
   const url = SITE + '?ref=' + h;
+
+  // Self-register: any code generated on this page is immediately recognised
+  // as a valid creator on the same browser. Cross-device validation requires
+  // the backend (Supabase) — this localStorage layer is the day-1 demo path.
+  try {
+    const known = JSON.parse(localStorage.getItem('sq_known_creators') || '{}');
+    known[h] = { name: '@' + h + ' · creator', tier: 'creator', created: new Date().toISOString() };
+    localStorage.setItem('sq_known_creators', JSON.stringify(known));
+  } catch(e){ console.warn('Could not persist creator code', e); }
 
   const caption =
 `London — a new game just dropped (and you can't download it yet).
