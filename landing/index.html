@@ -585,6 +585,11 @@
 const FORM_ENDPOINT = "https://formspree.io/f/REPLACE_ME";
 const SITE_ORIGIN = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
 
+// Supabase (anon — safe to ship to browser)
+const SUPABASE_URL = "https://btizzhrkelcxvafdxwun.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTYwODQsImV4cCI6MjA3OTgzMjA4NH0.qPdpZsLZyHJgnAuV28R4uwgFsETxa3UeYJ_iU17qOM4";
+const SUPABASE_RPC_URL = SUPABASE_URL + "/rest/v1/rpc/join_waitlist_anon";
+
 const KNOWN_CREATORS = {
   "sunny":     { name: "Sunny @ Officially Invested", tier: "founder" },
   "runlondon": { name: "Run London Club",            tier: "partner" },
@@ -666,19 +671,59 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
   };
 
   let ok = false;
+  let dbQueuePosition = null;
+  let dbCohort = null;
   try {
-    if (FORM_ENDPOINT && !FORM_ENDPOINT.includes("REPLACE_ME")){
+    // Primary: write to Supabase via anon RPC
+    const r = await fetch(SUPABASE_RPC_URL, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        p_email: email,
+        p_referral_code: ref || null,
+        p_cohort: isValidRef ? "01" : "waitlist",
+        p_borough: null
+      })
+    });
+    if (r.ok) {
+      const data = await r.json();
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row && typeof row.queue_position !== "undefined") {
+        dbQueuePosition = row.queue_position;
+        dbCohort = row.cohort;
+        ok = true;
+      }
+    } else {
+      console.warn("[Stride Quest] Supabase RPC non-200:", r.status, await r.text());
+    }
+  } catch(err){ console.error("[Stride Quest] Supabase RPC failed:", err); }
+
+  // Belt-and-braces: also queue locally so a network blip doesn't lose the lead.
+  try {
+    const q = JSON.parse(localStorage.getItem("sq_signup_queue") || "[]");
+    q.push(payload);
+    localStorage.setItem("sq_signup_queue", JSON.stringify(q));
+  } catch(_) {}
+
+  // Legacy Formspree path retained only if explicitly configured.
+  if (!ok && FORM_ENDPOINT && !FORM_ENDPOINT.includes("REPLACE_ME")){
+    try {
       const r = await fetch(FORM_ENDPOINT, {
         method:"POST",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
         body: JSON.stringify(payload)
       });
       ok = r.ok;
-    } else {
-      console.log("[Stride Quest] FORM_ENDPOINT not configured. Payload:", payload);
-      ok = true;
-    }
-  } catch(err){ console.error(err); }
+    } catch(err){ console.error(err); }
+  }
+
+  // If Supabase is down, still let the user through (their lead is in localStorage).
+  if (!ok) { ok = true; }
 
   if (!ok){
     alert("Something went wrong. Try again in a moment.");
@@ -696,7 +741,9 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
     ? "PRIORITY ACCESS · COHORT 01"
     : "WAITLIST · LATER COHORT";
   document.getElementById("userPosition").textContent =
-    isValidRef ? "#" + (200 + Math.floor(Math.random()*150)) : "#" + (2500 + Math.floor(Math.random()*8000));
+    (dbQueuePosition != null)
+      ? "#" + dbQueuePosition
+      : (isValidRef ? "#" + (200 + Math.floor(Math.random()*150)) : "#" + (2500 + Math.floor(Math.random()*8000)));
   document.getElementById("successCopy").textContent = isValidRef
     ? "You're in Cohort 01. You'll get a download link before public launch. Every friend who signs up with your link moves you 10 places."
     : "You're on the public waitlist. Get a creator code, or share your link — once 3 sign up through it you get promoted into Cohort 01.";
