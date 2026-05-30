@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Share preview · Stride Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* THE SHARE CARD (OG image) — 1200x630 ratio, but scaled down to fit */
+  .share-card{
+    aspect-ratio:1200/630;
+    width:100%;
+    max-width:600px;
+    margin:0 auto 32px;
+    background:
+      radial-gradient(600px 400px at 80% 20%, rgba(255,214,10,0.15), transparent 60%),
+      radial-gradient(500px 400px at 15% 90%, rgba(45,127,249,0.08), transparent 60%),
+      #0A0A0C;
+    border:1px solid var(--gold);
+    border-radius:24px;
+    padding:38px 44px;
+    position:relative;
+    overflow:hidden;
+    color:#fff;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,214,10,0.2);
+  }
+  /* Grid background */
+  .share-card::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 39px, rgba(255,255,255,0.025) 39px 40px),
+      repeating-linear-gradient(90deg, transparent 0 39px, rgba(255,255,255,0.025) 39px 40px);
+    opacity:.6;
+  }
+  /* Top-right gold bar */
+  .share-card::after{
+    content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent 20%,var(--gold) 50%,transparent 80%);
+  }
+  .sc-content{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;height:100%}
+  .sc-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+  .sc-brand{display:flex;align-items:center;gap:12px}
+  .sc-brand .bdg{width:38px;height:38px;border-radius:50%;background:var(--gold);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;letter-spacing:-0.02em;flex-shrink:0}
+  .sc-brand .word{font-weight:800;font-size:14px;letter-spacing:0.06em}
+  .sc-cohort{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--gold);background:rgba(255,214,10,0.08);border:1px solid rgba(255,214,10,0.3);padding:6px 12px;border-radius:999px;font-weight:600;white-space:nowrap}
+
+  .sc-mid{padding:14px 0}
+  .sc-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .sc-eyebrow::before{content:"";width:24px;height:1px;background:var(--gold)}
+  .sc-headline{font-weight:900;font-size:38px;line-height:1.02;letter-spacing:-0.035em;margin-bottom:8px}
+  .sc-headline .y{color:var(--gold)}
+  .sc-sub{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.45;letter-spacing:-0.005em}
+
+  .sc-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;border-top:1px solid rgba(255,255,255,0.1);padding-top:18px}
+  .sc-strider{display:flex;align-items:center;gap:10px}
+  .sc-strider .av{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#1a1a22,#0E0E12);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .sc-strider .info{line-height:1.3}
+  .sc-strider .nm{font-weight:700;font-size:14px;letter-spacing:-0.005em}
+  .sc-strider .det{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:.1em;text-transform:uppercase;margin-top:1px}
+  .sc-url{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.04em;text-align:right;font-weight:600}
+  .sc-url .domain{display:block;font-size:9px;color:rgba(255,255,255,0.5);font-weight:500;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}
+
+  /* Platform previews */
+  .preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+  @media(max-width:860px){.preview-grid{grid-template-columns:1fr}}
+  .preview-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column}
+  .preview-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-dim);text-transform:uppercase;font-weight:600}
+  .preview-head .name{color:var(--ink)}
+
+  /* WhatsApp style */
+  .wa{background:#0c1f1c;border-radius:14px;padding:0;overflow:hidden}
+  .wa-msg{padding:10px;font-size:13px;line-height:1.4;color:#e9edef}
+  .wa-msg .url-card{background:#1f2c2a;border-left:3px solid #25D366;border-radius:8px 8px 0 0;padding:8px 10px;margin-top:6px}
+  .wa-msg .url-card .ttl{font-weight:600;font-size:12px;margin-bottom:2px;color:#fff}
+  .wa-msg .url-card .desc{font-size:11px;color:#aebac1;line-height:1.4}
+  .wa-msg .url-card .domain{font-size:10px;color:#8696a0;margin-top:4px;text-transform:lowercase}
+  .wa-img{width:100%;aspect-ratio:1200/630;background:linear-gradient(135deg,#0A0A0C,#141418);border-radius:0 0 8px 8px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;position:relative;overflow:hidden}
+  .wa-img.with-art{background:url('share-card.svg') center/cover no-repeat,linear-gradient(135deg,#0A0A0C,#141418)}
+  .wa-link{font-size:12px;color:#53bdeb;margin-top:6px}
+  .wa-time{text-align:right;font-size:9px;color:#8696a0;margin-top:4px}
+
+  /* iMessage style */
+  .im{background:#1c1c1e;border-radius:14px;padding:12px;color:#fff}
+  .im-bubble{background:#0a84ff;color:#fff;padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.4;max-width:90%;margin-left:auto;margin-bottom:6px}
+  .im-link-bubble{background:#2c2c2e;border-radius:14px;overflow:hidden;max-width:90%;margin-left:auto;margin-bottom:6px}
+  .im-link-img{width:100%;aspect-ratio:1200/630;background:linear-gradient(135deg,#0A0A0C,#141418);position:relative;overflow:hidden}
+  .im-link-meta{padding:8px 12px}
+  .im-link-meta .ttl{font-weight:600;font-size:12px;color:#fff;line-height:1.3;margin-bottom:2px}
+  .im-link-meta .desc{font-size:11px;color:#8e8e93;line-height:1.35}
+  .im-link-meta .domain{font-size:10px;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+  .im-time{text-align:center;font-size:9px;color:#8e8e93;letter-spacing:.05em;margin:8px 0;text-transform:uppercase;font-weight:600}
+
+  /* X / Twitter style */
+  .x-card{background:#000;border:1px solid #2f3336;border-radius:14px;padding:12px;color:#fff}
+  .x-head{display:flex;gap:10px;margin-bottom:8px}
+  .x-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0E0E12,#1a1a22);border:1px solid #2f3336;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .x-meta{font-size:12px;line-height:1.3}
+  .x-meta .nm{font-weight:700;color:#fff}
+  .x-meta .handle{color:#71767b;display:inline-block;margin-left:2px}
+  .x-text{font-size:13px;line-height:1.4;color:#fff;margin-bottom:10px;letter-spacing:-0.005em}
+  .x-link-card{border:1px solid #2f3336;border-radius:14px;overflow:hidden}
+  .x-link-img{width:100%;aspect-ratio:1200/630;background:linear-gradient(135deg,#0A0A0C,#141418);position:relative}
+  .x-link-meta{padding:8px 12px;background:#000}
+  .x-link-meta .domain{font-size:11px;color:#71767b;margin-bottom:2px}
+  .x-link-meta .ttl{font-size:13px;color:#fff;font-weight:500;line-height:1.3}
+
+  /* The mini cards inside platform previews use the SAME share-card-content rendered smaller */
+  .mini-card{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:14px 16px;color:#fff;background:
+      radial-gradient(300px 200px at 80% 20%, rgba(255,214,10,0.18), transparent 60%),
+      radial-gradient(250px 200px at 15% 90%, rgba(45,127,249,0.1), transparent 60%),
+      #0A0A0C}
+  .mini-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .mini-card .mc-top{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:.18em;color:var(--gold);font-weight:600}
+  .mini-card .mc-mid{font-weight:900;font-size:14px;line-height:1;letter-spacing:-0.035em;color:#fff}
+  .mini-card .mc-mid .y{color:var(--gold)}
+  .mini-card .mc-bottom{display:flex;justify-content:space-between;align-items:flex-end;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:.1em;color:rgba(255,255,255,0.6);font-weight:600}
+  .mini-card .mc-bottom .ya{color:var(--gold)}
+
+  /* Compose section */
+  .compose{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:24px}
+  .compose label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:8px;font-weight:600}
+  .compose-text{background:#0E0E12;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.55;color:var(--ink);white-space:pre-wrap;letter-spacing:-0.005em;margin-bottom:12px}
+  .compose-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .compose-btn{flex:1;min-width:130px;background:#0E0E12;border:1px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:border-color .2s;font-family:inherit}
+  .compose-btn:hover{border-color:var(--gold)}
+  .compose-btn.wa{color:#25D366}
+  .compose-btn.im{color:#0a84ff}
+  .compose-btn.x{color:#fff}
+  .compose-btn.copy{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <a href="00-landing.html" class="brand"><span class="bdg">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status"><span class="pulse"></span><span>SHARE PREVIEW</span></div>
+</div>
+
+<div class="eyebrow">When you share your link · here's what they see</div>
+<h1>Your invite, <span class="y">previewed.</span></h1>
+<p class="lede">Every share generates a personalised card with your name, avatar and position. Same template across WhatsApp · iMessage · Instagram · X · Threads · Discord. One design. Awesome everywhere.</p>
+
+<!-- THE FULL SHARE CARD -->
+<div class="sec-h" style="margin-top:0"><h2>The card · 1200×630 OG image</h2><span class="more">DYNAMIC PER USER</span></div>
+
+<div class="share-card">
+  <div class="sc-content">
+    <div class="sc-header">
+      <div class="sc-brand"><span class="bdg">S</span><span class="word">STRIDE QUEST</span></div>
+      <div class="sc-cohort">▲ COHORT 01 · LONDON</div>
+    </div>
+    <div class="sc-mid">
+      <div class="sc-eyebrow">Sunny invited you in</div>
+      <div class="sc-headline">Skip the queue.<br/>Walk the <span class="y">city.</span></div>
+      <div class="sc-sub">London's invite-only AR walking game. Use Sunny's link → you jump straight into Cohort 01. No link, back of the queue.</div>
+    </div>
+    <div class="sc-bottom">
+      <div class="sc-strider">
+        <div class="av">🏃‍♂️</div>
+        <div class="info">
+          <div class="nm">Sunny</div>
+          <div class="det">HACKNEY · #247 · /sunny</div>
+        </div>
+      </div>
+      <div class="sc-url">
+        <span class="domain">JOIN AT</span>
+        stridequest.app/?ref=sunny
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT LOOKS ACROSS PLATFORMS -->
+<div class="sec-h"><h2>How it lands in the chat</h2><span class="more">3 PLATFORMS · 1 CARD</span></div>
+
+<div class="preview-grid">
+
+  <!-- WhatsApp -->
+  <div class="preview-card">
+    <div class="preview-head"><span class="name">WhatsApp</span><span style="color:#25D366">▼ LIVE PREVIEW</span></div>
+    <div class="wa">
+      <div class="wa-msg">
+        <div>👀 you in?<br/><br/>got into Stride Quest cohort 01 — london's invite-only walking game. use my link, skip the queue 👇<br/><br/><span class="wa-link">stridequest.app/?ref=sunny</span></div>
+        <div class="url-card">
+          <div class="wa-img">
+            <div class="mini-card">
+              <div class="mc-top"><span>STRIDE QUEST</span><span>COHORT 01</span></div>
+              <div class="mc-mid">Skip the queue.<br/>Walk the <span class="y">city.</span></div>
+              <div class="mc-bottom"><span>🏃‍♂️ SUNNY · HACKNEY</span><span class="ya">/SUNNY</span></div>
+            </div>
+          </div>
+          <div style="padding:6px 10px;background:#1f2c2a">
+            <div class="ttl">Sunny invited you in · Stride Quest</div>
+            <div class="desc">London's invite-only AR walking game. Walk to earn. Free with Sunny's code.</div>
+            <div class="domain">stridequest.app</div>
+          </div>
+        </div>
+        <div class="wa-time">14:32 ✓✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- iMessage -->
+  <div class="preview-card">
+    <div class="preview-head"><span class="name">iMessage</span><span style="color:#0a84ff">▼ LIVE PREVIEW</span></div>
+    <div class="im">
+      <div class="im-time">iMessage · Today 14:32</div>
+      <div class="im-bubble">u need to get on this 🏃‍♂️</div>
+      <div class="im-link-bubble">
+        <div class="im-link-img">
+          <div class="mini-card">
+            <div class="mc-top"><span>STRIDE QUEST</span><span>COHORT 01</span></div>
+            <div class="mc-mid">Skip the queue.<br/>Walk the <span class="y">city.</span></div>
+            <div class="mc-bottom"><span>🏃‍♂️ SUNNY · HACKNEY</span><span class="ya">/SUNNY</span></div>
+          </div>
+        </div>
+        <div class="im-link-meta">
+          <div class="ttl">Sunny invited you in · Stride Quest</div>
+          <div class="desc">London's invite-only AR walking game. Walk to earn. Free with Sunny's code.</div>
+          <div class="domain">stridequest.app</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- X / Twitter -->
+  <div class="preview-card">
+    <div class="preview-head"><span class="name">X · Twitter</span><span style="color:#fff">▼ LIVE PREVIEW</span></div>
+    <div class="x-card">
+      <div class="x-head">
+        <div class="x-av">🏃‍♂️</div>
+        <div class="x-meta">
+          <div><span class="nm">Sunny</span><span class="handle">@officiallyinvested · 2m</span></div>
+        </div>
+      </div>
+      <div class="x-text">Got into @StrideQuestApp Cohort 01.
+
+London's about to be a game. Walk to earn. £0 with my code, back of the queue without it.
+
+Door closes when launch hits 👇</div>
+      <div class="x-link-card">
+        <div class="x-link-img">
+          <div class="mini-card">
+            <div class="mc-top"><span>STRIDE QUEST</span><span>COHORT 01</span></div>
+            <div class="mc-mid">Skip the queue.<br/>Walk the <span class="y">city.</span></div>
+            <div class="mc-bottom"><span>🏃‍♂️ SUNNY · HACKNEY</span><span class="ya">/SUNNY</span></div>
+          </div>
+        </div>
+        <div class="x-link-meta">
+          <div class="domain">stridequest.app</div>
+          <div class="ttl">Sunny invited you in · Stride Quest · London</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- COMPOSE / SHARE -->
+<div class="sec-h"><h2>The text you send</h2><span class="more">EDIT BEFORE POSTING</span></div>
+
+<div class="compose">
+  <label>WHATSAPP / IMESSAGE / DM</label>
+  <div class="compose-text" id="msgChat">👀 you in?
+
+got into Stride Quest cohort 01 — london's invite-only AR walking game launching next quarter. walk the city, collect vaults, real rewards from real brands.
+
+use my link, skip the queue → stridequest.app/?ref=sunny
+
+(without a code you go to the back. no joke.)</div>
+
+  <label style="margin-top:14px">X / THREADS POST</label>
+  <div class="compose-text" id="msgX">Got into @StrideQuestApp Cohort 01.
+
+London's about to become a game. Walk to earn. Stake to win.
+
+£0 with my code, back of the queue without it. Door closes when launch hits 👇
+
+stridequest.app/?ref=sunny</div>
+
+  <label style="margin-top:14px">INSTAGRAM STORY HOOK · 1 LINE</label>
+  <div class="compose-text" id="msgIG">POV: someone just sent you the link that everyone in London will want next month.
+
+Use mine before Cohort 01 fills 👇
+stridequest.app/?ref=sunny</div>
+
+  <div class="compose-actions">
+    <button class="compose-btn wa">▲ WhatsApp</button>
+    <button class="compose-btn im">▲ Messages</button>
+    <button class="compose-btn x">𝕏 Post</button>
+    <button class="compose-btn copy">⎘ Copy link</button>
+  </div>
+</div>
+
+<!-- STRATEGY NOTES -->
+<div class="card">
+  <h2 style="font-weight:700;font-size:20px;letter-spacing:-0.025em;margin-bottom:14px">Why this card converts</h2>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;font-size:13px;color:var(--ink-dim);line-height:1.55">
+    <div>
+      <strong style="color:var(--gold);display:block;margin-bottom:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em">▲ THE NAME</strong>
+      "Sunny invited you in" — personal pull. Not from a brand, from a friend.
+    </div>
+    <div>
+      <strong style="color:var(--gold);display:block;margin-bottom:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em">▲ THE STAKES</strong>
+      "Skip the queue" — implies there IS a queue, implies they can skip it. Two FOMO triggers in 3 words.
+    </div>
+    <div>
+      <strong style="color:var(--gold);display:block;margin-bottom:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em">▲ THE PROOF</strong>
+      The Strider's name, borough and position visible — receipt that "yeah, this is a real thing my mate's doing."
+    </div>
+    <div>
+      <strong style="color:var(--gold);display:block;margin-bottom:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em">▲ THE WALL</strong>
+      Cohort 01 · London pill. Tells them this is a place. Their place if they live here.
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <div>STRIDE QUEST © 2026 · LONDON</div>
+  <div><a href="06-dashboard.html">← BACK TO DASHBOARD</a></div>
+</div>
+
+</div>
+
+<div class="mockup-nav">
+  <a href="00-landing.html">0. Landing</a>
+  <a href="01-onboard.html">1. Email</a>
+  <a href="02-borough.html">2. Borough</a>
+  <a href="03-avatar.html">3. Avatar</a>
+  <a href="04-goal.html">4. Goal</a>
+  <a href="05-membership.html">5. Membership</a>
+  <a href="06-dashboard.html">6. Dashboard</a>
+  <a href="07-profile.html">7. Profile</a>
+  <a href="08-borough-board.html">8. Borough LB</a>
+  <a href="09-creator-board.html">9. Creator LB</a>
+  <a href="10-leaderboard.html">10. Global LB</a>
+  <a href="11-paid-success.html?tier=founder">11. ✓ Paid</a>
+  <a href="12-share.html" class="on">12. Share</a>
+  <a href="13-signin.html">13. Sign-in</a>
+</div>
+
+</body></html>

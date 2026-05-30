@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avatar · Stride Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap narrow">
+
+<div class="hdr">
+  <a href="00-landing.html" class="brand"><span class="bdg">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status"><span class="pulse"></span><span>LONDON · COHORT 01</span></div>
+</div>
+
+<div class="steps">
+  <span class="dot done"></span>
+  <span class="dot done"></span>
+  <span class="dot on"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="l">STEP 3 OF 5</span>
+</div>
+
+<div class="eyebrow">Become a Strider</div>
+<h1>Pick your <span class="y">avatar.</span></h1>
+<p class="lede">This is who you'll be on the leaderboard. Eight starter avatars now — unlock rarer ones inside the app by hitting tier milestones.</p>
+
+<div class="card">
+  <div class="field">
+    <label>YOUR STRIKER NAME</label>
+    <input type="text" id="name" value="Sunny" placeholder="What should we call you?" />
+  </div>
+
+  <div class="field">
+    <label>PICK AN AVATAR</label>
+    <div class="avatar-grid">
+      <div class="av picked">🏃‍♂️</div>
+      <div class="av">🏃‍♀️</div>
+      <div class="av">🦊</div>
+      <div class="av">🐺</div>
+      <div class="av">🐉</div>
+      <div class="av">⚡</div>
+      <div class="av">🔥</div>
+      <div class="av">👑</div>
+    </div>
+    <div style="font-size:12px;color:var(--ink-dim);margin-top:8px;line-height:1.5">8 starter avatars · <strong style="color:var(--gold)">24 rarer avatars</strong> unlock through gameplay tiers · 4 exclusive avatars for Founders only</div>
+  </div>
+
+  <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <a href="02-borough.html" class="ghost">← Back</a>
+    <a href="04-goal.html" class="primary">Continue → Pace</a>
+  </div>
+</div>
+
+</div>
+
+<div class="mockup-nav">
+  <a href="00-landing.html">0. Landing</a>
+  <a href="01-onboard.html">1. Email</a>
+  <a href="02-borough.html">2. Borough</a>
+  <a href="03-avatar.html" class="on">3. Avatar</a>
+  <a href="04-goal.html">4. Goal</a>
+  <a href="05-membership.html">5. Membership</a>
+  <a href="06-dashboard.html">6. Dashboard</a>
+  <a href="07-profile.html">7. Profile</a>
+  <a href="08-borough-board.html">8. Borough LB</a>
+  <a href="09-creator-board.html">9. Creator LB</a>
+  <a href="10-leaderboard.html">10. Global LB</a>
+  <a href="11-paid-success.html?tier=founder">11. ✓ Paid</a>
+  <a href="12-share.html">12. Share</a>
+  <a href="13-signin.html">13. Sign-in</a>
+</div>
+
+<script>
+document.querySelectorAll('.av').forEach(a => a.addEventListener('click', () => {
+  document.querySelectorAll('.av').forEach(x => x.classList.remove('picked'));
+  a.classList.add('picked');
+}));
+</script>
+</body></html>
