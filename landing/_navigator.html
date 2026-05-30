@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mockup index · Stride Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .screen-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;transition:border-color .15s,transform .15s;display:block;color:inherit}
+  .screen-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .screen-card .num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.15em;margin-bottom:10px}
+  .screen-card h3{font-weight:700;font-size:18px;letter-spacing:-0.02em;margin-bottom:6px}
+  .screen-card p{font-size:13px;color:var(--ink-dim);line-height:1.5}
+  .flow-section{margin-top:32px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+  .flow-section h2{font-weight:700;font-size:16px;letter-spacing:-0.015em;color:var(--gold);font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+  .flow-section .line{flex:1;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <a href="../index.html" class="brand"><span class="bdg">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status"><span class="pulse"></span><span>MOCKUP · NO BACKEND</span></div>
+</div>
+
+<div class="eyebrow">Click-through walkthrough · 12 screens</div>
+<h1>The full <span class="y">experience.</span></h1>
+<p class="lede">Static mockup of every screen in the waitlist + onboarding + soft-paywall flow. Click through to see how the user (and the creator) experiences the loop. All data is fake. No backend wired in. The React build later just ports these layouts to components.</p>
+
+<div class="flow-section"><h2>▲ Acquisition</h2><div class="line"></div></div>
+<div class="grid-3">
+  <a class="screen-card" href="00-landing.html">
+    <div class="num">00 · LANDING</div>
+    <h3>The pitch</h3>
+    <p>Public landing. Three tiers visible, paid tiers anchor against free, social proof everywhere. The hook → click → onboarding gateway.</p>
+  </a>
+</div>
+
+<div class="flow-section"><h2>▲ Onboarding · 5 steps · mirrors the in-app journey</h2><div class="line"></div></div>
+<div class="grid-3">
+  <a class="screen-card" href="01-onboard.html">
+    <div class="num">01 · EMAIL + CODE</div>
+    <h3>Step 1 of 5</h3>
+    <p>Email + creator code with live validation. Magic-link sign-in. No password.</p>
+  </a>
+  <a class="screen-card" href="02-borough.html">
+    <div class="num">02 · BOROUGH</div>
+    <h3>Step 2 of 5</h3>
+    <p>22 London boroughs as selectable chips with live rank. Borough = tribe = viral fuel.</p>
+  </a>
+  <a class="screen-card" href="03-avatar.html">
+    <div class="num">03 · AVATAR</div>
+    <h3>Step 3 of 5</h3>
+    <p>Strider name + avatar selection. 8 starter avatars now, hints at 24+ unlockable + 4 Founder-only.</p>
+  </a>
+  <a class="screen-card" href="04-goal.html">
+    <div class="num">04 · GOAL</div>
+    <h3>Step 4 of 5</h3>
+    <p>Daily step target — Casual / Default / Serious / Beast. Streak bonus tease.</p>
+  </a>
+  <a class="screen-card" href="05-membership.html" style="border-color:rgba(255,214,10,0.4)">
+    <div class="num" style="color:var(--gold)">05 · MEMBERSHIP ★</div>
+    <h3>Step 5 of 5 · soft paywall</h3>
+    <p>Founder £99/yr (capped at 100) · Stride+ £60/yr · Free Cohort 01. Three side-by-side tiers, quiet skip-link. Never forces payment — but makes the value obvious.</p>
+  </a>
+  <a class="screen-card" href="11-paid-success.html?tier=founder" style="border-color:rgba(255,214,10,0.4)">
+    <div class="num" style="color:var(--gold)">11 · ✓ PAID SUCCESS</div>
+    <h3>The climb moment</h3>
+    <p>Post-payment confetti, queue jump (#2,318 → #8 for Founder, → #287 for Priority), badge unlock, receipt. The conversion payoff.</p>
+  </a>
+</div>
+
+<div class="flow-section"><h2>▲ Retention loop · post-onboarding</h2><div class="line"></div></div>
+<div class="grid-3">
+  <a class="screen-card" href="06-dashboard.html">
+    <div class="num">06 · DASHBOARD</div>
+    <h3>The hub</h3>
+    <p>Position card, milestones, referrals feed, invite kit (QR + link + share buttons), tribe progress. Quiet upgrade banner if still on free. The retention engine.</p>
+  </a>
+  <a class="screen-card" href="07-profile.html">
+    <div class="num">07 · PROFILE</div>
+    <h3>Public + private</h3>
+    <p>Strider profile with badges, weekly activity, next milestones. Shareable as /u/[code] so creators can flex their stats.</p>
+  </a>
+  <a class="screen-card" href="08-borough-board.html">
+    <div class="num">08 · BOROUGH LB</div>
+    <h3>Tribe war</h3>
+    <p>Live race between 22 London boroughs. Your tribe at #3 chasing #2. Shareable to recruit borough mates.</p>
+  </a>
+  <a class="screen-card" href="09-creator-board.html">
+    <div class="num">09 · CREATOR LB</div>
+    <h3>Creator wall</h3>
+    <p>Public ranking of every creator code by referrals + conversion rate. Social proof for creator-network expansion.</p>
+  </a>
+  <a class="screen-card" href="10-leaderboard.html">
+    <div class="num">10 · GLOBAL LB</div>
+    <h3>The Strider board</h3>
+    <p>Top 100 individuals globally with podium tier + your row highlighted. Distinct PAID / EARNED badges visible.</p>
+  </a>
+  <a class="screen-card" href="12-share.html" style="border-color:rgba(255,214,10,0.4)">
+    <div class="num" style="color:var(--gold)">12 · SHARE PREVIEW ★</div>
+    <h3>The viral card</h3>
+    <p>Shows the 1200×630 OG share card + how it lands across WhatsApp, iMessage, X. Plus ready-to-paste captions per platform.</p>
+  </a>
+</div>
+
+<div class="flow-section"><h2>▲ Re-entry · how Striders get back in</h2><div class="line"></div></div>
+<div class="grid-3">
+  <a class="screen-card" href="13-signin.html" style="border-color:rgba(255,214,10,0.4)">
+    <div class="num" style="color:var(--gold)">13 · MAGIC-LINK SIGN-IN ★</div>
+    <h3>No-password return</h3>
+    <p>Email → tap link → in. 30-day persistent session. Shows the real welcome email design + explains exactly how dashboard access works long-term.</p>
+  </a>
+</div>
+
+<div class="card" style="margin-top:48px">
+  <h2 style="font-weight:700;font-size:22px;letter-spacing:-0.025em;margin-bottom:18px">Pricing model · locked in</h2>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
+    <div style="background:rgba(45,127,249,0.04);border:1px solid var(--blue);border-radius:14px;padding:18px 14px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--blue);letter-spacing:.12em;margin-bottom:6px">STRIDE+ ANNUAL</div>
+      <div style="font-weight:800;font-size:26px;letter-spacing:-0.025em">£60<span style="color:var(--ink-dim);font-size:14px;font-weight:500">/yr</span></div>
+      <div style="font-size:11px;color:var(--ink-dim);margin-top:4px">Annual only · same as in-app</div>
+    </div>
+    <div style="background:rgba(255,214,10,0.06);border:1px solid var(--gold);border-radius:14px;padding:18px 14px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.12em;margin-bottom:6px">FOUNDER MEMBER</div>
+      <div style="font-weight:800;font-size:26px;letter-spacing:-0.025em">£99<span style="color:var(--ink-dim);font-size:14px;font-weight:500">/yr</span></div>
+      <div style="font-size:11px;color:var(--ink-dim);margin-top:4px">Auto-renews · limited · badge forever</div>
+    </div>
+    <div style="background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:18px 14px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);letter-spacing:.12em;margin-bottom:6px">COHORT 01</div>
+      <div style="font-weight:800;font-size:26px;letter-spacing:-0.025em">£0</div>
+      <div style="font-size:11px;color:var(--ink-dim);margin-top:4px">Creator-code only · permanent</div>
+    </div>
+  </div>
+  <div style="font-size:13px;color:var(--ink-dim);line-height:1.6">
+    <strong style="color:var(--gold)">The setup:</strong> Stride+ is the actual in-app product (£60/yr or £5/mo · matches the existing membership card). Founder is the limited <em>annual</em> upgrade on top — adds badge, founder wall name, founder-only avatars, monthly Q&amp;A. Cancel Founder later — the badge stays. Stride+ underneath keeps the perks active.
+  </div>
+</div>
+
+<div class="card" style="margin-top:24px">
+  <h2 style="font-weight:700;font-size:22px;letter-spacing:-0.025em;margin-bottom:12px">What's mocked vs real</h2>
+  <div class="grid-2" style="gap:12px;font-size:14px;line-height:1.6">
+    <div>
+      <strong style="color:var(--green);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase">✓ DESIGN-COMPLETE</strong>
+      <ul style="padding-left:20px;margin-top:8px;color:var(--ink-dim)">
+        <li>Every screen layout + interaction states</li>
+        <li>Brand palette, type system, components</li>
+        <li>Copy/voice across all surfaces</li>
+        <li>5-step onboarding mirroring the in-app journey</li>
+        <li>Soft paywall with always-visible skip path</li>
+        <li>Tier-based queue position logic + badge gating</li>
+        <li>Borough tribes + leaderboards UX</li>
+        <li>Recurring £60/yr Priority subscription positioning</li>
+      </ul>
+    </div>
+    <div>
+      <strong style="color:var(--red);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase">⚠ STILL FAKE</strong>
+      <ul style="padding-left:20px;margin-top:8px;color:var(--ink-dim)">
+        <li>All data is static — no real signups</li>
+        <li>Positions don't actually shift on referral</li>
+        <li>Stripe Payment Links not wired</li>
+        <li>Stripe Subscriptions not wired (need for £60/yr recurring)</li>
+        <li>No magic-link emails sent</li>
+        <li>Activity ticker is randomised</li>
+        <li>QR code is a static SVG placeholder</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-dim);line-height:1.5">
+    <strong style="color:var(--gold)">Next step:</strong> When you're happy with the experience, the React + SQLite/Turso build will reproduce all of this with real referrals, real positions, real leaderboards, and Stripe Subscriptions for the £60/yr Priority tier. ~4-5 hours single session work (extra for Subscriptions).
+  </div>
+</div>
+
+<div class="ftr">
+  <div>STRIDE QUEST MOCKUP · 2026 · LONDON</div>
+  <div><a href="00-landing.html">← BACK TO LANDING</a></div>
+</div>
+
+</div>
+
+<div class="mockup-nav">
+  <a href="00-landing.html">0. Landing</a>
+  <a href="01-onboard.html">1. Email</a>
+  <a href="02-borough.html">2. Borough</a>
+  <a href="03-avatar.html">3. Avatar</a>
+  <a href="04-goal.html">4. Goal</a>
+  <a href="05-membership.html">5. Membership</a>
+  <a href="06-dashboard.html">6. Dashboard</a>
+  <a href="07-profile.html">7. Profile</a>
+  <a href="08-borough-board.html">8. Borough LB</a>
+  <a href="09-creator-board.html">9. Creator LB</a>
+  <a href="10-leaderboard.html">10. Global LB</a>
+  <a href="11-paid-success.html?tier=founder">11. ✓ Paid</a>
+  <a href="12-share.html">12. Share</a>
+  <a href="13-signin.html">13. Sign-in</a>
+</div>
+
+</body></html>
