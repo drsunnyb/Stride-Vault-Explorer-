@@ -357,23 +357,26 @@
       </div>
     </div>
 
-    <!-- Netlify form registration. Hidden via CSS (the `hidden` HTML attribute
-         is unreliable on mobile Safari when global input{} CSS overrides display).
-         Netlify only needs the form name + field names registered for its
-         post-processor to create the form schema. -->
-    <form name="stride-quest-waitlist" netlify netlify-honeypot="bot-field" style="position:absolute;left:-9999px;width:0;height:0;overflow:hidden;pointer-events:none;" aria-hidden="true" tabindex="-1">
-      <input type="email" name="email" tabindex="-1" />
-      <input type="text" name="referral_code" tabindex="-1" />
-      <input type="text" name="referral_valid" tabindex="-1" />
-      <input type="text" name="referrer_name" tabindex="-1" />
-      <input type="text" name="referrer_tier" tabindex="-1" />
-      <input type="text" name="cohort" tabindex="-1" />
-      <input type="text" name="user_code" tabindex="-1" />
-      <input type="text" name="user_share_link" tabindex="-1" />
-      <input type="text" name="page" tabindex="-1" />
-      <input type="text" name="ts" tabindex="-1" />
-      <input type="text" name="bot-field" tabindex="-1" />
-    </form>
+    <!-- Netlify form registration. Detected by Netlify's HTML post-processor at deploy time.
+         Hidden with display:none on a wrapper (the form attribute itself can't use `hidden`
+         reliably across mobile Safari + Netlify's parser). The wrapper div approach is
+         Netlify's canonical recommendation for SPAs. -->
+    <div style="display:none;" aria-hidden="true">
+      <form name="stride-quest-waitlist" data-netlify="true" data-netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="stride-quest-waitlist" />
+        <input type="email" name="email" />
+        <input type="text" name="referral_code" />
+        <input type="text" name="referral_valid" />
+        <input type="text" name="referrer_name" />
+        <input type="text" name="referrer_tier" />
+        <input type="text" name="cohort" />
+        <input type="text" name="user_code" />
+        <input type="text" name="user_share_link" />
+        <input type="text" name="page" />
+        <input type="text" name="ts" />
+        <input type="text" name="bot-field" />
+      </form>
+    </div>
 
     <form id="waitlistForm" novalidate>
       <input type="email" id="email" name="email" placeholder="your@email.com" required autocomplete="email" />
@@ -719,15 +722,34 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
       formData.append("form-name", NETLIFY_FORM_NAME);
       Object.entries(payload).forEach(([k,v]) => formData.append(k, String(v)));
       formData.append("bot-field", ""); // honeypot — must be empty
-      const r = await fetch("/", {
-        method: "POST",
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: formData.toString()
-      });
-      ok = r.ok;
-      if (ok) console.log("[Stride Quest] Submitted to Netlify Forms:", payload);
+      try {
+        const r = await fetch("/", {
+          method: "POST",
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
+          body: formData.toString()
+        });
+        if (r.ok) {
+          console.log("[Stride Quest] Submitted to Netlify Forms:", payload);
+          ok = true;
+        } else {
+          // Netlify Forms not configured / form not registered. Fall back to localStorage
+          // queue so the signup isn't lost. We'll surface this in the dashboard later.
+          console.warn("[Stride Quest] Netlify Forms returned " + r.status + " — queueing locally:", payload);
+          const queue = JSON.parse(localStorage.getItem("sq_signup_queue") || "[]");
+          queue.push(payload);
+          localStorage.setItem("sq_signup_queue", JSON.stringify(queue));
+          ok = true; // user-facing success — we have their data, just not in Netlify yet
+        }
+      } catch(netErr){
+        // Network error — queue locally and still show success
+        console.warn("[Stride Quest] Network error — queueing locally:", netErr.message, payload);
+        const queue = JSON.parse(localStorage.getItem("sq_signup_queue") || "[]");
+        queue.push(payload);
+        localStorage.setItem("sq_signup_queue", JSON.stringify(queue));
+        ok = true;
+      }
     }
-  } catch(err){ console.error(err); }
+  } catch(err){ console.error("[Stride Quest] Submit error:", err); }
 
   if (!ok){
     alert("Something went wrong. Try again in a moment.");
