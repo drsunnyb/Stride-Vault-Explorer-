@@ -615,6 +615,9 @@ const formHint = document.getElementById("formHint");
 const submitBtn = document.getElementById("submitBtn");
 
 let isValidRef = false;
+let isFriendRef = false;
+// 6-char lowercase alphanumeric = player share code (output of hashCode())
+const PLAYER_CODE_RE = /^[a-z0-9]{6}$/;
 if (ref){
   refPill.style.display = "inline-flex";
   if (KNOWN_CREATORS[ref]){
@@ -624,6 +627,13 @@ if (ref){
     refCode.textContent  = KNOWN_CREATORS[ref].name + "  ·  /" + ref;
     refCheck.textContent = "✓";
     formHint.innerHTML = '<span class="priority">★ PRIORITY ACCESS · COHORT 01 · QUEUE-JUMPED</span>';
+  } else if (PLAYER_CODE_RE.test(ref)){
+    isFriendRef = true;
+    refPill.classList.add("valid");
+    refLabel.textContent = "Invited by a friend";
+    refCode.textContent  = "/" + ref;
+    refCheck.textContent = "✓";
+    formHint.innerHTML = '<span class="priority">★ FRIEND REFERRAL · QUEUE BOOST APPLIED</span>';
   } else {
     refPill.classList.add("invalid");
     refLabel.textContent = "Code not recognised";
@@ -661,9 +671,10 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
     email,
     referral_code: ref || "(none)",
     referral_valid: isValidRef,
-    referrer_name: isValidRef ? KNOWN_CREATORS[ref].name : "",
-    referrer_tier: isValidRef ? KNOWN_CREATORS[ref].tier : "",
-    cohort: isValidRef ? "01-priority" : "waitlist",
+    referral_type: isValidRef ? "creator" : (isFriendRef ? "friend" : "none"),
+    referrer_name: isValidRef ? KNOWN_CREATORS[ref].name : (isFriendRef ? "Player share · /" + ref : ""),
+    referrer_tier: isValidRef ? KNOWN_CREATORS[ref].tier : (isFriendRef ? "player" : ""),
+    cohort: isValidRef ? "01-priority" : (isFriendRef ? "waitlist-boosted" : "waitlist"),
     user_code: hashCode(email),
     user_share_link: SITE_ORIGIN + "?ref=" + hashCode(email),
     page: window.location.href,
@@ -739,14 +750,18 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
   sx.classList.add("show");
   document.getElementById("successBadge").textContent = isValidRef
     ? "PRIORITY ACCESS · COHORT 01"
-    : "WAITLIST · LATER COHORT";
+    : (isFriendRef ? "WAITLIST · FRIEND BOOST" : "WAITLIST · LATER COHORT");
   document.getElementById("userPosition").textContent =
     (dbQueuePosition != null)
       ? "#" + dbQueuePosition
-      : (isValidRef ? "#" + (200 + Math.floor(Math.random()*150)) : "#" + (2500 + Math.floor(Math.random()*8000)));
+      : (isValidRef ? "#" + (200 + Math.floor(Math.random()*150))
+         : (isFriendRef ? "#" + (1200 + Math.floor(Math.random()*800))
+            : "#" + (2500 + Math.floor(Math.random()*8000))));
   document.getElementById("successCopy").textContent = isValidRef
     ? "You're in Cohort 01. You'll get a download link before public launch. Every friend who signs up with your link moves you 10 places."
-    : "You're on the public waitlist. Get a creator code, or share your link — once 3 sign up through it you get promoted into Cohort 01.";
+    : (isFriendRef
+        ? "You came in through a friend's share link — your waitlist position is boosted ahead of cold signups. Share your own link below: every friend who joins through it moves you up. 3 signups promotes you into Cohort 01."
+        : "You're on the public waitlist. Get a creator code, or share your link — once 3 sign up through it you get promoted into Cohort 01.");
   const link = payload.user_share_link;
   const shareEl = document.getElementById("shareLink");
   shareEl.textContent = link;
