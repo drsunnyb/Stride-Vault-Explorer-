@@ -385,14 +385,14 @@
   <div class="modal" id="payModal">
     <div class="modal-card">
       <button class="modal-close" id="modalClose">×</button>
-      <h3 id="modalTitle">Claim a Founder Member</h3>
-      <div class="sub" id="modalSub">One of 100. Lifetime. Permanent.</div>
-      <div class="price-line"><span id="modalTierName">Founder Member</span><span id="modalTierPrice">£99.00/yr</span></div>
+      <h3 id="modalTitle">Apply for Founder Member</h3>
+      <div class="sub" id="modalSub">One of 100 ever. By application.</div>
+      <div class="price-line"><span id="modalTierName">Founder Member</span><span id="modalTierPrice">By application</span></div>
       <div class="price-line"><span>Processing</span><span>£0.00</span></div>
-      <div class="price-line total"><span>Total today</span><span id="modalTotal">£99.00</span></div>
-      <div class="price-line" style="font-size:11px;color:var(--ink-dim);margin-top:6px"><span>Then</span><span>£99.00/yr · auto-renews</span></div>
-      <button class="modal-cta" id="modalCheckout">Continue to secure checkout →</button>
-      <div class="modal-trust">Powered by Stripe · Full refund if Cohort 01 doesn't launch in 2026</div>
+      <div class="price-line total"><span>Status</span><span id="modalTotal">Pending review</span></div>
+      <div class="price-line" style="font-size:11px;color:var(--ink-dim);margin-top:6px"><span>Next step</span><span>We'll be in touch within 48h</span></div>
+      <button class="modal-cta" id="modalCheckout">Submit application →</button>
+      <div class="modal-trust">Reviewed within 48h · Founder seats are non-transferable</div>
     </div>
   </div>
 
@@ -425,8 +425,8 @@
     <div class="tiers-grid">
       <!-- FOUNDER -->
       <div class="tier founder">
-        <div class="tier-tag">FOUNDER MEMBER · ANNUAL</div>
-        <div class="tier-price"><span class="cur">£</span><span class="amt">99</span><span class="once">once</span></div>
+        <div class="tier-tag">FOUNDER MEMBER · BY APPLICATION</div>
+        <div class="tier-price"><span class="amt" style="font-size:42px;letter-spacing:-0.02em">By application</span></div>
         <div class="tier-name">Founder Member</div>
         <div class="tier-bar">
           <div class="tier-bar-fill" id="founderFill" style="width:62%"></div>
@@ -440,8 +440,8 @@
           <li><span class="tk">✦</span> Day-1 starter chest (Founder-only loot table)</li>
           <li><span class="tk">✦</span> Direct line to the team · early Q&amp;A</li>
         </ul>
-        <button class="tier-cta primary" data-tier="founder">Claim a Founder Member →</button>
-        <div class="tier-fineprint">Refunded in full if Cohort 01 doesn't launch in 2026.</div>
+        <button class="tier-cta primary" data-tier="founder">Apply for Founder Member →</button>
+        <div class="tier-fineprint">By application. Reviewed within 48h.</div>
       </div>
 
       <!-- PRIORITY -->
@@ -538,7 +538,7 @@
     </details>
     <details>
       <summary>What do paid tiers actually buy me?</summary>
-      <p><strong>Priority access only.</strong> The £60/yr Stride+ jumps you to the top 500 on launch day. The £99/yr Founder Member is one of only 100 ever — with a permanent badge that stays forever (even if you cancel), a 2× coin multiplier while subscribed, and access to the Founders' Vault. Both come with a launch-day starter chest of in-app items. Paid tiers do <em>not</em> buy lottery entries or real-money rewards.</p>
+      <p><strong>Priority access only.</strong> The £60/yr Stride+ jumps you to the top 500 on launch day. The Founder Member tier is one of only 100 ever, by application — with a permanent badge that stays forever, a 2× coin multiplier while subscribed, and access to the Founders' Vault. Both come with a launch-day starter chest of in-app items. Paid tiers do <em>not</em> buy lottery entries or real-money rewards.</p>
     </details>
     <details>
       <summary>What's in the Founders' Vault?</summary>
@@ -587,7 +587,7 @@ const SITE_ORIGIN = window.location.origin + window.location.pathname.replace(/\
 
 // Supabase (anon — safe to ship to browser)
 const SUPABASE_URL = "https://btizzhrkelcxvafdxwun.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTYwODQsImV4cCI6MjA3OTgzMjA4NH0.qPdpZsLZyHJgnAuV28R4uwgFsETxa3UeYJ_iU17qOM4";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjExMTQsImV4cCI6MjA5NDkzNzExNH0.QpxH-DDPa6qA4RCRG0Y18WDZX3KCF5PQzd8uhXV_cAk";
 const SUPABASE_RPC_URL = SUPABASE_URL + "/rest/v1/rpc/join_waitlist_anon";
 
 const KNOWN_CREATORS = {
@@ -781,7 +781,7 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
 (function(){
   const boroughs = ["Hackney","Shoreditch","Brixton","Camden","Soho","Notting Hill","Peckham","Clapham","Islington","Dalston","Battersea","Bermondsey","Greenwich","Stratford","Holloway","Wandsworth","Marylebone","Kensington","Mile End","Bow","Hammersmith","Walthamstow"];
   const tiers = [
-    { txt: "claimed a <strong>Founder Member</strong>", weight: 1 },
+    { txt: "applied for <strong>Founder Member</strong>", weight: 1 },
     { txt: "claimed a <strong>Stride+</strong>", weight: 4 },
     { txt: "joined Cohort 01 via creator code", weight: 12 },
     { txt: "joined the public waitlist", weight: 8 },
@@ -837,7 +837,7 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
   const close = document.getElementById("modalClose");
   const checkout = document.getElementById("modalCheckout");
   const TIERS = {
-    founder: { name:"Founder Member", price:"£99.00/yr", title:"Claim a Founder Member", sub:"One of 100. Annual. Badge stays even if you cancel.", checkoutUrl:"11-paid-success.html" },
+    founder: { name:"Founder Member", price:"By application", title:"Apply for Founder Member", sub:"One of 100 ever. By application. Badge is permanent.", checkoutUrl:"11-paid-success.html" },
     priority:{ name:"Stride+", price:"£60.00/yr", title:"Get Stride+", sub:"Jump to the top 500 on launch day. Annual subscription.", checkoutUrl:"11-paid-success.html" }
   };
   document.querySelectorAll(".tier-cta[data-tier]").forEach(btn=>{
