@@ -385,14 +385,14 @@
   <div class="modal" id="payModal">
     <div class="modal-card">
       <button class="modal-close" id="modalClose">×</button>
-      <h3 id="modalTitle">Apply for Founder Member</h3>
-      <div class="sub" id="modalSub">One of 100 ever. By application.</div>
-      <div class="price-line"><span id="modalTierName">Founder Member</span><span id="modalTierPrice">By application</span></div>
+      <h3 id="modalTitle">Claim a Founder Member</h3>
+      <div class="sub" id="modalSub">Strictly limited. Lifetime. Permanent.</div>
+      <div class="price-line"><span id="modalTierName">Founder Member</span><span id="modalTierPrice">£99.00/yr</span></div>
       <div class="price-line"><span>Processing</span><span>£0.00</span></div>
-      <div class="price-line total"><span>Status</span><span id="modalTotal">Pending review</span></div>
-      <div class="price-line" style="font-size:11px;color:var(--ink-dim);margin-top:6px"><span>Next step</span><span>We'll be in touch within 48h</span></div>
-      <button class="modal-cta" id="modalCheckout">Submit application →</button>
-      <div class="modal-trust">Reviewed within 48h · Founder seats are non-transferable</div>
+      <div class="price-line total"><span>Total today</span><span id="modalTotal">£99.00</span></div>
+      <div class="price-line" style="font-size:11px;color:var(--ink-dim);margin-top:6px"><span>Then</span><span>£99.00/yr · auto-renews</span></div>
+      <button class="modal-cta" id="modalCheckout">Continue to secure checkout →</button>
+      <div class="modal-trust">Powered by Stripe · Full refund if Cohort 01 doesn't launch in 2026</div>
     </div>
   </div>
 
@@ -400,7 +400,7 @@
   <div class="stats">
     <div class="stat"><div class="v">1,269</div><div class="l">London vaults</div></div>
     <div class="stat"><div class="v white">TBR</div><div class="l">Prize pool · sealed</div></div>
-    <div class="stat"><div class="v blue">100</div><div class="l">Founder seats</div></div>
+    <div class="stat"><div class="v blue">LTD</div><div class="l">Founder seats</div></div>
     <div class="stat"><div class="v red" id="seatsRemaining2">2,418</div><div class="l">Cohort 01 seats left</div></div>
   </div>
 
@@ -425,13 +425,13 @@
     <div class="tiers-grid">
       <!-- FOUNDER -->
       <div class="tier founder">
-        <div class="tier-tag">FOUNDER MEMBER · BY APPLICATION</div>
-        <div class="tier-price"><span class="amt" style="font-size:42px;letter-spacing:-0.02em">By application</span></div>
+        <div class="tier-tag">FOUNDER MEMBER · ANNUAL</div>
+        <div class="tier-price"><span class="cur">£</span><span class="amt">99</span><span class="once">/yr</span></div>
         <div class="tier-name">Founder Member</div>
         <div class="tier-bar">
-          <div class="tier-bar-fill" id="founderFill" style="width:62%"></div>
+          <div class="tier-bar-fill" style="width:62%"></div>
         </div>
-        <div class="tier-bar-label"><strong id="founderClaimed">—</strong> / 100 founder seats claimed</div>
+        <div class="tier-bar-label" style="color:var(--gold);font-weight:600">Strictly limited · once closed, closed forever</div>
         <ul class="tier-perks">
           <li><span class="tk">✦</span> Permanent OG badge · founder wall forever</li>
           <li><span class="tk">✦</span> Lifetime <strong>2× coin multiplier</strong> on every step</li>
@@ -440,8 +440,8 @@
           <li><span class="tk">✦</span> Day-1 starter chest (Founder-only loot table)</li>
           <li><span class="tk">✦</span> Direct line to the team · early Q&amp;A</li>
         </ul>
-        <button class="tier-cta primary" data-tier="founder">Apply for Founder Member →</button>
-        <div class="tier-fineprint">By application. Reviewed within 48h.</div>
+        <button class="tier-cta primary" data-tier="founder">Claim a Founder Member →</button>
+        <div class="tier-fineprint">Refunded in full if Cohort 01 doesn't launch in 2026.</div>
       </div>
 
       <!-- PRIORITY -->
@@ -538,11 +538,11 @@
     </details>
     <details>
       <summary>What do paid tiers actually buy me?</summary>
-      <p><strong>Priority access only.</strong> The £60/yr Stride+ jumps you to the top 500 on launch day. The Founder Member tier is one of only 100 ever, by application — with a permanent badge that stays forever, a 2× coin multiplier while subscribed, and access to the Founders' Vault. Both come with a launch-day starter chest of in-app items. Paid tiers do <em>not</em> buy lottery entries or real-money rewards.</p>
+      <p><strong>Priority access only.</strong> The £60/yr Stride+ jumps you to the top 500 on launch day. The £99/yr Founder Member is strictly limited — with a permanent badge that stays forever (even if you cancel), a 2× coin multiplier while subscribed, and access to the Founders' Vault. Both come with a launch-day starter chest of in-app items. Paid tiers do <em>not</em> buy lottery entries or real-money rewards.</p>
     </details>
     <details>
       <summary>What's in the Founders' Vault?</summary>
-      <p>If we told you, it wouldn't be the Founders' Vault. What we'll say: it's permanent, it's exclusive, it can't be earned by playing — only claimed by being one of the first 100.</p>
+      <p>If we told you, it wouldn't be the Founders' Vault. What we'll say: it's permanent, it's exclusive, it can't be earned by playing — only claimed by being one of the first founders. Once seats close, they close forever.</p>
     </details>
     <details>
       <summary>What rewards are coming?</summary>
@@ -567,9 +567,9 @@
     <div class="wall-head">
       <div>
         <div class="wall-title">The Founders' Wall</div>
-        <div class="wall-sub">First 100 players · permanent record</div>
+        <div class="wall-sub">Founder roster · permanent record</div>
       </div>
-      <div class="wall-sub" style="color:var(--gold)"><strong id="wallCount">8</strong> / 100 claimed</div>
+      <div class="wall-sub" style="color:var(--gold)"><strong id="wallCount">8</strong> founders claimed · strictly limited</div>
     </div>
     <div class="wall-grid" id="wallGrid"></div>
   </div>
@@ -781,7 +781,7 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
 (function(){
   const boroughs = ["Hackney","Shoreditch","Brixton","Camden","Soho","Notting Hill","Peckham","Clapham","Islington","Dalston","Battersea","Bermondsey","Greenwich","Stratford","Holloway","Wandsworth","Marylebone","Kensington","Mile End","Bow","Hammersmith","Walthamstow"];
   const tiers = [
-    { txt: "applied for <strong>Founder Member</strong>", weight: 1 },
+    { txt: "claimed a <strong>Founder Member</strong>", weight: 1 },
     { txt: "claimed a <strong>Stride+</strong>", weight: 4 },
     { txt: "joined Cohort 01 via creator code", weight: 12 },
     { txt: "joined the public waitlist", weight: 8 },
@@ -805,7 +805,8 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
 })();
 
 /* ============================================================
-   FOUNDERS' WALL — render 100 cells, mark taken vs empty
+   FOUNDERS' WALL — render claimed founders + a few empties.
+   Cap intentionally not revealed in the UI.
    ============================================================ */
 (function(){
   const grid = document.getElementById("wallGrid");
@@ -815,9 +816,10 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
     {n:4,name:"Marcus L."},{n:5,name:"Priya K."},{n:6,name:"James R."},
     {n:7,name:"Zara H."},{n:8,name:"Oliver P."}
   ];
+  const TOTAL_CELLS = 24; // shown — does NOT equal the real cap
   const claimed = new Set(seeded.map(s=>s.n));
   let html = "";
-  for (let i=1;i<=100;i++){
+  for (let i=1;i<=TOTAL_CELLS;i++){
     if (claimed.has(i)){
       const s = seeded.find(x=>x.n===i);
       html += `<div class="wall-cell taken"><div class="num">#${String(i).padStart(3,"0")}</div>${s.name}</div>`;
@@ -837,7 +839,7 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
   const close = document.getElementById("modalClose");
   const checkout = document.getElementById("modalCheckout");
   const TIERS = {
-    founder: { name:"Founder Member", price:"By application", title:"Apply for Founder Member", sub:"One of 100 ever. By application. Badge is permanent.", checkoutUrl:"11-paid-success.html" },
+    founder: { name:"Founder Member", price:"£99.00/yr", title:"Claim a Founder Member", sub:"Strictly limited. Annual. Badge is permanent.", checkoutUrl:"11-paid-success.html" },
     priority:{ name:"Stride+", price:"£60.00/yr", title:"Get Stride+", sub:"Jump to the top 500 on launch day. Annual subscription.", checkoutUrl:"11-paid-success.html" }
   };
   document.querySelectorAll(".tier-cta[data-tier]").forEach(btn=>{
