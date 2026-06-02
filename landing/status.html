@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Your queue status · Stride Quest</title>
+<meta name="description" content="Your live position in the Stride Quest waitlist." />
+<meta name="theme-color" content="#0A0A0C" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0C;--bg-2:#141418;--card:#17171C;--ink:#FFFFFF;--ink-dim:#7A7A86;
+    --line:#23232B;--gold:#FFD60A;--gold-2:#FFC107;--green:#10B981;--red:#FF3B30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,system-ui,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;min-height:100vh}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(800px 600px at 15% 5%, rgba(255,214,10,0.08), transparent 60%),radial-gradient(900px 700px at 90% 80%, rgba(45,127,249,0.06), transparent 60%);}
+  .wrap{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:24px}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:48px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .brand .badge{width:32px;height:32px;border-radius:50%;background:var(--gold);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;letter-spacing:-0.02em}
+  .brand .word{font-weight:700;font-size:16px;letter-spacing:0.02em}
+  .status-pill{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .status-pill .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .panel{background:linear-gradient(180deg,rgba(255,214,10,0.05),transparent 80%),var(--card);border:1px solid var(--line);border-radius:24px;padding:32px;margin-bottom:20px;position:relative;overflow:hidden}
+  .panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+  .badge-row{display:inline-flex;align-items:center;gap:8px;background:rgba(255,214,10,0.1);border:1px solid rgba(255,214,10,0.3);color:var(--gold);padding:6px 12px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:18px}
+  .badge-row.cohort-01{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:var(--green)}
+  .badge-row.founder{background:linear-gradient(90deg,rgba(255,214,10,0.15),rgba(255,193,7,0.15));border-color:var(--gold);color:var(--gold)}
+
+  h1{font-weight:800;font-size:clamp(36px,5vw,52px);line-height:1;letter-spacing:-0.035em;margin-bottom:12px}
+  .lede{font-size:16px;line-height:1.5;color:var(--ink-dim);margin-bottom:24px}
+
+  .position{display:flex;align-items:baseline;gap:16px;margin-bottom:28px}
+  .position .num{font-weight:800;font-size:clamp(56px,11vw,92px);line-height:.95;letter-spacing:-0.04em;color:var(--gold);font-feature-settings:"tnum"}
+  .position .label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--ink-dim);text-transform:uppercase}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  .stat{background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left}
+  .stat .v{font-weight:800;font-size:24px;letter-spacing:-0.02em;color:var(--ink);margin-bottom:4px;font-feature-settings:"tnum"}
+  .stat .l{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.15em;color:var(--ink-dim);text-transform:uppercase}
+
+  .unlock{background:linear-gradient(90deg,rgba(255,214,10,0.08),rgba(255,193,7,0.04));border:1px solid rgba(255,214,10,0.25);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px}
+  .unlock .ic{font-size:22px}
+  .unlock .body{flex:1;font-size:14px;line-height:1.4}
+  .unlock .body strong{color:var(--gold);font-weight:600}
+
+  .share-block{background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .share-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:10px}
+  .share-link{background:#17171C;border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);word-break:break-all;cursor:pointer;transition:background .15s}
+  .share-link:hover{background:#1d1d24}
+  .share-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .share-btn{flex:1;min-width:100px;background:transparent;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:10px;font-weight:600;font-size:13.5px;cursor:pointer;text-decoration:none;text-align:center;transition:border-color .15s, background .15s}
+  .share-btn:hover{border-color:var(--gold);background:rgba(255,214,10,0.05)}
+  .share-btn.wa{color:#25D366}
+  .share-btn.x{color:#fff}
+  .share-btn.copy{color:var(--gold)}
+
+  .loading{text-align:center;padding:60px 20px;color:var(--ink-dim)}
+  .loading .spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .err-panel{background:rgba(255,59,48,0.05);border:1px solid rgba(255,59,48,0.25);border-radius:14px;padding:20px;color:#FF6961;font-size:14px;line-height:1.5;text-align:center}
+  .err-panel a{color:var(--gold);text-decoration:underline}
+
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+  .action-btn{padding:11px 18px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;border:1px solid var(--line);transition:border-color .15s, color .15s}
+  .action-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+  .ftr{text-align:center;color:var(--ink-dim);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;padding:32px 0 16px}
+  .ftr a{color:var(--ink-dim);text-decoration:none}
+  .ftr a:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a href="/" class="brand"><span class="badge">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status-pill"><span class="pulse"></span><span id="liveBadge">CHECKING</span></div>
+</header>
+
+<div id="loadingView" class="loading">
+  <div class="spinner"></div>
+  <div>Loading your queue status…</div>
+</div>
+
+<div id="errorView" style="display:none">
+  <div class="err-panel">
+    <strong id="errTitle">Something went sideways.</strong>
+    <div id="errBody" style="margin-top:10px;color:var(--ink)"></div>
+    <div style="margin-top:14px"><a href="/signin.html">Send me a new sign-in link →</a></div>
+  </div>
+</div>
+
+<div id="statusView" style="display:none">
+  <div class="panel">
+    <div class="badge-row" id="tierBadge">WAITLIST · LATER COHORT</div>
+    <h1>Your <span style="color:var(--gold)">queue.</span></h1>
+    <p class="lede" id="leadCopy">You're on the public waitlist. Share your link to climb — every friend who joins moves you up.</p>
+
+    <div class="position">
+      <span class="num" id="posNum">#0</span>
+      <span class="label">Position in queue</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="v" id="statRefs">0</div>
+        <div class="l">REFERRALS</div>
+      </div>
+      <div class="stat">
+        <div class="v" id="statCohort">—</div>
+        <div class="l">COHORT</div>
+      </div>
+      <div class="stat">
+        <div class="v" id="statTier">FREE</div>
+        <div class="l">MEMBERSHIP</div>
+      </div>
+    </div>
+
+    <div class="unlock" id="unlockRow">
+      <span class="ic">⚡</span>
+      <span class="body" id="unlockText">Loading next unlock…</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="share-block" style="border:none;padding:0;background:transparent">
+      <div class="share-label">YOUR INVITE LINK — SHARE TO CLIMB</div>
+      <div class="share-link" id="shareLink" title="Tap to copy">…</div>
+      <div class="share-actions">
+        <a class="share-btn wa" id="shareWA" target="_blank" rel="noopener">▲ WhatsApp</a>
+        <a class="share-btn x" id="shareX" target="_blank" rel="noopener">𝕏 Post</a>
+        <button class="share-btn copy" id="shareCopy">⎘ Copy link</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="/" class="action-btn">← BACK TO HOME</a>
+    <a href="#" id="signOutBtn" class="action-btn">SIGN OUT</a>
+  </div>
+</div>
+
+<div class="ftr">
+  STRIDE QUEST © 2026 · LONDON
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://btizzhrkelcxvafdxwun.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjExMTQsImV4cCI6MjA5NDkzNzExNH0.QpxH-DDPa6qA4RCRG0Y18WDZX3KCF5PQzd8uhXV_cAk";
+const SITE_ORIGIN = window.location.origin;
+
+const loadingView = document.getElementById("loadingView");
+const errorView = document.getElementById("errorView");
+const statusView = document.getElementById("statusView");
+const errTitle = document.getElementById("errTitle");
+const errBody = document.getElementById("errBody");
+
+function showError(title, body){
+  errTitle.textContent = title;
+  errBody.textContent = body || "";
+  loadingView.style.display = "none";
+  statusView.style.display = "none";
+  errorView.style.display = "block";
+  document.getElementById("liveBadge").textContent = "ERROR";
+}
+
+// === 1. Parse magic-link tokens from URL hash, if present ===
+// Supabase puts access_token, refresh_token, type in the hash on redirect.
+function parseHashTokens(){
+  if (!window.location.hash) return null;
+  const hash = window.location.hash.replace(/^#/, "");
+  const params = new URLSearchParams(hash);
+  const at = params.get("access_token");
+  const rt = params.get("refresh_token");
+  if (at) {
+    // Persist so we don't lose them on refresh
+    try {
+      localStorage.setItem("sq_at", at);
+      if (rt) localStorage.setItem("sq_rt", rt);
+    } catch(_){}
+    // Clean the URL so tokens aren't visible
+    history.replaceState(null, "", window.location.pathname);
+    return { access_token: at, refresh_token: rt };
+  }
+  if (params.get("error")) {
+    showError("Sign-in link problem", params.get("error_description") || params.get("error"));
+    return null;
+  }
+  return null;
+}
+
+function getStoredTokens(){
+  try {
+    const at = localStorage.getItem("sq_at");
+    if (at) return { access_token: at, refresh_token: localStorage.getItem("sq_rt") };
+  } catch(_){}
+  return null;
+}
+
+// === 2. Get authenticated email via Supabase auth /user endpoint ===
+async function getAuthEmail(accessToken){
+  const r = await fetch(SUPABASE_URL + "/auth/v1/user", {
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + accessToken
+    }
+  });
+  if (!r.ok) {
+    if (r.status === 401) return null; // expired
+    throw new Error("HTTP " + r.status);
+  }
+  const u = await r.json();
+  return u && u.email ? u.email.toLowerCase() : null;
+}
+
+// === 3. Fetch user's profile via get_my_status RPC ===
+async function fetchStatus(email){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_my_status", {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({ p_email: email })
+  });
+  if (!r.ok) {
+    throw new Error("Status lookup failed (HTTP " + r.status + ")");
+  }
+  const data = await r.json();
+  return Array.isArray(data) ? data[0] : data;
+}
+
+// === 4. Render ===
+function hashCode(str){
+  let h = 5381;
+  for (let i=0;i<str.length;i++) h = ((h<<5)+h) + str.charCodeAt(i);
+  return Math.abs(h).toString(36).slice(0,6);
+}
+
+function render(profile, email){
+  if (!profile) {
+    showError("We don't see you in the queue", "Looks like " + email + " hasn't signed up yet. Join the waitlist and come back here.");
+    return;
+  }
+  loadingView.style.display = "none";
+  errorView.style.display = "none";
+  statusView.style.display = "block";
+  document.getElementById("liveBadge").textContent = "LIVE";
+
+  // Position
+  const pos = profile.queue_position != null ? profile.queue_position : "—";
+  document.getElementById("posNum").textContent = "#" + pos;
+
+  // Tier / cohort badges
+  const tier = profile.membership_tier || "free";
+  const cohort = profile.cohort || "waitlist";
+  const refs = profile.referrals_count || 0;
+  const badge = document.getElementById("tierBadge");
+  if (tier === "founder") {
+    badge.textContent = "FOUNDER MEMBER · LIFETIME";
+    badge.className = "badge-row founder";
+  } else if (tier === "stride_plus") {
+    badge.textContent = "STRIDE+ · COHORT 01";
+    badge.className = "badge-row cohort-01";
+  } else if (cohort === "01") {
+    badge.textContent = "COHORT 01 · PRIORITY";
+    badge.className = "badge-row cohort-01";
+  } else if (cohort === "waitlist-boosted") {
+    badge.textContent = "WAITLIST · FRIEND BOOST";
+    badge.className = "badge-row";
+  } else {
+    badge.textContent = "WAITLIST · LATER COHORT";
+    badge.className = "badge-row";
+  }
+
+  // Stats
+  document.getElementById("statRefs").textContent = refs;
+  document.getElementById("statCohort").textContent = cohort === "01" ? "01" : (cohort === "waitlist-boosted" ? "WL+" : "WL");
+  document.getElementById("statTier").textContent =
+    tier === "founder" ? "FOUNDER" :
+    tier === "stride_plus" ? "STRIDE+" : "FREE";
+
+  // Unlock copy
+  const unlockText = document.getElementById("unlockText");
+  if (profile.next_unlock_label) {
+    unlockText.innerHTML = profile.next_unlock_label.replace(/(\d+)/, "<strong>$1</strong>");
+  } else {
+    unlockText.innerHTML = "Top tier reached — <strong>nothing more to unlock</strong>. Just walk.";
+  }
+
+  // Lead copy
+  const lead = document.getElementById("leadCopy");
+  if (tier === "founder") {
+    lead.textContent = "You're a Founder Member. You'll get the download link before public launch — your badge is permanent.";
+  } else if (tier === "stride_plus") {
+    lead.textContent = "You're Stride+. You're in Cohort 01 with priority access at launch.";
+  } else if (cohort === "01") {
+    lead.textContent = "You're in Cohort 01 — priority access at launch. Refer 10 friends to earn a free year of Stride+.";
+  } else {
+    lead.textContent = "You're on the public waitlist. Share your link to climb — 3 referrals promotes you into Cohort 01.";
+  }
+
+  // Share link
+  const shareCode = profile.share_code || hashCode(email);
+  const link = SITE_ORIGIN + "/?ref=" + shareCode;
+  const shareEl = document.getElementById("shareLink");
+  shareEl.textContent = link;
+  shareEl.addEventListener("click", () => copy(link, shareEl));
+  document.getElementById("shareCopy").addEventListener("click", () => copy(link, document.getElementById("shareCopy")));
+
+  // Share intents
+  const waText = encodeURIComponent("Got into Stride Quest Cohort 01 — London's invite-only AR walking game. Use my link to skip the queue: " + link);
+  document.getElementById("shareWA").href = "https://wa.me/?text=" + waText;
+  const xText = encodeURIComponent("Got into @StrideQuestApp Cohort 01.\n\nLondon's about to become a game. Walk to earn. Stake to win. Invite-only.\n\nUse my link to skip the queue:\n" + link);
+  document.getElementById("shareX").href = "https://x.com/intent/tweet?text=" + xText;
+}
+
+function copy(text, el){
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = el.textContent;
+    el.textContent = "✓ Copied to clipboard";
+    setTimeout(()=>{ el.textContent = orig; }, 1400);
+  });
+}
+
+document.getElementById("signOutBtn").addEventListener("click", function(e){
+  e.preventDefault();
+  try {
+    localStorage.removeItem("sq_at");
+    localStorage.removeItem("sq_rt");
+  } catch(_){}
+  window.location.href = "/";
+});
+
+// === Main flow ===
+(async function(){
+  // Prefer fresh hash tokens (just clicked magic link), fall back to stored
+  let tokens = parseHashTokens() || getStoredTokens();
+
+  if (!tokens) {
+    showError("Sign in to see your status", "We need to verify it's you. Tap below to get a fresh sign-in link.");
+    return;
+  }
+
+  let email = null;
+  try {
+    email = await getAuthEmail(tokens.access_token);
+  } catch(err) {
+    showError("Couldn't verify your session", err.message || String(err));
+    return;
+  }
+
+  if (!email) {
+    // Token expired or invalid
+    try { localStorage.removeItem("sq_at"); localStorage.removeItem("sq_rt"); } catch(_){}
+    showError("Session expired", "Sign-in links are good for 60 minutes. Get a fresh one — it's quick.");
+    return;
+  }
+
+  try {
+    const profile = await fetchStatus(email);
+    render(profile, email);
+    // Cache email for the signin form prefill
+    try { localStorage.setItem("sq_user_email", email); } catch(_){}
+  } catch(err) {
+    showError("Couldn't load your status", err.message || String(err));
+  }
+})();
+</script>
+</body></html>
