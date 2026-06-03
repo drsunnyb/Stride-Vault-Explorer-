@@ -1,0 +1,17 @@
+[build]
+  publish = "landing"
+
+[[redirects]]
+  from = "/leaderboard"
+  to   = "/leaderboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/status"
+  to   = "/status.html"
+  status = 200
+
+[[redirects]]
+  from = "/signin"
+  to   = "/signin.html"
+  status = 200
