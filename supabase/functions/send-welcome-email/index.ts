@@ -233,6 +233,8 @@ Stride Quest — London's AR walking game. Walk to earn. Stake to win. Launch is
       });
     }
 
+    const fromAddress = Deno.env.get("RESEND_FROM") || "Stride Quest <onboarding@resend.dev>";
+
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -240,7 +242,7 @@ Stride Quest — London's AR walking game. Walk to earn. Stake to win. Launch is
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Stride Quest <welcome@stridequest.xyz>",
+        from: fromAddress,
         to: [email],
         subject: `You're in, Strider — your queue position is ${posLabel}`,
         html,
