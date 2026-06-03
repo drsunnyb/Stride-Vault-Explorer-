@@ -155,12 +155,9 @@ async function sendMagicLink(email){
       },
       body: JSON.stringify({
         email,
-        // Supabase will use this if it's in the project's allowed redirect list.
-        // Otherwise it falls back to Site URL (configured in dashboard).
-        options: {
-          email_redirect_to: window.location.origin + "/status.html"
-        },
-        // If user not in auth.users yet, create them (default true).
+        // email_redirect_to must be top-level for the REST /auth/v1/otp endpoint
+        // (the JS SDK wraps it in options{} but the raw REST API doesn't).
+        email_redirect_to: window.location.origin + "/status.html",
         create_user: true
       })
     });

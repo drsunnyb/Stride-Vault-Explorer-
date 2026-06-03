@@ -285,9 +285,10 @@ function renderRows(rows, myEmail){
   }
 
   const html = rows.map(row => {
-    const isMe = myEmail && row.display_name && myEmail.toLowerCase().startsWith(
-      row.display_name.toLowerCase().split(" ")[0].toLowerCase()
-    ); // rough match — good enough for highlight
+    // Exact match: compare queue_position (unique) from the user's own profile
+    const isMe = myProfile && row.queue_position != null &&
+                 myProfile.queue_position != null &&
+                 row.queue_position === myProfile.queue_position;
     const medal = medalFor(row.rank);
     const b = badgeFor(row.membership_tier, row.cohort);
     return `

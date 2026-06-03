@@ -294,6 +294,11 @@ function render(profile, email){
   statusView.style.display = "block";
   document.getElementById("liveBadge").textContent = "LIVE";
 
+  // Expose queue_position globally so the mini-leaderboard can exact-match this user's row
+  window._sqMyQueuePosition = profile.queue_position != null ? profile.queue_position : null;
+  // Render mini leaderboard now that we know the user's position
+  if (window._renderMiniLbWhenReady) window._renderMiniLbWhenReady(window._sqMyQueuePosition);
+
   // Position
   const pos = profile.queue_position != null ? profile.queue_position : "—";
   document.getElementById("posNum").textContent = "#" + pos;
@@ -391,7 +396,7 @@ function escHtml(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-function renderMiniLeaderboard(rows, myEmail){
+function renderMiniLeaderboard(rows, myQueuePos){
   const el = document.getElementById("lbRows");
   if (!rows || rows.length === 0){
     el.innerHTML = '<div class="lb-loading" style="font-size:12px">No entries yet.</div>';
@@ -399,9 +404,9 @@ function renderMiniLeaderboard(rows, myEmail){
   }
   const medals = ["🥇","🥈","🥉"];
   const html = rows.map(row => {
-    const isMe = myEmail && row.display_name &&
-      myEmail.split("@")[0].split(".")[0].toLowerCase() ===
-      (row.display_name||"").split(" ")[0].toLowerCase();
+    // Exact match on queue_position (unique per cohort)
+    const isMe = myQueuePos != null && row.queue_position != null &&
+                 row.queue_position === myQueuePos;
     let bCls = "", bLabel = "";
     if (row.membership_tier === "founder")     { bCls = "founder"; bLabel = "FOUNDER"; }
     else if (row.membership_tier === "stride_plus") { bCls = "plus"; bLabel = "STRIDE+"; }
@@ -418,13 +423,18 @@ function renderMiniLeaderboard(rows, myEmail){
 }
 
 // Kick off leaderboard fetch alongside main status fetch
-fetchLeaderboard().then(rows => {
-  // render once statusView has been populated (or immediately if already done)
-  renderMiniLeaderboard(rows, localStorage.getItem("sq_user_email"));
-}).catch(() => {
-  const el = document.getElementById("lbRows");
-  if (el) el.innerHTML = '<div class="lb-loading" style="font-size:12px;color:var(--ink-dim)">Couldn\'t load board.</div>';
-});
+// We store the promise and render after profile is loaded so queue_position is available
+window._lbPromise = fetchLeaderboard();
+
+// called from render() after profile is known
+window._renderMiniLbWhenReady = function(queuePos){
+  window._lbPromise.then(rows => {
+    renderMiniLeaderboard(rows, queuePos);
+  }).catch(() => {
+    const el = document.getElementById("lbRows");
+    if (el) el.innerHTML = '<div class="lb-loading" style="font-size:12px;color:var(--ink-dim)">Couldn\'t load board.</div>';
+  });
+};
 
 document.getElementById("signOutBtn").addEventListener("click", function(e){
   e.preventDefault();
@@ -463,8 +473,12 @@ document.getElementById("signOutBtn").addEventListener("click", function(e){
   try {
     const profile = await fetchStatus(email);
     render(profile, email);
-    // Cache email for the signin form prefill
-    try { localStorage.setItem("sq_user_email", email); } catch(_){}
+  // Cache email for the signin form prefill
+  try { localStorage.setItem("sq_user_email", email); } catch(_){}
+  // Cache share_code for exact leaderboard row highlighting
+  if (profile && profile.share_code) {
+    try { localStorage.setItem("sq_share_code", profile.share_code); } catch(_){}
+  }
   } catch(err) {
     showError("Couldn't load your status", err.message || String(err));
   }

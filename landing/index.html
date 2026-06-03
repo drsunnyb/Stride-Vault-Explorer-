@@ -769,6 +769,29 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
 
   localStorage.setItem("sq_user_code", payload.user_code);
   localStorage.setItem("sq_user_email", email);
+  // Save the canonical share_code returned by the DB (used for exact leaderboard matching)
+  if (row && row.share_code) {
+    localStorage.setItem("sq_share_code", row.share_code);
+  }
+
+  // Fire welcome email (non-blocking — don't await, don't let it block the success state)
+  if (ok && row && row.share_code) {
+    fetch(SUPABASE_URL + "/functions/v1/send-welcome-email", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        share_code: row.share_code,
+        queue_position: dbQueuePosition,
+        cohort: dbCohort || (isValidRef ? "01" : "waitlist"),
+        site_origin: window.location.origin,
+      })
+    }).catch(err => console.warn("[SQ] Welcome email failed:", err));
+  }
 
   document.getElementById("gate").style.display = "none";
   const sx = document.getElementById("success");
