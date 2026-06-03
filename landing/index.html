@@ -368,7 +368,7 @@
         <div class="gate-title">Claim your seat</div>
         <div class="gate-sub">Cohort 01 · invite-gated</div>
       </div>
-      <div class="gate-stat">Seats remaining<strong id="seatsRemaining">2,418</strong></div>
+      <div class="gate-stat">Cohort 01 · <strong>Invite only</strong></div>
     </div>
 
     <div id="refPill" class="ref-pill" style="display:none">
@@ -426,7 +426,7 @@
     <div class="stat"><div class="v">1,269</div><div class="l">London vaults</div></div>
     <div class="stat"><div class="v white">TBR</div><div class="l">Prize pool · sealed</div></div>
     <div class="stat"><div class="v blue">Limited</div><div class="l">Founder seats</div></div>
-    <div class="stat"><div class="v red" id="seatsRemaining2">2,418</div><div class="l">Cohort 01 seats left</div></div>
+    <div class="stat"><div class="v red">Closing</div><div class="l">Cohort 01 access</div></div>
   </div>
 
   <!-- LIVE ACTIVITY TICKER -->
@@ -492,8 +492,8 @@
         <div class="tier-tag">INVITED · FREE</div>
         <div class="tier-price"><span class="cur"></span><span class="amt">£0</span><span class="once"></span></div>
         <div class="tier-name">Cohort 01</div>
-        <div class="tier-bar"><div class="tier-bar-fill gold" id="cohortFill" style="width:3%"></div></div>
-        <div class="tier-bar-label"><strong id="cohortClaimed">82</strong> / 2,500 Cohort 01 seats claimed</div>
+        <div class="tier-bar"><div class="tier-bar-fill gold" style="width:12%"></div></div>
+        <div class="tier-bar-label">Cohort 01 · <strong>invite-gated launch</strong></div>
         <ul class="tier-perks">
           <li><span class="tk">✦</span> Day-one download access</li>
           <li><span class="tk">✦</span> Standard launch-day starter chest</li>
@@ -555,7 +555,7 @@
     <h2>Frequently asked</h2>
     <details>
       <summary>Why invite-only?</summary>
-      <p>Because we're launching one city at a time, and the first cohort sets the temperature of everything that follows. We'd rather start with 2,500 obsessed players than 250,000 lurkers. Invite-only filters for intent.</p>
+      <p>Because we're launching one city at a time, and the first cohort sets the temperature of everything that follows. We'd rather start with a tight group of obsessed players than a crowd of lurkers. Invite-only filters for intent.</p>
     </details>
     <details>
       <summary>Where do I get an invite code?</summary>
@@ -667,18 +667,6 @@ if (ref){
     formHint.innerHTML = '<span class="back">⚠ INVALID CODE — JOINING BACK OF QUEUE</span>';
   }
 }
-
-(function(){
-  const base = 2418;
-  const start = new Date("2026-05-27T00:00:00Z").getTime();
-  const hrs = Math.floor((Date.now() - start) / 3600000);
-  const drift = Math.max(0, hrs * 7);
-  const left = Math.max(50, base - drift);
-  const formatted = left.toLocaleString();
-  document.getElementById("seatsRemaining").textContent = formatted;
-  const s2 = document.getElementById("seatsRemaining2");
-  if (s2) s2.textContent = formatted;
-})();
 
 function hashCode(str){
   let h = 5381;
