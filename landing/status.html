@@ -72,6 +72,27 @@
   .action-btn{padding:11px 18px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;border:1px solid var(--line);transition:border-color .15s, color .15s}
   .action-btn:hover{border-color:var(--gold);color:var(--gold)}
 
+  /* Mini leaderboard */
+  .lb-section{margin-bottom:20px}
+  .lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .lb-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim)}
+  .lb-more{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-decoration:none}
+  .lb-more:hover{text-decoration:underline}
+  .lb-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(35,35,43,.5)}
+  .lb-row:last-child{border-bottom:none}
+  .lb-row.is-me{background:rgba(255,214,10,0.04);border-radius:8px;padding-left:8px;padding-right:8px;margin:0 -8px;border-bottom:none;border:1px solid rgba(255,214,10,0.2);margin-bottom:2px}
+  .lb-rank{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ink-dim);width:24px;text-align:right;flex-shrink:0;font-feature-settings:"tnum"}
+  .lb-name{flex:1;font-size:13px;font-weight:600;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lb-name.is-me{color:var(--gold)}
+  .lb-refs{font-size:13px;font-weight:700;color:var(--ink);font-feature-settings:"tnum";flex-shrink:0}
+  .lb-badge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;padding:3px 7px;border-radius:5px;flex-shrink:0}
+  .lb-badge.founder{background:rgba(255,214,10,0.12);border:1px solid rgba(255,214,10,0.3);color:var(--gold)}
+  .lb-badge.plus{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10B981}
+  .lb-badge.c01{background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--ink-dim)}
+  .lb-loading{padding:20px;text-align:center;color:var(--ink-dim);font-size:13px}
+  .lb-spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-right:8px;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
   .ftr{text-align:center;color:var(--ink-dim);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;padding:32px 0 16px}
   .ftr a{color:var(--ink-dim);text-decoration:none}
   .ftr a:hover{color:var(--gold)}
@@ -130,6 +151,19 @@
     </div>
   </div>
 
+  <!-- Mini leaderboard — top 10 -->
+  <div class="panel lb-section" id="lbPanel">
+    <div style="padding:20px 20px 16px">
+      <div class="lb-header">
+        <span class="lb-title">TOP STRIDERS · REFERRAL BOARD</span>
+        <a href="/leaderboard.html" class="lb-more">VIEW ALL 100 →</a>
+      </div>
+      <div id="lbRows">
+        <div class="lb-loading"><span class="lb-spinner"></span>Loading…</div>
+      </div>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="share-block" style="border:none;padding:0;background:transparent">
       <div class="share-label">YOUR INVITE LINK — SHARE TO CLIMB</div>
@@ -144,6 +178,7 @@
 
   <div class="actions">
     <a href="/" class="action-btn">← BACK TO HOME</a>
+    <a href="/leaderboard.html" class="action-btn">🏆 LEADERBOARD</a>
     <a href="#" id="signOutBtn" class="action-btn">SIGN OUT</a>
   </div>
 </div>
@@ -334,6 +369,62 @@ function copy(text, el){
     setTimeout(()=>{ el.textContent = orig; }, 1400);
   });
 }
+
+// === Mini leaderboard (top 10) ===
+async function fetchLeaderboard(){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_leaderboard", {
+    method:"POST",
+    headers:{
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type":"application/json",
+      "Accept":"application/json"
+    },
+    body: JSON.stringify({p_limit: 10})
+  });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const d = await r.json();
+  return Array.isArray(d) ? d : [];
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function renderMiniLeaderboard(rows, myEmail){
+  const el = document.getElementById("lbRows");
+  if (!rows || rows.length === 0){
+    el.innerHTML = '<div class="lb-loading" style="font-size:12px">No entries yet.</div>';
+    return;
+  }
+  const medals = ["🥇","🥈","🥉"];
+  const html = rows.map(row => {
+    const isMe = myEmail && row.display_name &&
+      myEmail.split("@")[0].split(".")[0].toLowerCase() ===
+      (row.display_name||"").split(" ")[0].toLowerCase();
+    let bCls = "", bLabel = "";
+    if (row.membership_tier === "founder")     { bCls = "founder"; bLabel = "FOUNDER"; }
+    else if (row.membership_tier === "stride_plus") { bCls = "plus"; bLabel = "STRIDE+"; }
+    else if (row.cohort === "01")              { bCls = "c01";     bLabel = "C-01"; }
+    const medal = row.rank <= 3 ? medals[row.rank-1] : row.rank;
+    return `<div class="lb-row ${isMe?"is-me":""}">
+      <span class="lb-rank">${medal}</span>
+      <span class="lb-name ${isMe?"is-me":""}">${escHtml(row.display_name||"Anonymous")}${isMe?" (you)":""}</span>
+      ${bLabel ? `<span class="lb-badge ${bCls}">${bLabel}</span>` : ""}
+      <span class="lb-refs">${row.referrals_count||0}</span>
+    </div>`;
+  }).join("");
+  el.innerHTML = html;
+}
+
+// Kick off leaderboard fetch alongside main status fetch
+fetchLeaderboard().then(rows => {
+  // render once statusView has been populated (or immediately if already done)
+  renderMiniLeaderboard(rows, localStorage.getItem("sq_user_email"));
+}).catch(() => {
+  const el = document.getElementById("lbRows");
+  if (el) el.innerHTML = '<div class="lb-loading" style="font-size:12px;color:var(--ink-dim)">Couldn\'t load board.</div>';
+});
 
 document.getElementById("signOutBtn").addEventListener("click", function(e){
   e.preventDefault();
