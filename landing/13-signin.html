@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in · Stride Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .magic-card{background:linear-gradient(180deg,rgba(255,214,10,0.05),transparent 80%),var(--card);border:1px solid var(--line);border-radius:24px;padding:36px;text-align:center;margin-bottom:32px;position:relative;overflow:hidden}
+  .magic-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .magic-card h2{font-weight:800;font-size:32px;letter-spacing:-0.03em;margin-bottom:10px}
+  .magic-card p{color:var(--ink-dim);font-size:15px;line-height:1.55;max-width:440px;margin:0 auto 24px}
+
+  .magic-icon{display:inline-flex;width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,#FFD60A,#FFC107);align-items:center;justify-content:center;font-size:40px;margin-bottom:18px;box-shadow:0 16px 48px rgba(255,214,10,0.25)}
+
+  .sent-state{display:none;animation:rise .5s ease both}
+  .sent-state.show{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .email-display{background:#0E0E12;border:1px solid var(--gold);border-radius:12px;padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);margin-bottom:18px;display:inline-flex;align-items:center;gap:10px}
+  .email-display::before{content:"✉";font-size:18px}
+
+  .checks{text-align:left;max-width:380px;margin:24px auto 0;display:grid;gap:10px}
+  .check-row{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--ink);line-height:1.45;background:#0E0E12;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .check-row .ck{color:var(--gold);font-weight:700;flex-shrink:0;font-size:12px;line-height:1.5}
+  .check-row strong{color:var(--gold);font-weight:600}
+
+  .help-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;font-size:14px;line-height:1.55;color:var(--ink-dim)}
+  .help-card h3{font-weight:700;font-size:16px;color:var(--ink);letter-spacing:-0.015em;margin-bottom:10px}
+  .help-card a{color:var(--gold);text-decoration:none;font-weight:600}
+  .help-card a:hover{text-decoration:underline}
+
+  /* Email preview */
+  .email-preview{background:#fff;color:#1a1a1a;border-radius:14px;overflow:hidden;margin-top:20px;box-shadow:0 16px 48px rgba(0,0,0,0.4)}
+  .ep-head{background:#0A0A0C;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+  .ep-from{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--ink-dim)}
+  .ep-from strong{color:#fff;font-weight:600;display:block;margin-bottom:2px;font-family:'Inter',sans-serif;letter-spacing:-0.005em;font-size:13px}
+  .ep-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);letter-spacing:.1em}
+  .ep-body{padding:32px 28px;text-align:left;font-family:'Inter',sans-serif}
+  .ep-body h4{font-weight:800;font-size:24px;letter-spacing:-0.025em;margin-bottom:14px;color:#1a1a1a}
+  .ep-body h4 .y{color:#B8870B}
+  .ep-body p{font-size:14.5px;line-height:1.55;color:#3a3a3a;margin-bottom:16px}
+  .ep-body p strong{color:#1a1a1a}
+  .ep-cta{display:inline-block;background:#FFD60A;color:#0A0A0C;padding:14px 28px;border-radius:12px;font-weight:700;font-size:15px;text-decoration:none;letter-spacing:-0.005em;margin:8px 0 18px}
+  .ep-meta{font-size:12px;color:#888;border-top:1px solid #eee;padding-top:14px;margin-top:14px;line-height:1.5}
+  .ep-meta a{color:#B8870B;text-decoration:none}
+  .ep-foot{background:#f5f5f0;padding:14px 28px;font-size:11px;color:#888;text-align:center;letter-spacing:0.02em;line-height:1.5}
+  .ep-foot strong{color:#1a1a1a}
+</style>
+</head>
+<body>
+<div class="wrap narrow">
+
+<div class="hdr">
+  <a href="00-landing.html" class="brand"><span class="bdg">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status"><span class="pulse"></span><span>SIGN-IN</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="magic-card" id="defaultState">
+  <div class="magic-icon">✉</div>
+  <h2>Welcome <span class="y">back.</span></h2>
+  <p>No passwords here. Drop your email, we'll send you a one-tap link to your Strider dashboard — instantly.</p>
+
+  <div style="max-width:380px;margin:0 auto">
+    <div class="field">
+      <label for="emailIn">YOUR EMAIL</label>
+      <input type="email" id="emailIn" placeholder="your@email.com" value="sandeep@officiallyinvested.com" />
+    </div>
+    <button class="primary full" id="sendBtn">Send me my link →</button>
+  </div>
+
+  <div style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);letter-spacing:.12em">
+    NEW HERE? <a href="01-onboard.html" style="color:var(--gold);text-decoration:underline">START FROM ONBOARDING →</a>
+  </div>
+</div>
+
+<!-- SENT STATE -->
+<div class="magic-card sent-state" id="sentState">
+  <div class="magic-icon" style="background:linear-gradient(135deg,#10B981,#0EA371)">✓</div>
+  <h2>Check your <span class="y">inbox.</span></h2>
+  <p>We just sent a one-tap login link to:</p>
+  <div class="email-display">sandeep@officiallyinvested.com</div>
+  <p style="margin-top:18px">Tap the gold button in that email and you're back in your dashboard. The link is good for the next 15 minutes. After that, just come back here and we'll send a fresh one.</p>
+
+  <div class="checks">
+    <div class="check-row"><span class="ck">✓</span><span>Link arrives in <strong>under 30 seconds</strong> — usually 5</span></div>
+    <div class="check-row"><span class="ck">✓</span><span>Tap once → dashboard opens, you're <strong>signed in for 30 days</strong></span></div>
+    <div class="check-row"><span class="ck">✓</span><span>Can't find it? <strong>Check spam / promotions</strong> — search "Stride Quest"</span></div>
+  </div>
+
+  <div style="margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);letter-spacing:.12em">
+    DIDN'T GET IT? <a href="#" onclick="document.getElementById('defaultState').style.display='block';document.getElementById('sentState').classList.remove('show');return false" style="color:var(--gold);text-decoration:underline">SEND ANOTHER →</a>
+  </div>
+</div>
+
+<!-- EMAIL PREVIEW -->
+<div class="sec-h"><h2>This is the email they get</h2><span class="more">FROM: hi@stridequest.app</span></div>
+
+<div class="email-preview">
+  <div class="ep-head">
+    <div class="ep-from">FROM<strong>Stride Quest &lt;hi@stridequest.app&gt;</strong>SUBJECT: Your dashboard link · Cohort 01</div>
+    <div class="ep-time">2 SEC AGO</div>
+  </div>
+  <div class="ep-body">
+    <h4>One tap and you're <span class="y">back in.</span></h4>
+    <p>Hey Sunny —</p>
+    <p>Here's your one-tap login. Tap the gold button below to land straight in your Strider dashboard. <strong>This link expires in 15 minutes</strong>, so do it now if you can.</p>
+    <a href="06-dashboard.html" class="ep-cta">Open my dashboard →</a>
+    <p style="font-size:13px;color:#666">Or copy this link:<br/><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#B8870B">stridequest.app/d?t=8f4a2c91b6e3d7…</span></p>
+    <div class="ep-meta">
+      You're at <strong>queue position #247</strong> in Cohort 01.
+      <a href="06-dashboard.html">5 referrals so far — see who joined →</a>
+      <br/><br/>
+      Didn't request this? Ignore it — no one can access your account without this link.
+    </div>
+  </div>
+  <div class="ep-foot">
+    STRIDE QUEST · LONDON · 2026<br/>
+    <strong>Sent because you signed up for Cohort 01.</strong> · <a href="#" style="color:#888">Unsubscribe</a>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="sec-h"><h2>How dashboard access works</h2><span class="more">NO PASSWORDS · EVER</span></div>
+
+<div class="help-card">
+  <h3>The short version</h3>
+  <p>Passwords are friction. People forget them, hate making them, and recover them via email anyway. So we skipped the middle step.</p>
+
+  <h3 style="margin-top:18px">Three ways to get into your dashboard</h3>
+  <ol style="padding-left:20px;margin-top:6px">
+    <li style="margin-bottom:10px"><strong style="color:var(--gold)">Welcome email</strong> — when you finish onboarding, your first dashboard link comes by email. Tap it, you're in.</li>
+    <li style="margin-bottom:10px"><strong style="color:var(--gold)">This page</strong> — drop your email, get a fresh link. Use it from any device, any browser.</li>
+    <li style="margin-bottom:10px"><strong style="color:var(--gold)">Stay signed in</strong> — once you tap a link, your device stays signed in for 30 days. No need to keep going to email.</li>
+  </ol>
+
+  <h3 style="margin-top:18px">What we send and when</h3>
+  <ul style="padding-left:20px;margin-top:6px">
+    <li style="margin-bottom:8px"><strong>Right after signup:</strong> Welcome email with your dashboard link + share kit</li>
+    <li style="margin-bottom:8px"><strong>When someone joins via your link:</strong> "Maya from Hackney just joined — you're now #244" (capped at 3/day so it doesn't get spammy)</li>
+    <li style="margin-bottom:8px"><strong>Weekly:</strong> Insider drop — borough race standings, position movement, paid-tier-only intel for Stride+ members</li>
+    <li style="margin-bottom:8px"><strong>When Cohort 01 starts opening:</strong> "You're up. Download window opens for you in 24h."</li>
+    <li><strong>When something matters:</strong> Hackney overtakes Brixton, you hit a milestone, a Founder spot opens. No noise — only signal.</li>
+  </ul>
+
+  <h3 style="margin-top:18px">If you change email or lose access</h3>
+  <p>DM Sunny → he confirms it's you → we move the queue position to your new email. No drama. <a href="mailto:hello@stridequest.app">hello@stridequest.app</a></p>
+</div>
+
+<div class="ftr">
+  <div>STRIDE QUEST © 2026 · LONDON</div>
+  <div><a href="06-dashboard.html">DASHBOARD →</a></div>
+</div>
+
+</div>
+
+<div class="mockup-nav">
+  <a href="00-landing.html">0. Landing</a>
+  <a href="01-onboard.html">1. Email</a>
+  <a href="02-borough.html">2. Borough</a>
+  <a href="03-avatar.html">3. Avatar</a>
+  <a href="04-goal.html">4. Goal</a>
+  <a href="05-membership.html">5. Membership</a>
+  <a href="06-dashboard.html">6. Dashboard</a>
+  <a href="07-profile.html">7. Profile</a>
+  <a href="08-borough-board.html">8. Borough LB</a>
+  <a href="09-creator-board.html">9. Creator LB</a>
+  <a href="10-leaderboard.html">10. Global LB</a>
+  <a href="11-paid-success.html?tier=founder">11. ✓ Paid</a>
+  <a href="12-share.html">12. Share</a>
+  <a href="13-signin.html" class="on">13. Sign-in</a>
+</div>
+
+<script>
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  document.getElementById('defaultState').style.display = 'none';
+  document.getElementById('sentState').classList.add('show');
+});
+</script>
+</body></html>

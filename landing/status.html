@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Your queue status · Stride Quest</title>
+<meta name="description" content="Your live position in the Stride Quest waitlist." />
+<meta name="theme-color" content="#0A0A0C" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0C;--bg-2:#141418;--card:#17171C;--ink:#FFFFFF;--ink-dim:#7A7A86;
+    --line:#23232B;--gold:#FFD60A;--gold-2:#FFC107;--green:#10B981;--red:#FF3B30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,system-ui,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;min-height:100vh}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(800px 600px at 15% 5%, rgba(255,214,10,0.08), transparent 60%),radial-gradient(900px 700px at 90% 80%, rgba(45,127,249,0.06), transparent 60%);}
+  .wrap{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:24px}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:48px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .brand .badge{width:32px;height:32px;border-radius:50%;background:var(--gold);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;letter-spacing:-0.02em}
+  .brand .word{font-weight:700;font-size:16px;letter-spacing:0.02em}
+  .status-pill{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .status-pill .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .panel{background:linear-gradient(180deg,rgba(255,214,10,0.05),transparent 80%),var(--card);border:1px solid var(--line);border-radius:24px;padding:32px;margin-bottom:20px;position:relative;overflow:hidden}
+  .panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+  .badge-row{display:inline-flex;align-items:center;gap:8px;background:rgba(255,214,10,0.1);border:1px solid rgba(255,214,10,0.3);color:var(--gold);padding:6px 12px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:18px}
+  .badge-row.cohort-01{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:var(--green)}
+  .badge-row.founder{background:linear-gradient(90deg,rgba(255,214,10,0.15),rgba(255,193,7,0.15));border-color:var(--gold);color:var(--gold)}
+
+  h1{font-weight:800;font-size:clamp(36px,5vw,52px);line-height:1;letter-spacing:-0.035em;margin-bottom:12px}
+  .lede{font-size:16px;line-height:1.5;color:var(--ink-dim);margin-bottom:24px}
+
+  .position{display:flex;align-items:baseline;gap:16px;margin-bottom:28px}
+  .position .num{font-weight:800;font-size:clamp(56px,11vw,92px);line-height:.95;letter-spacing:-0.04em;color:var(--gold);font-feature-settings:"tnum"}
+  .position .label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--ink-dim);text-transform:uppercase}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  .stat{background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left}
+  .stat .v{font-weight:800;font-size:24px;letter-spacing:-0.02em;color:var(--ink);margin-bottom:4px;font-feature-settings:"tnum"}
+  .stat .l{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.15em;color:var(--ink-dim);text-transform:uppercase}
+
+  .unlock{background:linear-gradient(90deg,rgba(255,214,10,0.08),rgba(255,193,7,0.04));border:1px solid rgba(255,214,10,0.25);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px}
+  .unlock .ic{font-size:22px}
+  .unlock .body{flex:1;font-size:14px;line-height:1.4}
+  .unlock .body strong{color:var(--gold);font-weight:600}
+
+  .share-block{background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .share-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:10px}
+  .share-link{background:#17171C;border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);word-break:break-all;cursor:pointer;transition:background .15s}
+  .share-link:hover{background:#1d1d24}
+  .share-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .share-btn{flex:1;min-width:100px;background:transparent;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:10px;font-weight:600;font-size:13.5px;cursor:pointer;text-decoration:none;text-align:center;transition:border-color .15s, background .15s}
+  .share-btn:hover{border-color:var(--gold);background:rgba(255,214,10,0.05)}
+  .share-btn.wa{color:#25D366}
+  .share-btn.x{color:#fff}
+  .share-btn.copy{color:var(--gold)}
+
+  .loading{text-align:center;padding:60px 20px;color:var(--ink-dim)}
+  .loading .spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .err-panel{background:rgba(255,59,48,0.05);border:1px solid rgba(255,59,48,0.25);border-radius:14px;padding:20px;color:#FF6961;font-size:14px;line-height:1.5;text-align:center}
+  .err-panel a{color:var(--gold);text-decoration:underline}
+
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+  .action-btn{padding:11px 18px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;border:1px solid var(--line);transition:border-color .15s, color .15s}
+  .action-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* Mini leaderboard */
+  .lb-section{margin-bottom:20px}
+  .lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .lb-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim)}
+  .lb-subtitle{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+  .lb-context{font-size:13.5px;line-height:1.45;color:var(--ink-dim);background:rgba(255,214,10,0.04);border:1px solid rgba(255,214,10,0.2);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+  .lb-context strong{color:var(--gold);font-weight:600}
+  .lb-context.maxed{background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.25)}
+  .lb-context.maxed strong{color:var(--green)}
+  .lb-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(35,35,43,.5)}
+  .lb-row:last-child{border-bottom:none}
+  .lb-row.is-me{background:rgba(255,214,10,0.06);border-radius:10px;padding:11px 10px;margin:2px -8px;border-bottom:none;border:1px solid rgba(255,214,10,0.35);box-shadow:0 0 0 1px rgba(255,214,10,0.08)}
+  .lb-rank{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ink-dim);width:32px;text-align:right;flex-shrink:0;font-feature-settings:"tnum"}
+  .lb-rank.is-me{color:var(--gold);font-weight:800}
+  .lb-name{flex:1;font-size:13px;font-weight:600;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lb-name.is-me{color:var(--gold)}
+  .lb-refs{font-size:13px;font-weight:700;color:var(--ink);font-feature-settings:"tnum";flex-shrink:0;min-width:28px;text-align:right}
+  .lb-refs-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-dim);letter-spacing:.1em;margin-left:3px}
+  .lb-badge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;padding:3px 7px;border-radius:5px;flex-shrink:0}
+  .lb-badge.founder{background:rgba(255,214,10,0.12);border:1px solid rgba(255,214,10,0.3);color:var(--gold)}
+  .lb-badge.plus{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10B981}
+  .lb-badge.c01{background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--ink-dim)}
+  .lb-gap{display:flex;align-items:center;gap:10px;padding:14px 0;color:var(--ink-dim)}
+  .lb-gap-line{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line) 0,var(--line) 4px,transparent 4px,transparent 8px)}
+  .lb-gap-dots{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--ink-dim)}
+  .lb-loading{padding:20px;text-align:center;color:var(--ink-dim);font-size:13px}
+  .lb-spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-right:8px;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .ftr{text-align:center;color:var(--ink-dim);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;padding:32px 0 16px}
+  .ftr a{color:var(--ink-dim);text-decoration:none}
+  .ftr a:hover{color:var(--gold)}
+
+  /* ===== Referral explainer panel ===== */
+  .ref-panel{background:#0E0E12;border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:20px}
+  .ref-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+  .ref-title{font-weight:800;font-size:24px;line-height:1.15;letter-spacing:-0.02em;color:var(--ink);margin-bottom:8px}
+  .ref-sub{font-size:14px;line-height:1.5;color:var(--ink-dim);margin-bottom:20px}
+  .ref-sub strong{color:var(--gold);font-weight:600}
+  .ladder{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+  .ladder-row{display:flex;align-items:center;gap:14px;padding:12px 14px;background:#17171C;border:1px solid var(--line);border-radius:12px;position:relative}
+  .ladder-row.met{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.04)}
+  .ladder-row.next{border-color:var(--gold);background:rgba(255,214,10,0.06);box-shadow:0 0 0 1px rgba(255,214,10,0.3)}
+  .ladder-mark{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace}
+  .ladder-mark.empty{background:#17171C;border:1px solid var(--line);color:var(--ink-dim)}
+  .ladder-mark.met{background:var(--green);color:#0A0A0C}
+  .ladder-mark.next{background:var(--gold);color:#0A0A0C}
+  .ladder-body{flex:1;min-width:0}
+  .ladder-head{font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-0.005em}
+  .ladder-head.met{color:var(--green)}
+  .ladder-head.next{color:var(--gold)}
+  .ladder-detail{font-size:12px;color:var(--ink-dim);margin-top:2px;line-height:1.35}
+  .ref-cta-row{display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(90deg,rgba(255,214,10,0.12),rgba(255,193,7,0.04));border:1px solid rgba(255,214,10,0.3);border-radius:12px;font-size:13.5px;line-height:1.4}
+  .ref-cta-row strong{color:var(--gold);font-weight:600}
+
+  /* ===== Upsell panel ===== */
+  .up-panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+  .up-panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .up-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px}
+  .up-title{font-weight:800;font-size:26px;line-height:1.1;letter-spacing:-0.025em;color:var(--ink);margin-bottom:8px}
+  .up-title em{font-style:normal;color:var(--gold)}
+  .up-sub{font-size:14px;line-height:1.5;color:var(--ink-dim);margin-bottom:22px}
+  .tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:520px){ .tier-grid{grid-template-columns:1fr} }
+  .tier-card{background:#0E0E12;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px;position:relative;transition:border-color .2s, transform .2s, box-shadow .2s}
+  .tier-card:hover{transform:translateY(-2px)}
+  .tier-card.founder{border-color:rgba(255,214,10,0.3)}
+  .tier-card.founder:hover{border-color:var(--gold);box-shadow:0 12px 28px rgba(255,214,10,0.15)}
+  .tier-card.plus{border-color:rgba(16,185,129,0.25)}
+  .tier-card.plus:hover{border-color:var(--green);box-shadow:0 12px 28px rgba(16,185,129,0.15)}
+  .tier-pill{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 9px;border-radius:5px;align-self:flex-start;background:rgba(255,214,10,0.12);border:1px solid rgba(255,214,10,0.3);color:var(--gold);font-weight:600}
+  .tier-pill.plus{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:var(--green)}
+  .tier-name{font-weight:800;font-size:22px;letter-spacing:-0.025em;color:var(--ink);margin-top:2px;line-height:1.1}
+  .tier-pitch-lead{font-size:14px;line-height:1.5;color:var(--ink-dim);margin:0}
+  .tier-pitch-lead strong{color:var(--ink);font-weight:600}
+  .tier-perks{list-style:none;padding:0;margin:6px 0 0 0;display:flex;flex-direction:column;gap:9px}
+  .tier-perks li{font-size:13px;line-height:1.45;color:var(--ink-dim);display:flex;align-items:flex-start;gap:9px;padding-left:0}
+  .tier-perks li strong{color:var(--ink);font-weight:600}
+  .tier-perks li em{font-style:normal;color:var(--ink-dim);opacity:0.75;font-size:12px}
+  .tier-perks .tk{flex-shrink:0;color:var(--gold);font-size:13px;line-height:1.45;margin-top:1px;width:14px;text-align:center;font-weight:700}
+  .tier-perks .tk.plus{color:var(--green)}
+  .tier-bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:8px}
+  .tier-price{font-weight:800;font-size:30px;letter-spacing:-0.025em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;flex-wrap:wrap}
+  .tier-price .cur{font-size:18px;font-weight:600;color:var(--ink-dim);margin-right:1px}
+  .tier-price .per{font-size:14px;color:var(--ink-dim);font-weight:500;margin-left:2px}
+  .tier-price .note{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase;font-weight:500;margin-left:10px;align-self:center}
+  .tier-btn{display:block;text-align:center;padding:13px 14px;border-radius:10px;font-weight:700;font-size:13.5px;letter-spacing:-0.005em;text-decoration:none;cursor:pointer;transition:transform .15s, box-shadow .15s}
+  .tier-btn:hover{transform:translateY(-1px)}
+  .tier-btn.founder{background:var(--gold);color:#0A0A0C;box-shadow:0 6px 16px rgba(255,214,10,0.25)}
+  .tier-btn.founder:hover{box-shadow:0 8px 22px rgba(255,214,10,0.4)}
+  .tier-btn.plus{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.4)}
+  .tier-btn.plus:hover{background:rgba(16,185,129,0.25)}
+  .up-footnote{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase;text-align:center;margin-top:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a href="/" class="brand"><span class="badge">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status-pill"><span class="pulse"></span><span id="liveBadge">CHECKING</span></div>
+</header>
+
+<div id="loadingView" class="loading">
+  <div class="spinner"></div>
+  <div>Loading your queue status…</div>
+</div>
+
+<div id="errorView" style="display:none">
+  <div class="err-panel">
+    <strong id="errTitle">Something went sideways.</strong>
+    <div id="errBody" style="margin-top:10px;color:var(--ink)"></div>
+    <div style="margin-top:14px"><a href="/signin.html">Send me a new sign-in link →</a></div>
+  </div>
+</div>
+
+<div id="statusView" style="display:none">
+  <div class="panel">
+    <div class="badge-row" id="tierBadge">WAITLIST · LATER COHORT</div>
+    <h1>Your <span style="color:var(--gold)">queue.</span></h1>
+    <p class="lede" id="leadCopy">You're on the public waitlist. Share your link to climb — every friend who joins moves you up.</p>
+
+    <div class="position">
+      <span class="num" id="posNum">#0</span>
+      <span class="label">Position in queue</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="v" id="statRefs">0</div>
+        <div class="l">REFERRALS</div>
+      </div>
+      <div class="stat">
+        <div class="v" id="statCohort">—</div>
+        <div class="l">COHORT</div>
+      </div>
+      <div class="stat">
+        <div class="v" id="statTier">FREE</div>
+        <div class="l">MEMBERSHIP</div>
+      </div>
+    </div>
+
+    <div class="unlock" id="unlockRow">
+      <span class="ic">⚡</span>
+      <span class="body" id="unlockText">Loading next unlock…</span>
+    </div>
+  </div>
+
+  <!-- ===== REFERRAL EXPLAINER PANEL (hidden for paid tiers) ===== -->
+  <div class="ref-panel" id="refPanel" style="display:none">
+    <div class="ref-eyebrow">▲ HOW YOU CLIMB</div>
+    <div class="ref-title">Every Strider you bring <span style="color:var(--gold)">jumps you 5 places.</span></div>
+    <div class="ref-sub" id="refSub">You're at <strong id="refSubPos">#—</strong>. Each friend who joins with your link cuts <strong>5 people</strong> ahead of you — and hits milestones that promote you, free.</div>
+
+    <div class="ladder" id="ladder">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="ref-cta-row" id="refCtaRow">
+      <span style="font-size:18px">🎯</span>
+      <span id="refCtaText">Next milestone: <strong>2 more referrals</strong> to lock in Cohort 01.</span>
+    </div>
+  </div>
+
+  <!-- ===== UPSELL PANEL — skip the queue with paid tier (hidden for paid tiers) ===== -->
+  <div class="up-panel" id="upPanel" style="display:none">
+    <div class="up-eyebrow">⚡ FAST TRACK · SKIP THE QUEUE</div>
+    <div class="up-title">Don't want to wait? <em>Buy your spot.</em></div>
+    <div class="up-sub" id="upSub">Paid tiers cut straight past the queue into <strong style="color:var(--ink)">Cohort 01</strong> with permanent perks. Referrals are free but slow — these are instant.</div>
+
+    <div class="tier-grid">
+      <!-- FOUNDER -->
+      <div class="tier-card founder">
+        <span class="tier-pill">LIMITED · 100 SEATS · LIFETIME BADGE</span>
+        <div class="tier-name">Founder Member</div>
+        <div class="tier-pitch-lead">The permanent record. <strong>Lifetime founder status</strong> across every season, every city — Cohort 01 included.</div>
+        <ul class="tier-perks">
+          <li><span class="tk">✦</span> <strong>Permanent founder badge</strong> — never expires</li>
+          <li><span class="tk">✦</span> <strong>2× coin multiplier</strong> on every step, forever</li>
+          <li><span class="tk">✦</span> Day-1 starter chest <em>(rare cosmetic + 500 coins)</em></li>
+          <li><span class="tk">✦</span> Founders' Vault — exclusive vaults you'll never see</li>
+          <li><span class="tk">✦</span> Cuts the queue: you launch on day one</li>
+          <li><span class="tk">✦</span> Your name etched on the <strong>Founders' Wall</strong></li>
+        </ul>
+        <div class="tier-bottom">
+          <div class="tier-price"><span class="cur">£</span>99<span class="per">/yr</span><span class="note">· capped at 100 seats</span></div>
+          <a href="/#tiers?tier=founder" class="tier-btn founder">Claim a Founder seat →</a>
+        </div>
+      </div>
+
+      <!-- STRIDE+ -->
+      <div class="tier-card plus">
+        <span class="tier-pill plus">PRIORITY · COHORT 01 GUARANTEED</span>
+        <div class="tier-name">Stride+</div>
+        <div class="tier-pitch-lead">The priority pass. <strong>Skip straight into Cohort 01</strong> with priority perks for the first season.</div>
+        <ul class="tier-perks">
+          <li><span class="tk plus">⚡</span> <strong>Top 500 on launch day</strong> — instant access</li>
+          <li><span class="tk plus">⚡</span> Priority badge in-app + on leaderboards</li>
+          <li><span class="tk plus">⚡</span> Launch starter chest <em>(cosmetic + 200 coins)</em></li>
+          <li><span class="tk plus">⚡</span> Annual subscription — renewable</li>
+          <li><span class="tk plus">⚡</span> Cuts the queue: skips the public waitlist entirely</li>
+        </ul>
+        <div class="tier-bottom">
+          <div class="tier-price"><span class="cur">£</span>60<span class="per">/yr</span><span class="note">· annual subscription</span></div>
+          <a href="/#tiers?tier=priority" class="tier-btn plus">Become Priority →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="up-footnote">
+      ✦&nbsp;&nbsp;PAID TIERS GRANT PRIORITY ACCESS ONLY · ALL IN-APP REWARDS REMAIN EARNED
+    </div>
+  </div>
+
+  <!-- Mini leaderboard — top 5 + you-are-here window -->
+  <div class="panel lb-section" id="lbPanel">
+    <div style="padding:20px 20px 16px">
+      <div class="lb-header">
+        <span class="lb-title">▲ REFERRAL RANK · WHERE YOU STAND</span>
+        <span class="lb-subtitle" id="lbSubtitle">RANKED BY REFERRALS</span>
+      </div>
+      <div id="lbContext"></div>
+      <div id="lbRows">
+        <div class="lb-loading"><span class="lb-spinner"></span>Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="share-block" style="border:none;padding:0;background:transparent">
+      <div class="share-label">YOUR INVITE LINK — SHARE TO CLIMB</div>
+      <div class="share-link" id="shareLink" title="Tap to copy">…</div>
+      <div class="share-actions">
+        <a class="share-btn wa" id="shareWA" target="_blank" rel="noopener">▲ WhatsApp</a>
+        <a class="share-btn x" id="shareX" target="_blank" rel="noopener">𝕏 Post</a>
+        <button class="share-btn copy" id="shareCopy">⎘ Copy link</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="/" class="action-btn">← BACK TO HOME</a>
+    <a href="#" id="signOutBtn" class="action-btn">SIGN OUT</a>
+  </div>
+</div>
+
+<div class="ftr">
+  STRIDE QUEST © 2026 · LONDON
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://btizzhrkelcxvafdxwun.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjExMTQsImV4cCI6MjA5NDkzNzExNH0.QpxH-DDPa6qA4RCRG0Y18WDZX3KCF5PQzd8uhXV_cAk";
+const SITE_ORIGIN = window.location.origin;
+
+const loadingView = document.getElementById("loadingView");
+const errorView = document.getElementById("errorView");
+const statusView = document.getElementById("statusView");
+const errTitle = document.getElementById("errTitle");
+const errBody = document.getElementById("errBody");
+
+function showError(title, body){
+  errTitle.textContent = title;
+  errBody.textContent = body || "";
+  loadingView.style.display = "none";
+  statusView.style.display = "none";
+  errorView.style.display = "block";
+  document.getElementById("liveBadge").textContent = "ERROR";
+}
+
+// === 1. Parse magic-link tokens from URL hash, if present ===
+// Supabase puts access_token, refresh_token, type in the hash on redirect.
+function parseHashTokens(){
+  if (!window.location.hash) return null;
+  const hash = window.location.hash.replace(/^#/, "");
+  const params = new URLSearchParams(hash);
+  const at = params.get("access_token");
+  const rt = params.get("refresh_token");
+  if (at) {
+    // Persist so we don't lose them on refresh
+    try {
+      localStorage.setItem("sq_at", at);
+      if (rt) localStorage.setItem("sq_rt", rt);
+    } catch(_){}
+    // Clean the URL so tokens aren't visible
+    history.replaceState(null, "", window.location.pathname);
+    return { access_token: at, refresh_token: rt };
+  }
+  if (params.get("error")) {
+    showError("Sign-in link problem", params.get("error_description") || params.get("error"));
+    return null;
+  }
+  return null;
+}
+
+function getStoredTokens(){
+  try {
+    const at = localStorage.getItem("sq_at");
+    if (at) return { access_token: at, refresh_token: localStorage.getItem("sq_rt") };
+  } catch(_){}
+  return null;
+}
+
+// === 2. Get authenticated email via Supabase auth /user endpoint ===
+async function getAuthEmail(accessToken){
+  const r = await fetch(SUPABASE_URL + "/auth/v1/user", {
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + accessToken
+    }
+  });
+  if (!r.ok) {
+    if (r.status === 401) return null; // expired
+    throw new Error("HTTP " + r.status);
+  }
+  const u = await r.json();
+  return u && u.email ? u.email.toLowerCase() : null;
+}
+
+// === 3. Fetch user's profile via get_my_status RPC ===
+async function fetchStatus(email){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_my_status", {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({ p_email: email })
+  });
+  if (!r.ok) {
+    throw new Error("Status lookup failed (HTTP " + r.status + ")");
+  }
+  const data = await r.json();
+  return Array.isArray(data) ? data[0] : data;
+}
+
+// === 4. Render ===
+function hashCode(str){
+  let h = 5381;
+  for (let i=0;i<str.length;i++) h = ((h<<5)+h) + str.charCodeAt(i);
+  return Math.abs(h).toString(36).slice(0,6);
+}
+
+function render(profile, email){
+  if (!profile) {
+    showError("We don't see you in the queue", "Looks like " + email + " hasn't signed up yet. Join the waitlist and come back here.");
+    return;
+  }
+  loadingView.style.display = "none";
+  errorView.style.display = "none";
+  statusView.style.display = "block";
+  document.getElementById("liveBadge").textContent = "LIVE";
+
+  // Expose queue_position globally so the mini-leaderboard can exact-match this user's row
+  window._sqMyQueuePosition = profile.queue_position != null ? profile.queue_position : null;
+  // Render mini leaderboard now that we know the user's profile + email
+  if (window._renderMiniLbWhenReady) window._renderMiniLbWhenReady(profile, email);
+
+  // Position
+  const pos = profile.queue_position != null ? profile.queue_position : "—";
+  document.getElementById("posNum").textContent = "#" + pos;
+
+  // Tier / cohort badges
+  const tier = profile.membership_tier || "free";
+  const cohort = profile.cohort || "waitlist";
+  const refs = profile.referrals_count || 0;
+  const badge = document.getElementById("tierBadge");
+  if (tier === "founder") {
+    badge.textContent = "FOUNDER MEMBER · LIFETIME";
+    badge.className = "badge-row founder";
+  } else if (tier === "stride_plus") {
+    badge.textContent = "STRIDE+ · COHORT 01";
+    badge.className = "badge-row cohort-01";
+  } else if (cohort === "01") {
+    badge.textContent = "COHORT 01 · PRIORITY";
+    badge.className = "badge-row cohort-01";
+  } else if (cohort === "waitlist-boosted") {
+    badge.textContent = "WAITLIST · FRIEND BOOST";
+    badge.className = "badge-row";
+  } else {
+    badge.textContent = "WAITLIST · LATER COHORT";
+    badge.className = "badge-row";
+  }
+
+  // Stats
+  document.getElementById("statRefs").textContent = refs;
+  document.getElementById("statCohort").textContent = cohort === "01" ? "01" : (cohort === "waitlist-boosted" ? "WL+" : "WL");
+  document.getElementById("statTier").textContent =
+    tier === "founder" ? "FOUNDER" :
+    tier === "stride_plus" ? "STRIDE+" : "FREE";
+
+  // Unlock copy
+  const unlockText = document.getElementById("unlockText");
+  if (profile.next_unlock_label) {
+    unlockText.innerHTML = profile.next_unlock_label.replace(/(\d+)/, "<strong>$1</strong>");
+  } else {
+    unlockText.innerHTML = "Top tier reached — <strong>nothing more to unlock</strong>. Just walk.";
+  }
+
+  // Lead copy
+  const lead = document.getElementById("leadCopy");
+  if (tier === "founder") {
+    lead.textContent = "You're a Founder Member. You'll get the download link before public launch — your badge is permanent.";
+  } else if (tier === "stride_plus") {
+    lead.textContent = "You're Stride+. You're in Cohort 01 with priority access at launch.";
+  } else if (cohort === "01") {
+    lead.textContent = "You're in Cohort 01 — priority access at launch. Refer 10 friends to earn a free year of Stride+.";
+  } else {
+    lead.textContent = "You're on the public waitlist. Share your link to climb — 3 referrals promotes you into Cohort 01.";
+  }
+
+  // ===== Referral ladder + upsell panel (free + non-founder tiers only) =====
+  const refPanel = document.getElementById("refPanel");
+  const upPanel = document.getElementById("upPanel");
+  const isPaid = (tier === "founder" || tier === "stride_plus");
+
+  if (!isPaid) {
+    refPanel.style.display = "block";
+    upPanel.style.display = "block";
+    document.getElementById("refSubPos").textContent = "#" + pos;
+
+    // Build ladder rungs — milestones match the SQL trigger thresholds in
+    // supabase/migrations/20260602000000_referral_climb.sql:
+    //   cohort_01_refs    = 3   → promoted out of public waitlist
+    //   stride_plus_refs  = 10  → free Stride+ (priority + perks)
+    //   founder_refs      = 25  → free Founder Member tier (permanent badge)
+    const rungs = [
+      { n: 0,  head: "You're in the queue",            detail: "Share your invite link to start climbing. Each friend who signs up cuts 5 ahead of you." },
+      { n: 1,  head: "First referral — climb 5 spots", detail: "Every successful signup through your link bumps you up the queue." },
+      { n: 3,  head: "Cohort 01 — priority access",    detail: "Promoted out of the public waitlist. You launch with the first wave." },
+      { n: 10, head: "Free Stride+ — priority tier",   detail: "All Stride+ perks unlocked, no payment. Top 500 at launch." },
+      { n: 25, head: "Free Founder Member",            detail: "Permanent founder badge + 2× coin multiplier. You'd otherwise pay £99/yr." }
+    ];
+    const ladder = document.getElementById("ladder");
+    ladder.innerHTML = "";
+    let nextRung = null;
+    rungs.forEach((r, i) => {
+      const isMet = refs >= r.n && r.n > 0;
+      const isNext = !isMet && r.n > refs && nextRung === null;
+      if (isNext) nextRung = r;
+      const cls = isMet ? "met" : (isNext ? "next" : "");
+      const markCls = isMet ? "met" : (isNext ? "next" : "empty");
+      const markText = isMet ? "✓" : r.n;
+      ladder.innerHTML += `
+        <div class="ladder-row ${cls}">
+          <div class="ladder-mark ${markCls}">${markText}</div>
+          <div class="ladder-body">
+            <div class="ladder-head ${cls}">${escHtml(r.head)}</div>
+            <div class="ladder-detail">${escHtml(r.detail)}</div>
+          </div>
+        </div>
+      `;
+    });
+
+    // Personalised "next milestone" CTA copy
+    const refCtaText = document.getElementById("refCtaText");
+    if (nextRung) {
+      const need = nextRung.n - refs;
+      refCtaText.innerHTML = `Next: <strong>${need} more referral${need===1?"":"s"}</strong> → ${escHtml(nextRung.head)}.`;
+    } else {
+      refCtaText.innerHTML = `<strong>Maxed out.</strong> You've claimed every referral reward — Founder Member is yours for free.`;
+      // No more rungs — hide the upsell too (they've already earned Founder)
+      upPanel.style.display = "none";
+    }
+  }
+  // ===== end referral/upsell =====
+
+  // Share link
+  const shareCode = profile.share_code || hashCode(email);
+  const link = SITE_ORIGIN + "/?ref=" + shareCode;
+  const shareEl = document.getElementById("shareLink");
+  shareEl.textContent = link;
+  shareEl.addEventListener("click", () => copy(link, shareEl));
+  document.getElementById("shareCopy").addEventListener("click", () => copy(link, document.getElementById("shareCopy")));
+
+  // Share intents
+  const waText = encodeURIComponent("Got into Stride Quest Cohort 01 — London's invite-only AR walking game. Use my link to skip the queue: " + link);
+  document.getElementById("shareWA").href = "https://wa.me/?text=" + waText;
+  const xText = encodeURIComponent("Got into @StrideQuestApp Cohort 01.\n\nLondon's about to become a game. Walk to earn. Stake to win. Invite-only.\n\nUse my link to skip the queue:\n" + link);
+  document.getElementById("shareX").href = "https://x.com/intent/tweet?text=" + xText;
+}
+
+function copy(text, el){
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = el.textContent;
+    el.textContent = "✓ Copied to clipboard";
+    setTimeout(()=>{ el.textContent = orig; }, 1400);
+  });
+}
+
+// === Mini leaderboard (top 5 + window around me) ===
+// Uses get_leaderboard_with_me() — server sends two sections in one payload:
+//   section='top'    → top N by referrals
+//   section='window' → ±N rows centered on the caller (only if caller is NOT in top N)
+// We splice them with a "gap" row when there's a real gap between the two sections.
+async function fetchLeaderboard(userEmail){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_leaderboard_with_me", {
+    method:"POST",
+    headers:{
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type":"application/json",
+      "Accept":"application/json"
+    },
+    body: JSON.stringify({p_email: userEmail || null, p_top: 5, p_window: 2})
+  });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const d = await r.json();
+  return Array.isArray(d) ? d : [];
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function buildLbRowHtml(row){
+  const isMe = !!row.is_me;
+  let bCls = "", bLabel = "";
+  if (row.membership_tier === "founder")           { bCls = "founder"; bLabel = "FOUNDER"; }
+  else if (row.membership_tier === "stride_plus")  { bCls = "plus";    bLabel = "STRIDE+"; }
+  else if (row.cohort === "01")                    { bCls = "c01";     bLabel = "C-01"; }
+  const medals = ["🥇","🥈","🥉"];
+  const rankDisplay = row.rank <= 3 ? medals[row.rank-1] : ("#" + row.rank);
+  const refs = row.referrals_count || 0;
+  return `<div class="lb-row ${isMe?"is-me":""}">
+    <span class="lb-rank ${isMe?"is-me":""}">${rankDisplay}</span>
+    <span class="lb-name ${isMe?"is-me":""}">${escHtml(row.display_name||"Anonymous")}${isMe?" (you)":""}</span>
+    ${bLabel ? `<span class="lb-badge ${bCls}">${bLabel}</span>` : ""}
+    <span class="lb-refs">${refs}<span class="lb-refs-label">REF</span></span>
+  </div>`;
+}
+
+function renderMiniLeaderboard(rows, myProfile){
+  const el = document.getElementById("lbRows");
+  const ctxEl = document.getElementById("lbContext");
+  if (!rows || rows.length === 0){
+    el.innerHTML = '<div class="lb-loading" style="font-size:12px">No entries yet — be the first.</div>';
+    ctxEl.innerHTML = "";
+    return;
+  }
+
+  const topRows    = rows.filter(r => r.section === "top");
+  const windowRows = rows.filter(r => r.section === "window");
+  const myRefs     = myProfile.referrals_count || 0;
+
+  // Find my row to determine my rank
+  const myRow = rows.find(r => r.is_me === true);
+  const myRank = myRow ? myRow.rank : null;
+
+  // === Context line: "you are X spots from the leader" / "X more refs to overtake Y" ===
+  let ctxHtml = "";
+  if (myRank != null) {
+    const topRow = topRows[0];
+    if (myRank === 1) {
+      ctxHtml = `<div class="lb-context maxed">🏆 <strong>You're the top Strider</strong> — ${myRefs} referral${myRefs===1?"":"s"} ahead. Keep climbing.</div>`;
+    } else {
+      // Find the row immediately above me to compute the gap in referrals
+      const allSorted = rows.slice().sort((a,b)=>a.rank - b.rank);
+      const idxMe = allSorted.findIndex(r => r.is_me);
+      const above = idxMe > 0 ? allSorted[idxMe - 1] : null;
+      const refsAbove = above ? above.referrals_count : (topRow ? topRow.referrals_count : 0);
+      const gap = Math.max(0, refsAbove - myRefs);
+      const aboveLabel = above ? above.display_name : (topRow ? topRow.display_name : "the leader");
+      if (gap === 0) {
+        ctxHtml = `<div class="lb-context">You're tied with <strong>${escHtml(aboveLabel)}</strong> at rank <strong>#${myRank}</strong>. <strong>One more referral</strong> jumps you ahead.</div>`;
+      } else {
+        ctxHtml = `<div class="lb-context">You're ranked <strong>#${myRank}</strong>. <strong>${gap} more referral${gap===1?"":"s"}</strong> to overtake <strong>${escHtml(aboveLabel)}</strong>.</div>`;
+      }
+    }
+  } else if (myProfile && myProfile.email) {
+    // User signed in but not yet in the ranked set (e.g. brand-new signup, no referrals yet)
+    ctxHtml = `<div class="lb-context">You haven't been ranked yet. <strong>Your first referral</strong> puts you on the board.</div>`;
+  }
+  ctxEl.innerHTML = ctxHtml;
+
+  // === Build the row list ===
+  let html = topRows.map(buildLbRowHtml).join("");
+
+  // Insert a "gap" divider if there's a window section AND it doesn't continue from the top
+  if (windowRows.length > 0) {
+    const lastTopRank = topRows.length > 0 ? topRows[topRows.length - 1].rank : 0;
+    const firstWinRank = windowRows[0].rank;
+    if (firstWinRank > lastTopRank + 1) {
+      const gapCount = firstWinRank - lastTopRank - 1;
+      html += `<div class="lb-gap">
+        <span class="lb-gap-line"></span>
+        <span class="lb-gap-dots">··· ${gapCount} more Striders ahead ···</span>
+        <span class="lb-gap-line"></span>
+      </div>`;
+    }
+    html += windowRows.map(buildLbRowHtml).join("");
+  }
+
+  el.innerHTML = html;
+}
+
+// === Wire it up ===
+// We fetch the leaderboard ONCE we know the user's email (from the auth session).
+// Earlier the fetch fired immediately on page load — but the new RPC needs the
+// caller's email to compute "you are here", so we kick it off after profile loads.
+window._renderMiniLbWhenReady = function(profile, email){
+  fetchLeaderboard(email)
+    .then(rows => renderMiniLeaderboard(rows, {...profile, email}))
+    .catch(err => {
+      console.warn("Leaderboard fetch failed:", err);
+      const el = document.getElementById("lbRows");
+      if (el) el.innerHTML = '<div class="lb-loading" style="font-size:12px;color:var(--ink-dim)">Couldn\'t load the board right now. Refresh to retry.</div>';
+    });
+};
+
+document.getElementById("signOutBtn").addEventListener("click", function(e){
+  e.preventDefault();
+  try {
+    localStorage.removeItem("sq_at");
+    localStorage.removeItem("sq_rt");
+  } catch(_){}
+  window.location.href = "/";
+});
+
+// === Main flow ===
+(async function(){
+  // Prefer fresh hash tokens (just clicked magic link), fall back to stored
+  let tokens = parseHashTokens() || getStoredTokens();
+
+  if (!tokens) {
+    showError("Sign in to see your status", "We need to verify it's you. Tap below to get a fresh sign-in link.");
+    return;
+  }
+
+  let email = null;
+  try {
+    email = await getAuthEmail(tokens.access_token);
+  } catch(err) {
+    showError("Couldn't verify your session", err.message || String(err));
+    return;
+  }
+
+  if (!email) {
+    // Token expired or invalid
+    try { localStorage.removeItem("sq_at"); localStorage.removeItem("sq_rt"); } catch(_){}
+    showError("Session expired", "Sign-in links are good for 60 minutes. Get a fresh one — it's quick.");
+    return;
+  }
+
+  try {
+    const profile = await fetchStatus(email);
+    render(profile, email);
+  // Cache email for the signin form prefill
+  try { localStorage.setItem("sq_user_email", email); } catch(_){}
+  // Cache share_code for exact leaderboard row highlighting
+  if (profile && profile.share_code) {
+    try { localStorage.setItem("sq_share_code", profile.share_code); } catch(_){}
+  }
+  } catch(err) {
+    showError("Couldn't load your status", err.message || String(err));
+  }
+})();
+</script>
+</body></html>

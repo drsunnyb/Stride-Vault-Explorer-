@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sunny · Stride Quest Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .profile-hero{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding:32px;background:var(--card);border:1px solid var(--line);border-radius:24px;position:relative;overflow:hidden}
+  .profile-hero::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .av-lg{width:96px;height:96px;border-radius:24px;background:linear-gradient(135deg,var(--bg-2),var(--card-2));border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:48px;flex-shrink:0;box-shadow:0 0 0 1px var(--gold), 0 12px 32px rgba(255,214,10,0.2)}
+  .badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .badge-chip{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-dim);text-transform:uppercase}
+  .badge-chip.gold{border-color:var(--gold);color:var(--gold);background:rgba(255,214,10,0.06)}
+  .badge-chip.blue{border-color:var(--blue);color:var(--blue);background:rgba(45,127,249,0.06)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <a href="../index.html" class="brand"><span class="bdg">S</span><span class="word">STRIDE QUEST</span></a>
+  <nav class="hdr-nav">
+    <a href="06-dashboard.html">Dashboard</a>
+    <a href="10-leaderboard.html">Leaderboard</a>
+    <a href="08-borough-board.html">Borough</a>
+    <a class="on">Profile</a>
+  </nav>
+</div>
+
+<!-- Profile hero -->
+<div class="profile-hero">
+  <div class="av-lg">🏃‍♂️</div>
+  <div style="flex:1;min-width:200px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">▲ SUNNY · @sunny</div>
+    <h1 style="font-size:36px;margin-bottom:8px">Sunny <span style="color:var(--ink-dim);font-weight:500;font-size:24px">· The Strider</span></h1>
+    <div style="font-size:14px;color:var(--ink-dim);line-height:1.5">Hackney · 8k daily goal · Joined 5 days ago</div>
+    <div class="badges">
+      <span class="badge-chip" style="border-color:var(--green);color:var(--green);background:rgba(16,185,129,0.06)">✓ COHORT 01 · INVITED</span>
+      <span class="badge-chip blue">▲ TOP 5 IN HACKNEY</span>
+      <span class="badge-chip">⚡ 5 REFERRALS</span>
+      <span class="badge-chip" style="opacity:.5">🏛️ FOUNDER · NOT YET</span>
+    </div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-weight:800;font-size:48px;color:var(--gold);letter-spacing:-0.04em;line-height:1">#247</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);letter-spacing:.15em;text-transform:uppercase;margin-top:4px">QUEUE POSITION</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab on">Overview</div>
+  <div class="tab">Referrals</div>
+  <div class="tab">Borough</div>
+  <div class="tab">Badges</div>
+  <div class="tab">Settings</div>
+</div>
+
+<!-- Stats -->
+<div class="stat-row">
+  <div class="stat-tile"><div class="v">#247</div><div class="l">Cohort 01 position</div></div>
+  <div class="stat-tile"><div class="v green">+50</div><div class="l">Points this week</div></div>
+  <div class="stat-tile"><div class="v blue">5</div><div class="l">Referrals</div></div>
+  <div class="stat-tile"><div class="v white">87%</div><div class="l">Tier completion</div></div>
+</div>
+
+<div class="grid-2">
+  <div>
+    <div class="card">
+      <div class="sec-h" style="margin-top:0">
+        <h2>This week</h2>
+        <span class="more">MAY 21 — MAY 27</span>
+      </div>
+      <div class="ref-row">
+        <div class="who"><span class="lb-av">▲</span><div><div class="nm">Climbed 38 positions</div><div class="meta">FROM #285 → #247</div></div></div>
+        <div class="points">+380</div>
+      </div>
+      <div class="ref-row">
+        <div class="who"><span class="lb-av">⚡</span><div><div class="nm">Maya R. joined via your link</div><div class="meta">HACKNEY · 2H AGO</div></div></div>
+        <div class="points">+10</div>
+      </div>
+      <div class="ref-row">
+        <div class="who"><span class="lb-av">⚡</span><div><div class="nm">Tom W. joined via your link</div><div class="meta">SHOREDITCH · 8H AGO</div></div></div>
+        <div class="points">+10</div>
+      </div>
+      <div class="ref-row">
+        <div class="who"><span class="lb-av">🔥</span><div><div class="nm">Hackney overtook Brixton</div><div class="meta">YOU CONTRIBUTED 2 STRIKERS</div></div></div>
+        <div class="points" style="color:var(--gold)">★</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-weight:700;font-size:20px;letter-spacing:-0.025em;margin-bottom:16px">Badges earned</h2>
+      <div class="grid-3" style="grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="background:#0E0E12;border:1px solid var(--green);border-radius:14px;padding:18px 8px;text-align:center"><div style="font-size:32px;margin-bottom:6px">✓</div><div style="font-size:10px;font-weight:600;color:var(--green);letter-spacing:.05em;text-transform:uppercase">Cohort 01</div></div>
+        <div style="background:#0E0E12;border:1px solid var(--blue);border-radius:14px;padding:18px 8px;text-align:center"><div style="font-size:32px;margin-bottom:6px">⚡</div><div style="font-size:10px;font-weight:600;color:var(--blue);letter-spacing:.05em;text-transform:uppercase">5 Refs</div></div>
+        <a href="11-paid-success.html?tier=priority" style="background:#0E0E12;border:1px dashed var(--blue);border-radius:14px;padding:18px 8px;text-align:center;opacity:.85;text-decoration:none;color:inherit;display:block"><div style="font-size:32px;margin-bottom:6px;filter:grayscale(.4)">⚡</div><div style="font-size:10px;font-weight:600;color:var(--blue);letter-spacing:.05em;text-transform:uppercase">Stride+<br/>£60/yr OR 25 REFS</div></a>
+        <a href="11-paid-success.html?tier=founder" style="background:linear-gradient(135deg,rgba(255,214,10,0.06),transparent),#0E0E12;border:1px dashed var(--gold);border-radius:14px;padding:18px 8px;text-align:center;text-decoration:none;color:inherit;display:block"><div style="font-size:32px;margin-bottom:6px;filter:grayscale(.4)">🏛️</div><div style="font-size:10px;font-weight:600;color:var(--gold);letter-spacing:.05em;text-transform:uppercase">Founder<br/>£99/yr · 92 LEFT</div></a>
+      </div>
+      <div style="font-size:11px;color:var(--ink-dim);margin-top:14px;line-height:1.4;font-family:'JetBrains Mono',monospace;letter-spacing:.05em">★ FOUNDER MEMBER BADGE = PAID-ONLY · CAPPED FOREVER · NO FREE PATH</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card gold">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">▲ SHARE PROFILE</div>
+      <h2 style="font-weight:700;font-size:20px;letter-spacing:-0.025em;margin-bottom:14px">Public profile link</h2>
+      <div class="share-box">stridequest.app/u/sunny</div>
+      <div class="share-btn-row">
+        <button class="share-btn wa">▲ WhatsApp</button>
+        <button class="share-btn x">𝕏 Post</button>
+        <button class="share-btn copy">⎘ Copy</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-weight:700;font-size:18px;letter-spacing:-0.025em;margin-bottom:16px">Next milestones</h2>
+      <div class="ref-row">
+        <div class="who"><span class="lb-av">🥇</span><div><div class="nm">Reach top 100</div><div class="meta">147 POSITIONS AWAY</div></div></div>
+        <div class="points" style="color:var(--ink-dim);font-family:'JetBrains Mono',monospace;font-size:11px">5 REFS</div>
+      </div>
+      <div class="ref-row">
+        <div class="who"><span class="lb-av">⚡</span><div><div class="nm">25 referrals → free Stride+ year</div><div class="meta">20 MORE REFS · £60 VALUE</div></div></div>
+        <div class="points" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:11px">FREE</div>
+      </div>
+      <div class="ref-row">
+        <div class="who"><span class="lb-av">🏛️</span><div><div class="nm">Claim a Founder Member</div><div class="meta">PAID-ONLY · LIMITED · WHILE THEY LAST</div></div></div>
+        <a href="11-paid-success.html?tier=founder" class="points" style="color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px;text-decoration:none">£99/yr →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <div>STRIDE QUEST © 2026 · LONDON</div>
+  <div>SIGNED IN AS SUNNY · <a href="01-onboard.html">SIGN OUT</a></div>
+</div>
+
+</div>
+
+<div class="mockup-nav">
+  <a href="00-landing.html">0. Landing</a>
+  <a href="01-onboard.html">1. Email</a>
+  <a href="02-borough.html">2. Borough</a>
+  <a href="03-avatar.html">3. Avatar</a>
+  <a href="04-goal.html">4. Goal</a>
+  <a href="05-membership.html">5. Membership</a>
+  <a href="06-dashboard.html">6. Dashboard</a>
+  <a href="07-profile.html" class="on">7. Profile</a>
+  <a href="08-borough-board.html">8. Borough LB</a>
+  <a href="09-creator-board.html">9. Creator LB</a>
+  <a href="10-leaderboard.html">10. Global LB</a>
+  <a href="11-paid-success.html?tier=founder">11. ✓ Paid</a>
+  <a href="12-share.html">12. Share</a>
+  <a href="13-signin.html">13. Sign-in</a>
+</div>
+
+</body></html>

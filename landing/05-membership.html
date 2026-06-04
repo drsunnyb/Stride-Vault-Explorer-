@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose your membership · Stride Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .mtiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+  @media(max-width:860px){.mtiers{grid-template-columns:1fr}}
+  .mtier{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px 24px;position:relative;display:flex;flex-direction:column;transition:transform .2s, border-color .2s}
+  .mtier:hover{transform:translateY(-3px)}
+
+  .mtier.founder{
+    border-color:rgba(255,214,10,0.5);
+    background:linear-gradient(180deg,rgba(255,214,10,0.08),transparent 70%),var(--card);
+    box-shadow:0 16px 48px rgba(255,214,10,0.08);
+  }
+  .mtier.founder::before{content:"MOST WANTED · LIMITED";position:absolute;top:-1px;left:24px;background:var(--gold);color:#0A0A0C;padding:5px 12px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;font-weight:700;border-radius:0 0 8px 8px}
+
+  .mtier.stride{border-color:rgba(45,127,249,0.4)}
+  .mtier.stride::before{content:"FAN FAVOURITE · FILLING FAST";position:absolute;top:-1px;left:24px;background:var(--blue);color:#fff;padding:5px 12px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;font-weight:700;border-radius:0 0 8px 8px}
+
+  .mtier.free{border-color:var(--line);background:rgba(255,255,255,0.015)}
+
+  .mtag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:14px;margin-top:6px}
+  .mtier.founder .mtag{color:var(--gold)}
+  .mtier.stride .mtag{color:var(--blue)}
+
+  .mprice{display:flex;align-items:baseline;gap:4px;margin-bottom:4px;letter-spacing:-0.03em;min-height:60px}
+  .mprice .cur{font-size:24px;color:var(--ink-dim);font-weight:600}
+  .mprice .amt{font-size:54px;font-weight:900;color:var(--ink);line-height:1}
+  .mprice .term{font-size:14px;color:var(--ink-dim);margin-left:8px;font-weight:500;line-height:1.3}
+  .mprice.free .amt{color:var(--ink-dim)}
+
+  .mname{font-weight:800;font-size:22px;letter-spacing:-0.025em;margin-bottom:4px}
+  .msub{font-size:13px;color:var(--ink-dim);margin-bottom:18px;line-height:1.5;min-height:42px}
+
+  /* Toggle */
+  .toggle{display:flex;background:#0E0E12;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:16px;position:relative}
+  .toggle-opt{flex:1;text-align:center;padding:10px 8px;cursor:pointer;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);transition:all .15s;position:relative;font-weight:600}
+  .toggle-opt.on{background:var(--blue);color:#fff}
+  .toggle-opt .save{font-size:9px;letter-spacing:.1em;color:var(--green);margin-left:4px;font-weight:700;background:rgba(16,185,129,0.15);padding:2px 6px;border-radius:4px;display:inline-block}
+  .toggle-opt.on .save{color:#fff;background:rgba(255,255,255,0.18)}
+
+  .mposition{background:#0E0E12;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .mposition .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase}
+  .mposition .val{font-weight:800;letter-spacing:-0.02em;font-size:16px;color:var(--ink)}
+  .mtier.founder .mposition{border-color:rgba(255,214,10,0.3);background:rgba(255,214,10,0.04)}
+  .mtier.founder .mposition .val{color:var(--gold)}
+  .mtier.stride .mposition{border-color:rgba(45,127,249,0.25)}
+  .mtier.stride .mposition .val{color:var(--blue)}
+
+  .mperks{list-style:none;padding:0;margin:0 0 24px;flex:1}
+  .mperks li{padding:9px 0;font-size:13px;color:var(--ink);line-height:1.45;letter-spacing:-0.005em;display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,0.03)}
+  .mperks li:last-child{border-bottom:0}
+  .mperks .tk{font-size:12px;line-height:1.5;flex-shrink:0;color:var(--gold);font-weight:700}
+  .mtier.stride .mperks .tk{color:var(--blue)}
+  .mtier.free .mperks .tk{color:var(--ink-dim)}
+  .mperks strong{font-weight:700}
+  .mtier.founder .mperks strong{color:var(--gold)}
+  .mtier.stride .mperks strong{color:var(--blue)}
+  .mperks .qty{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);font-weight:600;letter-spacing:.02em;background:rgba(255,255,255,0.04);padding:2px 6px;border-radius:6px;margin-left:auto;flex-shrink:0;white-space:nowrap}
+  .mtier.founder .mperks .qty{color:var(--gold);background:rgba(255,214,10,0.06)}
+  .mtier.stride .mperks .qty{color:var(--blue);background:rgba(45,127,249,0.08)}
+
+  .mperks-section{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim);padding:14px 0 6px;border-top:1px solid var(--line);margin-top:6px;font-weight:600}
+  .mperks-section.gold{color:var(--gold)}
+
+  .mcta{display:block;text-align:center;border-radius:14px;padding:16px 20px;font-weight:700;font-size:15px;letter-spacing:-0.005em;text-decoration:none;border:none;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .2s;width:100%}
+  .mcta:hover{transform:translateY(-1px)}
+  .mcta.gold{background:var(--gold);color:#0A0A0C}
+  .mcta.gold:hover{box-shadow:0 12px 32px rgba(255,214,10,0.3)}
+  .mcta.blue{background:var(--blue);color:#fff}
+  .mcta.blue:hover{box-shadow:0 12px 32px rgba(45,127,249,0.3)}
+  .mcta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .mcta.ghost:hover{border-color:var(--gold);color:var(--gold)}
+
+  .mguarantee{font-size:11px;color:var(--ink-dim);margin-top:10px;text-align:center;letter-spacing:-0.005em;line-height:1.4}
+
+  .skip-banner{background:var(--card);border:1px dashed var(--line);border-radius:16px;padding:18px 22px;margin-top:8px;text-align:center;font-size:14px;color:var(--ink-dim);line-height:1.5}
+  .skip-banner a{color:var(--gold);font-weight:600;text-decoration:none}
+  .skip-banner a:hover{text-decoration:underline}
+
+  .compare-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:32px;font-size:12px}
+  .compare-strip .cs-cell{background:var(--card);padding:12px 14px;text-align:center;letter-spacing:-0.005em}
+  .compare-strip .cs-cell strong{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:600}
+  .compare-strip .cs-cell.blue strong{color:var(--blue)}
+  .compare-strip .cs-cell.dim strong{color:var(--ink-dim)}
+
+  .who-summary{background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:14px;font-size:13px}
+  .who-summary .av-sm{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--bg-2),var(--card));border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .who-summary .det{flex:1;color:var(--ink-dim);line-height:1.4}
+  .who-summary .det strong{color:var(--ink);font-weight:600;display:block;margin-bottom:2px;font-size:14px;letter-spacing:-0.005em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <a href="00-landing.html" class="brand"><span class="bdg">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status"><span class="pulse"></span><span>LONDON · COHORT 01</span></div>
+</div>
+
+<div class="steps">
+  <span class="dot done"></span>
+  <span class="dot done"></span>
+  <span class="dot done"></span>
+  <span class="dot done"></span>
+  <span class="dot on"></span>
+  <span class="l">STEP 5 OF 5 · LAST ONE</span>
+</div>
+
+<div class="eyebrow">You're in. Now pick your level.</div>
+<h1>Same game. <span class="y">Different start line.</span></h1>
+<p class="lede" style="max-width:720px">You're already on the list — Strider <strong style="color:var(--ink)">Sunny from Hackney</strong>. The free Cohort 01 spot is yours and always will be. Below: two ways to start earlier, claim more, and wear badges that disappear after launch.</p>
+
+<div class="who-summary">
+  <div class="av-sm">🏃‍♂️</div>
+  <div class="det">
+    <strong>Sunny · Hackney · 8k/day</strong>
+    Cohort 01 · invited by Sunny @ Officially Invested · waitlist queue #2,318
+  </div>
+</div>
+
+<div class="compare-strip">
+  <div class="cs-cell"><strong>FOUNDER · £99/YR</strong>First-in-line · permanent badge · all Stride+ perks</div>
+  <div class="cs-cell blue"><strong>STRIDE+ · £60/YR</strong>Top of public queue · +25% coins · 14 vaults/day</div>
+  <div class="cs-cell dim"><strong>COHORT 01 · FREE</strong>Standard · 10 vaults/day · creator-code only</div>
+</div>
+
+<!-- TIERS -->
+<div class="mtiers">
+
+  <!-- FOUNDER -->
+  <div class="mtier founder">
+    <div class="mtag">FOUNDER MEMBER</div>
+    <div class="mprice">
+      <span class="cur">£</span><span class="amt">99</span><span class="term">/year · auto-renews</span>
+    </div>
+    <div class="mname">Founder Member</div>
+    <div class="msub">Limited annual pass for the early loyalists. Once they're gone, they're gone — and the badge stays on your profile forever, even if you cancel later.</div>
+
+    <div class="mposition">
+      <span class="lbl">YOUR START POSITION</span>
+      <span class="val">FIRST-IN-LINE</span>
+    </div>
+
+    <div class="mperks-section gold">▲ FOUNDER-ONLY · FOREVER</div>
+    <ul class="mperks">
+      <li><span class="tk">★</span><span><strong>Founder badge</strong> on profile · permanent, even if you cancel</span></li>
+      <li><span class="tk">★</span><span>Name on the public <strong>Founders' Wall</strong> · permanent</span></li>
+      <li><span class="tk">★</span><span><strong>4 Founder-only avatars</strong> unlocked instantly</span></li>
+      <li><span class="tk">★</span><span>Direct line to the team · monthly <strong>Founder Q&amp;A</strong></span></li>
+      <li><span class="tk">★</span><span>Early access to every new city we launch in</span></li>
+    </ul>
+
+    <div class="mperks-section gold">▲ PLUS ALL 8 STRIDE+ PERKS</div>
+    <ul class="mperks">
+      <li><span class="tk">✦</span><span>Everything in Stride+ below</span><span class="qty">×8</span></li>
+    </ul>
+
+    <a href="11-paid-success.html?tier=founder" class="mcta gold">Become a Founder · £99/yr →</a>
+    <div class="mguarantee">Auto-renews annually · cancel anytime · founder badge stays forever</div>
+  </div>
+
+  <!-- STRIDE+ -->
+  <div class="mtier stride">
+    <div class="mtag">STRIDE+</div>
+
+    <div class="mprice" id="stridePrice">
+      <span class="cur">£</span><span class="amt">60</span><span class="term">/year · auto-renews</span>
+    </div>
+    <div class="mname">Stride+</div>
+    <div class="msub">The full membership — same one that'll be in the app. Annual only. Lock in the rate now and you keep it for life.</div>
+
+    <div class="mposition">
+      <span class="lbl">YOUR START POSITION</span>
+      <span class="val">TOP OF QUEUE</span>
+    </div>
+
+    <ul class="mperks">
+      <li><span class="tk">✦</span><span><strong>+25%</strong> coins per vault · stacks with Stride Status</span><span class="qty">+25%</span></li>
+      <li><span class="tk">✦</span><span>Daily vault cap raised · <strong>14 claims/day</strong> (free is 10)</span><span class="qty">14/day</span></li>
+      <li><span class="tk">✦</span><span><strong>25% faster respawn</strong> · more loops, more loot</span><span class="qty">−25%</span></li>
+      <li><span class="tk">✦</span><span><strong>1 free raffle entry</strong> every week · Stride Coins draws</span><span class="qty">1/wk</span></li>
+      <li><span class="tk">✦</span><span><strong>Members-only raffles</strong> · normally Platinum+ locked</span><span class="qty">EXCL</span></li>
+      <li><span class="tk">✦</span><span><strong>1 streak freeze</strong> per week · don't lose your run</span><span class="qty">1/wk</span></li>
+      <li><span class="tk">✦</span><span><strong>48h early access</strong> · new vaults &amp; partner drops</span><span class="qty">48h</span></li>
+      <li><span class="tk">✦</span><span><strong>+1,000 welcome bonus</strong> · paid the moment you start</span><span class="qty">+1k</span></li>
+    </ul>
+
+    <a href="11-paid-success.html?tier=stride" class="mcta blue">Become Stride+ · £60/yr →</a>
+    <div class="mguarantee">Auto-renews annually · cancel anytime · refund if Cohort 01 doesn't launch in 2026</div>
+  </div>
+
+  <!-- FREE -->
+  <div class="mtier free">
+    <div class="mtag">COHORT 01 · FREE</div>
+    <div class="mprice free" style="min-height:60px">
+      <span class="amt">£0</span><span class="term">free with creator code</span>
+    </div>
+    <div class="mname">Cohort 01 · invited</div>
+    <div class="msub">You're already in. This is the spot you've claimed by being invited — and it's permanent.</div>
+
+    <div class="mposition">
+      <span class="lbl">YOUR START POSITION</span>
+      <span class="val">PUBLIC QUEUE</span>
+    </div>
+
+    <ul class="mperks">
+      <li><span class="tk">✓</span><span>Day-one download access · before public launch</span></li>
+      <li><span class="tk">✓</span><span>Standard 1× coin multiplier</span></li>
+      <li><span class="tk">✓</span><span><strong>10 vault claims</strong> per day</span><span class="qty">10/day</span></li>
+      <li><span class="tk">✓</span><span>Permanent Cohort 01 badge on profile</span></li>
+      <li><span class="tk">✓</span><span>Standard starter chest · 8 starter avatars</span></li>
+      <li><span class="tk">✓</span><span>Refer 25 friends → <strong>upgrade to Stride+ free</strong></span></li>
+      <li><span class="tk">✓</span><span>Full access to all leaderboards</span></li>
+    </ul>
+
+    <a href="06-dashboard.html" class="mcta ghost">Continue with free Cohort 01 →</a>
+    <div class="mguarantee">You can upgrade any time from your dashboard</div>
+  </div>
+
+</div>
+
+<div class="skip-banner">
+  Not sure yet? You can always upgrade later from your dashboard.
+  <a href="06-dashboard.html">Take me to my free dashboard →</a>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:40px">
+  <div style="text-align:center;padding:18px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px">
+    <div style="font-size:22px;margin-bottom:4px">🔒</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase">Stripe secure</div>
+  </div>
+  <div style="text-align:center;padding:18px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px">
+    <div style="font-size:22px;margin-bottom:4px">↩️</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase">No-launch refund</div>
+  </div>
+  <div style="text-align:center;padding:18px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px">
+    <div style="font-size:22px;margin-bottom:4px">⚡</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase">Cancel anytime</div>
+  </div>
+  <div style="text-align:center;padding:18px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px">
+    <div style="font-size:22px;margin-bottom:4px">🇬🇧</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase">UK-built · London</div>
+  </div>
+</div>
+
+<div class="ftr">
+  <div>STRIDE QUEST © 2026 · LONDON</div>
+  <div><a href="04-goal.html">← BACK TO ONBOARDING</a></div>
+</div>
+
+</div>
+
+<div class="mockup-nav">
+  <a href="00-landing.html">0. Landing</a>
+  <a href="01-onboard.html">1. Email</a>
+  <a href="02-borough.html">2. Borough</a>
+  <a href="03-avatar.html">3. Avatar</a>
+  <a href="04-goal.html">4. Goal</a>
+  <a href="05-membership.html" class="on">5. Membership</a>
+  <a href="06-dashboard.html">6. Dashboard</a>
+  <a href="07-profile.html">7. Profile</a>
+  <a href="08-borough-board.html">8. Borough LB</a>
+  <a href="09-creator-board.html">9. Creator LB</a>
+  <a href="10-leaderboard.html">10. Global LB</a>
+  <a href="11-paid-success.html?tier=founder">11. ✓ Paid</a>
+  <a href="12-share.html">12. Share</a>
+  <a href="13-signin.html">13. Sign-in</a>
+</div>
+
+<script>
+// Annual-only · no toggle
+</script>
+</body></html>

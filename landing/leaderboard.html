@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Leaderboard · Stride Quest</title>
+<meta name="description" content="Top 100 referrers on the Stride Quest waitlist. Share your link — every friend who joins moves you up." />
+<meta name="theme-color" content="#0A0A0C" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0C;--bg-2:#141418;--card:#17171C;--ink:#FFFFFF;--ink-dim:#7A7A86;
+    --line:#23232B;--gold:#FFD60A;--gold-2:#FFC107;--green:#10B981;--red:#FF3B30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,system-ui,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;min-height:100vh}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(800px 600px at 15% 5%, rgba(255,214,10,0.07), transparent 60%),radial-gradient(900px 700px at 90% 80%, rgba(45,127,249,0.05), transparent 60%);}
+  .wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:24px}
+
+  /* Header */
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:48px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .brand .badge{width:32px;height:32px;border-radius:50%;background:var(--gold);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;letter-spacing:-0.02em}
+  .brand .word{font-weight:700;font-size:16px;letter-spacing:0.02em}
+  .hdr-right{display:flex;align-items:center;gap:16px}
+  .hdr-link{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;transition:color .15s}
+  .hdr-link:hover{color:var(--gold)}
+  .status-pill{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .status-pill .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* Hero */
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+  h1{font-weight:800;font-size:clamp(34px,6vw,56px);line-height:1;letter-spacing:-0.035em;margin-bottom:14px}
+  h1 .y{color:var(--gold)}
+  .lede{font-size:16px;line-height:1.55;color:var(--ink-dim);margin-bottom:32px;max-width:540px}
+
+  /* My position banner (shown when signed in) */
+  .my-banner{background:linear-gradient(90deg,rgba(255,214,10,0.08),rgba(255,193,7,0.04));border:1px solid rgba(255,214,10,0.3);border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+  .my-banner .left{display:flex;align-items:center;gap:14px}
+  .my-banner .rank-num{font-weight:800;font-size:28px;letter-spacing:-0.03em;color:var(--gold);font-feature-settings:"tnum"}
+  .my-banner .meta{font-size:13px;line-height:1.4}
+  .my-banner .meta strong{font-weight:700;color:var(--ink)}
+  .my-banner .meta span{color:var(--ink-dim)}
+  .my-banner .cta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;white-space:nowrap}
+  .my-banner .cta:hover{text-decoration:underline}
+
+  /* Table panel */
+  .panel{background:linear-gradient(180deg,rgba(255,214,10,0.04),transparent 50%),var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;margin-bottom:24px;position:relative}
+  .panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);z-index:1}
+
+  .table-header{display:grid;grid-template-columns:48px 1fr 88px 80px;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .th{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim)}
+  .th.right{text-align:right}
+
+  .row{display:grid;grid-template-columns:48px 1fr 88px 80px;gap:12px;padding:14px 20px;border-bottom:1px solid rgba(35,35,43,.5);align-items:center;transition:background .12s}
+  .row:last-child{border-bottom:none}
+  .row:hover{background:rgba(255,255,255,0.02)}
+  .row.top3{background:rgba(255,214,10,0.03)}
+  .row.is-me{background:rgba(255,214,10,0.06);border-left:2px solid var(--gold)}
+
+  .rank-cell{display:flex;align-items:center;gap:0}
+  .rank-num{font-weight:800;font-size:15px;letter-spacing:-0.02em;color:var(--ink-dim);font-feature-settings:"tnum";min-width:28px}
+  .rank-medal{font-size:16px;line-height:1}
+
+  .name-cell{}
+  .display-name{font-weight:600;font-size:14px;letter-spacing:-0.01em;margin-bottom:3px}
+  .display-name.is-me{color:var(--gold)}
+  .borough-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase}
+
+  .badge-cell{display:flex;align-items:center}
+  .tier-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+  .tier-badge.founder{background:rgba(255,214,10,0.12);border:1px solid rgba(255,214,10,0.35);color:var(--gold)}
+  .tier-badge.plus{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
+  .tier-badge.cohort{background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--ink-dim)}
+  .tier-badge.waitlist{background:transparent;border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.3)}
+
+  .refs-cell{text-align:right;font-weight:700;font-size:15px;letter-spacing:-0.01em;font-feature-settings:"tnum";color:var(--ink)}
+
+  /* Loading / empty */
+  .loading-row{padding:48px 20px;text-align:center;color:var(--ink-dim)}
+  .spinner{display:inline-block;width:28px;height:28px;border:2.5px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty-msg{padding:48px 20px;text-align:center;color:var(--ink-dim);font-size:14px}
+
+  /* Footer count */
+  .count-line{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase;padding:14px 20px;border-top:1px solid var(--line);text-align:center}
+
+  /* Signup nudge */
+  .nudge{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;text-align:center;margin-bottom:32px}
+  .nudge p{color:var(--ink-dim);font-size:14px;line-height:1.5;margin-bottom:16px}
+  .nudge p strong{color:var(--ink)}
+  .nudge .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .btn-primary{display:inline-block;background:var(--gold);color:#0A0A0C;padding:12px 22px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;letter-spacing:-0.01em;transition:transform .12s, box-shadow .15s}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(255,214,10,0.22)}
+  .btn-ghost{display:inline-block;border:1px solid var(--line);color:var(--ink-dim);padding:12px 22px;border-radius:10px;font-size:14px;text-decoration:none;transition:border-color .15s, color .15s}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* Unlock ladder */
+  .ladder{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:32px}
+  .ladder h3{font-weight:700;font-size:13px;letter-spacing:.12em;font-family:'JetBrains Mono',monospace;text-transform:uppercase;color:var(--ink-dim);margin-bottom:18px}
+  .rung{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(35,35,43,.6)}
+  .rung:last-child{border-bottom:none;padding-bottom:0}
+  .rung .ic{font-size:20px;width:28px;text-align:center}
+  .rung .body{flex:1;font-size:13px;line-height:1.4;color:var(--ink-dim)}
+  .rung .body strong{color:var(--ink);font-weight:600}
+  .rung .req{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--gold);white-space:nowrap}
+
+  /* Footer */
+  .ftr{text-align:center;color:var(--ink-dim);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;padding:32px 0 16px}
+  .ftr a{color:var(--ink-dim);text-decoration:none}
+  .ftr a:hover{color:var(--gold)}
+
+  /* Mobile tweaks */
+  @media(max-width:520px){
+    .table-header,.row{grid-template-columns:40px 1fr 0 64px}
+    .th:nth-child(3),.badge-cell{display:none}
+    .th.right{text-align:right}
+    h1{font-size:clamp(28px,8vw,40px)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a href="/" class="brand"><span class="badge">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="hdr-right">
+    <a href="/status.html" class="hdr-link">MY STATUS</a>
+    <div class="status-pill"><span class="pulse"></span><span>LIVE</span></div>
+  </div>
+</header>
+
+<div class="eyebrow">REFERRAL LEADERBOARD</div>
+<h1>Who's <span class="y">racing</span><br>the queue.</h1>
+<p class="lede">Top 100 Striders by referrals. Refer 3 → Cohort 01. Refer 10 → free Stride+. Refer 25 → free Founder. Every friend counts.</p>
+
+<!-- My position banner — shown only when signed in -->
+<div id="myBanner" class="my-banner" style="display:none">
+  <div class="left">
+    <div class="rank-num" id="bannerRank">—</div>
+    <div class="meta">
+      <strong id="bannerName">You</strong><br>
+      <span id="bannerRefs">0 referrals</span>
+    </div>
+  </div>
+  <a href="/status.html" class="cta">VIEW MY STATUS →</a>
+</div>
+
+<!-- Signup nudge — shown when not signed in -->
+<div id="nudgeBlock" class="nudge" style="display:none">
+  <p><strong>Want to appear on this board?</strong><br>Join the waitlist and share your link. Every referral climbs you up in real-time.</p>
+  <div class="btn-row">
+    <a href="/" class="btn-primary">JOIN THE WAITLIST →</a>
+    <a href="/signin.html" class="btn-ghost">Sign in to see my rank</a>
+  </div>
+</div>
+
+<!-- Leaderboard table -->
+<div class="panel">
+  <div class="table-header">
+    <div class="th">#</div>
+    <div class="th">STRIDER</div>
+    <div class="th">TIER</div>
+    <div class="th right">REFS</div>
+  </div>
+  <div id="tableBody">
+    <div class="loading-row">
+      <div class="spinner"></div>
+      <div>Loading the board…</div>
+    </div>
+  </div>
+  <div class="count-line" id="countLine" style="display:none"></div>
+</div>
+
+<!-- Unlock ladder -->
+<div class="ladder">
+  <h3>THE REFERRAL CLIMB</h3>
+  <div class="rung">
+    <div class="ic">🏃</div>
+    <div class="body"><strong>3 referrals</strong> — promoted to Cohort 01, priority access at launch</div>
+    <div class="req">3 REFS</div>
+  </div>
+  <div class="rung">
+    <div class="ic">⚡</div>
+    <div class="body"><strong>10 referrals</strong> — free Stride+ for 1 year (£60 value)</div>
+    <div class="req">10 REFS</div>
+  </div>
+  <div class="rung">
+    <div class="ic">🏛️</div>
+    <div class="body"><strong>25 referrals</strong> — free Founder membership (£99/yr, limited seats)</div>
+    <div class="req">25 REFS</div>
+  </div>
+</div>
+
+<div class="ftr">
+  STRIDE QUEST © 2026 · LONDON · <a href="/">HOME</a> · <a href="/status.html">MY QUEUE</a>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://btizzhrkelcxvafdxwun.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjExMTQsImV4cCI6MjA5NDkzNzExNH0.QpxH-DDPa6qA4RCRG0Y18WDZX3KCF5PQzd8uhXV_cAk";
+const SITE_ORIGIN = window.location.origin;
+
+// ---------- helpers ----------
+function medalFor(rank){
+  if (rank === 1) return "🥇";
+  if (rank === 2) return "🥈";
+  if (rank === 3) return "🥉";
+  return null;
+}
+
+function badgeFor(tier, cohort){
+  if (tier === "founder")     return {cls:"founder", label:"🏛️ FOUNDER"};
+  if (tier === "stride_plus") return {cls:"plus",    label:"⚡ STRIDE+"};
+  if (cohort === "01")        return {cls:"cohort",  label:"COHORT 01"};
+  return                             {cls:"waitlist",label:"WAITLIST"};
+}
+
+function refsLabel(n){
+  if (n === 1) return "1 referral";
+  return (n || 0) + " referrals";
+}
+
+// ---------- stored session ----------
+function getStoredTokens(){
+  try {
+    const at = localStorage.getItem("sq_at");
+    return at ? {access_token: at} : null;
+  } catch(_){ return null; }
+}
+
+async function getAuthEmail(at){
+  const r = await fetch(SUPABASE_URL + "/auth/v1/user", {
+    headers:{"apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + at}
+  });
+  if (!r.ok) return null;
+  const u = await r.json();
+  return u && u.email ? u.email.toLowerCase() : null;
+}
+
+async function fetchStatus(email){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_my_status", {
+    method:"POST",
+    headers:{
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type":"application/json",
+      "Accept":"application/json"
+    },
+    body: JSON.stringify({p_email: email})
+  });
+  if (!r.ok) return null;
+  const d = await r.json();
+  return Array.isArray(d) ? d[0] : d;
+}
+
+// ---------- leaderboard fetch ----------
+async function fetchLeaderboard(limit){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_leaderboard", {
+    method:"POST",
+    headers:{
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type":"application/json",
+      "Accept":"application/json"
+    },
+    body: JSON.stringify({p_limit: limit || 100})
+  });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const d = await r.json();
+  return Array.isArray(d) ? d : [];
+}
+
+// ---------- render ----------
+function renderRows(rows, myEmail){
+  const tbody = document.getElementById("tableBody");
+  if (!rows || rows.length === 0){
+    tbody.innerHTML = '<div class="empty-msg">No entries yet — be the first to refer a friend.</div>';
+    return;
+  }
+
+  const html = rows.map(row => {
+    // Exact match: compare queue_position (unique) from the user's own profile
+    const isMe = myProfile && row.queue_position != null &&
+                 myProfile.queue_position != null &&
+                 row.queue_position === myProfile.queue_position;
+    const medal = medalFor(row.rank);
+    const b = badgeFor(row.membership_tier, row.cohort);
+    return `
+      <div class="row ${row.rank <= 3 ? 'top3' : ''} ${isMe ? 'is-me' : ''}">
+        <div class="rank-cell">
+          ${medal
+            ? `<span class="rank-medal">${medal}</span>`
+            : `<span class="rank-num">${row.rank}</span>`
+          }
+        </div>
+        <div class="name-cell">
+          <div class="display-name ${isMe ? 'is-me' : ''}">${escHtml(row.display_name || "Anonymous")}${isMe ? " (you)" : ""}</div>
+          ${row.borough ? `<div class="borough-tag">${escHtml(row.borough)}</div>` : ""}
+        </div>
+        <div class="badge-cell">
+          <span class="tier-badge ${b.cls}">${b.label}</span>
+        </div>
+        <div class="refs-cell">${row.referrals_count || 0}</div>
+      </div>`;
+  }).join("");
+
+  tbody.innerHTML = html;
+
+  const countLine = document.getElementById("countLine");
+  countLine.textContent = rows.length + " STRIDERS COMPETING";
+  countLine.style.display = "block";
+}
+
+function escHtml(s){
+  return String(s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+// ---------- main ----------
+(async function(){
+  // Fetch leaderboard (fire immediately, don't wait for auth)
+  const lbPromise = fetchLeaderboard(100);
+
+  // Check auth in parallel
+  let myEmail = null;
+  let myProfile = null;
+  const tokens = getStoredTokens();
+  if (tokens){
+    try {
+      myEmail = await getAuthEmail(tokens.access_token);
+      if (myEmail) {
+        myProfile = await fetchStatus(myEmail);
+      }
+    } catch(_){}
+  }
+
+  // Show/hide my banner or nudge
+  if (myProfile){
+    const banner = document.getElementById("myBanner");
+    document.getElementById("bannerRank").textContent = "#" + (myProfile.queue_position || "—");
+    document.getElementById("bannerName").textContent =
+      myEmail.split("@")[0].split(".")[0].charAt(0).toUpperCase() +
+      myEmail.split("@")[0].split(".")[0].slice(1) + " (you)";
+    document.getElementById("bannerRefs").textContent = refsLabel(myProfile.referrals_count);
+    banner.style.display = "flex";
+  } else {
+    document.getElementById("nudgeBlock").style.display = "block";
+  }
+
+  // Render leaderboard
+  try {
+    const rows = await lbPromise;
+    renderRows(rows, myEmail);
+  } catch(err){
+    document.getElementById("tableBody").innerHTML =
+      `<div class="empty-msg" style="color:var(--red)">Couldn't load the board — ${escHtml(err.message)}. <a href="" style="color:var(--gold)">Refresh</a></div>`;
+  }
+})();
+</script>
+</body>
+</html>

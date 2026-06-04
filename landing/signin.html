@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Sign in · Stride Quest</title>
+<meta name="description" content="One-tap sign-in. No passwords. Drop your email — we'll send a link to your Strider dashboard." />
+<meta name="theme-color" content="#0A0A0C" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0C;--bg-2:#141418;--card:#17171C;--ink:#FFFFFF;--ink-dim:#7A7A86;
+    --line:#23232B;--gold:#FFD60A;--gold-2:#FFC107;--green:#10B981;--red:#FF3B30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,system-ui,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;min-height:100vh}
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(800px 600px at 15% 5%, rgba(255,214,10,0.08), transparent 60%),
+      radial-gradient(900px 700px at 90% 80%, rgba(45,127,249,0.06), transparent 60%);
+  }
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:24px}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:48px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .brand .badge{width:32px;height:32px;border-radius:50%;background:var(--gold);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;letter-spacing:-0.02em}
+  .brand .word{font-weight:700;font-size:16px;letter-spacing:0.02em}
+  .status{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .status .pulse{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .magic-card{background:linear-gradient(180deg,rgba(255,214,10,0.05),transparent 80%),var(--card);border:1px solid var(--line);border-radius:24px;padding:36px;text-align:center;margin-bottom:24px;position:relative;overflow:hidden}
+  .magic-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .magic-card h2{font-weight:800;font-size:32px;letter-spacing:-0.03em;margin-bottom:10px}
+  .magic-card h2 .y{color:var(--gold)}
+  .magic-card p{color:var(--ink-dim);font-size:15px;line-height:1.55;max-width:440px;margin:0 auto 24px}
+  .magic-icon{display:inline-flex;width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,#FFD60A,#FFC107);align-items:center;justify-content:center;font-size:40px;margin-bottom:18px;box-shadow:0 16px 48px rgba(255,214,10,0.25);color:#0A0A0C}
+
+  .field{margin-bottom:14px;text-align:left}
+  .field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--ink-dim);margin-bottom:8px;text-transform:uppercase}
+  .field input{width:100%;background:#0E0E12;border:1px solid var(--line);color:var(--ink);padding:14px 16px;border-radius:12px;font-size:16px;font-family:inherit;outline:none;transition:border-color .15s}
+  .field input:focus{border-color:var(--gold)}
+  .primary{display:block;width:100%;background:var(--gold);color:#0A0A0C;border:none;padding:16px 24px;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;letter-spacing:-0.01em;transition:transform .12s, box-shadow .15s}
+  .primary:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(255,214,10,0.25)}
+  .primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  .sent-state{display:none;animation:rise .5s ease both}
+  .sent-state.show{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .email-display{background:#0E0E12;border:1px solid var(--gold);border-radius:12px;padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);margin-bottom:18px;display:inline-flex;align-items:center;gap:10px;word-break:break-all}
+  .email-display::before{content:"✉";font-size:18px}
+  .checks{text-align:left;max-width:380px;margin:24px auto 0;display:grid;gap:10px}
+  .check-row{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--ink);line-height:1.45;background:#0E0E12;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .check-row .ck{color:var(--gold);font-weight:700;flex-shrink:0;font-size:12px;line-height:1.5}
+  .check-row strong{color:var(--gold);font-weight:600}
+
+  .err{display:none;background:rgba(255,59,48,0.1);border:1px solid rgba(255,59,48,0.3);color:#FF6961;padding:12px 14px;border-radius:10px;font-size:13.5px;margin-bottom:14px;text-align:left}
+  .err.show{display:block}
+
+  .meta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-dim);text-align:center;margin-top:18px}
+  .meta a{color:var(--gold);text-decoration:underline}
+
+  .ftr{text-align:center;color:var(--ink-dim);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;padding:32px 0 16px}
+  .ftr a{color:var(--ink-dim);text-decoration:none}
+  .ftr a:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a href="/" class="brand"><span class="badge">S</span><span class="word">STRIDE QUEST</span></a>
+  <div class="status"><span class="pulse"></span><span>SIGN-IN</span></div>
+</header>
+
+<!-- DEFAULT STATE -->
+<div class="magic-card" id="defaultState">
+  <div class="magic-icon">✉</div>
+  <h2>Welcome <span class="y">back.</span></h2>
+  <p>No passwords here. Drop your email, we'll send you a one-tap link to your queue status — instantly.</p>
+
+  <div id="errMsg" class="err"></div>
+
+  <form id="otpForm" style="max-width:380px;margin:0 auto">
+    <div class="field">
+      <label for="emailIn">YOUR EMAIL</label>
+      <input type="email" id="emailIn" placeholder="your@email.com" autocomplete="email" required />
+    </div>
+    <button type="submit" class="primary" id="sendBtn">Send me my link →</button>
+  </form>
+
+  <div class="meta" style="margin-top:18px">
+    NEW HERE? <a href="/">JOIN THE WAITLIST →</a>
+  </div>
+</div>
+
+<!-- SENT STATE -->
+<div class="magic-card sent-state" id="sentState">
+  <div class="magic-icon" style="background:linear-gradient(135deg,#10B981,#0EA371);color:#FFFFFF">✓</div>
+  <h2>Check your <span class="y">inbox.</span></h2>
+  <p>We just sent a one-tap login link to:</p>
+  <div class="email-display" id="sentEmail">your@email.com</div>
+  <p style="margin-top:18px">Tap the link in that email and you're back. The link is good for the next 60 minutes. After that, just come back here and we'll send a fresh one.</p>
+
+  <div class="checks">
+    <div class="check-row"><span class="ck">✓</span><span>Link arrives in <strong>under 30 seconds</strong> — usually 5</span></div>
+    <div class="check-row"><span class="ck">✓</span><span>Tap once → your <strong>queue status opens</strong></span></div>
+    <div class="check-row"><span class="ck">✓</span><span>Can't find it? <strong>Check spam / promotions</strong> — search "Stride Quest"</span></div>
+  </div>
+
+  <div class="meta" style="margin-top:24px">
+    DIDN'T GET IT? <a href="#" id="resendLink">SEND ANOTHER →</a>
+  </div>
+</div>
+
+<div class="ftr">
+  STRIDE QUEST © 2026 · LONDON · <a href="/">BACK TO WAITLIST</a>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://btizzhrkelcxvafdxwun.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjExMTQsImV4cCI6MjA5NDkzNzExNH0.QpxH-DDPa6qA4RCRG0Y18WDZX3KCF5PQzd8uhXV_cAk";
+
+const form = document.getElementById("otpForm");
+const sendBtn = document.getElementById("sendBtn");
+const emailIn = document.getElementById("emailIn");
+const errMsg = document.getElementById("errMsg");
+const defaultState = document.getElementById("defaultState");
+const sentState = document.getElementById("sentState");
+const sentEmail = document.getElementById("sentEmail");
+
+// If user previously signed up, prefill their email
+try {
+  const cached = localStorage.getItem("sq_user_email");
+  if (cached) emailIn.value = cached;
+} catch(_){}
+
+function showErr(msg){ errMsg.textContent = msg; errMsg.classList.add("show"); }
+function hideErr(){ errMsg.classList.remove("show"); }
+
+async function sendMagicLink(email){
+  hideErr();
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Sending…";
+  try {
+    const r = await fetch(SUPABASE_URL + "/auth/v1/otp", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        // REST /auth/v1/otp requires email_redirect_to top-level (not nested in options).
+        // DEPLOY-MARKER-2026-06-04-1640 (forced rebuild to fix stale Netlify deploy)
+        email_redirect_to: window.location.origin + "/status.html",
+        create_user: true
+      })
+    });
+    if (!r.ok) {
+      const data = await r.json().catch(()=>({}));
+      throw new Error(data.msg || data.error_description || data.error || ("HTTP " + r.status));
+    }
+    try { localStorage.setItem("sq_user_email", email); } catch(_){}
+    sentEmail.textContent = email;
+    defaultState.style.display = "none";
+    sentState.classList.add("show");
+    window.scrollTo({top:0, behavior:"smooth"});
+  } catch(err) {
+    showErr("Couldn't send the link — " + (err.message || "try again in a moment."));
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Send me my link →";
+  }
+}
+
+form.addEventListener("submit", function(e){
+  e.preventDefault();
+  const email = emailIn.value.trim().toLowerCase();
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    showErr("Enter a valid email.");
+    return;
+  }
+  sendMagicLink(email);
+});
+
+document.getElementById("resendLink").addEventListener("click", function(e){
+  e.preventDefault();
+  defaultState.style.display = "block";
+  sentState.classList.remove("show");
+  sendBtn.disabled = false;
+  sendBtn.textContent = "Send me my link →";
+  emailIn.focus();
+});
+
+// Allow ?email=... prefill for share/return links
+try {
+  const qs = new URLSearchParams(window.location.search);
+  const qsEmail = qs.get("email");
+  if (qsEmail) emailIn.value = qsEmail.toLowerCase();
+} catch(_){}
+</script>
+</body></html>

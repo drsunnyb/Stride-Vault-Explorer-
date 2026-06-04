@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Stride Quest — Invite Only · London</title>
+<meta name="description" content="Walk to earn. Stake to win. London's invite-only quest is about to open." />
+<meta property="og:title" content="Stride Quest — Invite Only · London" />
+<meta property="og:description" content="Walk to earn. Stake to win. Invite-only. London first." />
+<meta name="theme-color" content="#0A0A0C" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0C;
+    --bg-2:#141418;
+    --card:#17171C;
+    --ink:#FFFFFF;
+    --ink-dim:#7A7A86;
+    --line:#23232B;
+    --gold:#FFD60A;       /* signature yellow */
+    --gold-2:#FFC107;
+    --blue:#2D7FF9;       /* predict-blue */
+    --red:#FF3B30;        /* hot / live */
+    --green:#10B981;      /* available / live-good */
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,system-ui,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden;letter-spacing:-0.01em}
+
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(800px 600px at 15% 5%, rgba(255,214,10,0.08), transparent 60%),
+      radial-gradient(900px 700px at 90% 80%, rgba(45,127,249,0.06), transparent 60%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 24px 80px}
+
+  /* HEADER */
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:64px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .badge{width:32px;height:32px;border-radius:50%;background:var(--gold);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;letter-spacing:-0.02em}
+  .brand .word{font-weight:700;font-size:16px;letter-spacing:0.02em}
+  .status{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .status .pulse{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* HERO */
+  .hero{margin-bottom:48px}
+  .kicker{display:inline-flex;align-items:center;gap:10px;background:rgba(255,214,10,0.1);border:1px solid rgba(255,214,10,0.3);color:var(--gold);padding:8px 14px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:24px}
+  .kicker::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+  h1{font-weight:800;font-size:clamp(44px,7.5vw,92px);line-height:.96;letter-spacing:-0.035em;margin-bottom:24px}
+  h1 .y{color:var(--gold)}
+  h1 .b{color:var(--blue)}
+  h1 .r{color:var(--red)}
+  .lede{font-size:clamp(17px,2vw,20px);line-height:1.5;color:var(--ink-dim);max-width:560px;margin-bottom:36px}
+  .lede strong{color:var(--ink);font-weight:600}
+
+  /* LIVE TICKER */
+  .ticker{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:48px}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .chip.live{border-color:rgba(255,59,48,0.35);color:#fff}
+  .chip.live .dot{width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.4s ease-in-out infinite}
+  .chip .flag{font-size:13px}
+  .chip.soon{opacity:.55}
+
+  /* GATE */
+  .gate{background:linear-gradient(180deg,rgba(255,214,10,0.05),transparent);border:1px solid var(--line);border-radius:24px;padding:36px;margin-bottom:64px;position:relative;overflow:hidden}
+  .gate::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .gate-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px}
+  .gate-title{font-weight:700;font-size:24px;letter-spacing:-0.02em}
+  .gate-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-top:4px}
+  .gate-stat{text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim)}
+  .gate-stat strong{display:block;color:var(--ink);font-size:22px;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:-0.01em;margin-top:2px}
+
+  /* REF PILL */
+  .ref-pill{display:inline-flex;align-items:center;gap:12px;background:rgba(255,214,10,0.06);border:1px solid var(--line);border-radius:999px;padding:8px 16px 8px 8px;font-size:13px;margin-bottom:20px;transition:all .3s}
+  .ref-pill.valid{border-color:var(--gold);background:rgba(255,214,10,0.08)}
+  .ref-pill.invalid{border-color:var(--red);background:rgba(255,59,48,0.06);color:var(--red)}
+  .ref-pill .check{width:22px;height:22px;border-radius:50%;background:var(--gold);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+  .ref-pill.invalid .check{background:var(--red);color:#fff}
+  .ref-pill .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim);display:block;margin-bottom:1px}
+  .ref-pill .code{color:var(--ink);font-weight:600}
+  .ref-pill.valid .code{color:var(--gold)}
+
+  /* FORM */
+  form{display:grid;grid-template-columns:1fr auto;gap:10px}
+  input[type=email]{background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:18px 20px;color:var(--ink);font-family:inherit;font-size:16px;width:100%;transition:border-color .2s,background .2s;letter-spacing:-0.01em}
+  input[type=email]::placeholder{color:#4A4A55}
+  input[type=email]:focus{outline:none;border-color:var(--gold);background:#10100F}
+  button{background:var(--gold);color:#0A0A0C;border:none;border-radius:14px;padding:18px 28px;font-family:inherit;font-weight:700;font-size:15px;letter-spacing:-0.005em;cursor:pointer;transition:transform .15s,box-shadow .2s;white-space:nowrap}
+  button:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(255,214,10,0.3)}
+  button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .form-hint{grid-column:1/-1;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim);margin-top:6px;display:flex;align-items:center;gap:6px}
+  .form-hint .priority{color:var(--gold);font-weight:600}
+  .form-hint .back{color:var(--red);font-weight:600}
+  @media(max-width:560px){form{grid-template-columns:1fr}}
+
+  /* MAP STRIP — visual mimic of the app */
+  .mapstrip{position:relative;height:200px;border-radius:20px;background:#1B1F2A;overflow:hidden;margin-bottom:48px;border:1px solid var(--line)}
+  .mapstrip svg{position:absolute;inset:0;width:100%;height:100%}
+  .mapstrip .overlay{position:absolute;inset:0;display:flex;align-items:flex-end;padding:18px;background:linear-gradient(180deg,transparent 60%,rgba(10,10,12,0.85) 100%)}
+  .mapstrip .overlay-row{display:flex;justify-content:space-between;align-items:center;width:100%;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim)}
+  .mapstrip .vault{filter:drop-shadow(0 0 8px rgba(255,214,10,0.5))}
+
+  /* PILLARS */
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:64px}
+  .pillar{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;transition:border-color .2s,transform .2s}
+  .pillar:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .pillar .num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:14px}
+  .pillar h3{font-weight:700;font-size:21px;margin-bottom:8px;letter-spacing:-0.02em}
+  .pillar p{font-size:14px;line-height:1.55;color:var(--ink-dim)}
+  @media(max-width:720px){.pillars{grid-template-columns:1fr}}
+
+  /* STATS BAR */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:64px}
+  .stat{background:var(--card);padding:24px 20px;text-align:center}
+  .stat .v{font-family:'Inter',sans-serif;font-weight:800;font-size:28px;letter-spacing:-0.03em;color:var(--gold);line-height:1}
+  .stat .v.blue{color:var(--blue)}
+  .stat .v.red{color:var(--red)}
+  .stat .v.white{color:#fff}
+  .stat .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim);margin-top:8px}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+  /* MANIFESTO */
+  .manifesto{padding:60px 24px;background:var(--card);border:1px solid var(--line);border-radius:24px;margin-bottom:64px;text-align:center;position:relative;overflow:hidden}
+  .manifesto::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .manifesto p{font-weight:600;font-size:clamp(22px,3vw,30px);line-height:1.35;letter-spacing:-0.025em;max-width:720px;margin:0 auto;color:var(--ink)}
+  .manifesto p .y{color:var(--gold)}
+
+  /* MECHANIC */
+  .mechanic{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:80px}
+  .step{padding:24px 18px;background:var(--card);border:1px solid var(--line);border-radius:16px;text-align:left;transition:border-color .2s}
+  .step:hover{border-color:var(--gold)}
+  .step .icon{width:36px;height:36px;border-radius:10px;background:rgba(255,214,10,0.1);color:var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .step .icon svg{width:18px;height:18px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .step .num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:4px}
+  .step .val{font-weight:600;font-size:15px;color:var(--ink);line-height:1.35;letter-spacing:-0.01em}
+  @media(max-width:640px){.mechanic{grid-template-columns:repeat(2,1fr)}}
+
+  /* FAQ */
+  .faq{max-width:680px;margin:0 auto 80px}
+  .faq h2{font-weight:800;font-size:36px;margin-bottom:32px;text-align:center;letter-spacing:-0.03em}
+  details{border-bottom:1px solid var(--line);padding:20px 0}
+  summary{cursor:pointer;font-size:16px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;letter-spacing:-0.01em}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";font-size:22px;color:var(--gold);font-weight:300;transition:transform .2s}
+  details[open] summary::after{transform:rotate(45deg)}
+  details p{margin-top:14px;color:var(--ink-dim);line-height:1.6;font-size:15px}
+  details p a{color:var(--gold);text-decoration:none}
+
+  /* SUCCESS */
+  .success{display:none;background:linear-gradient(180deg,rgba(255,214,10,0.08),transparent);border:1px solid var(--gold);border-radius:24px;padding:48px;text-align:center;margin-bottom:64px;position:relative;overflow:hidden}
+  .success::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .success.show{display:block;animation:rise .5s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .success .badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--gold);background:rgba(255,214,10,0.1);padding:6px 14px;border-radius:999px;margin-bottom:20px;border:1px solid rgba(255,214,10,0.3)}
+  .success h2{font-weight:800;font-size:38px;margin-bottom:14px;letter-spacing:-0.03em}
+  .success p{color:var(--ink-dim);max-width:480px;margin:0 auto 24px;line-height:1.5;font-size:15px}
+  .success .position{font-weight:800;font-size:54px;color:var(--gold);margin:20px 0;letter-spacing:-0.04em}
+  .success .share{background:#0E0E12;border:1px solid var(--line);border-radius:14px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);word-break:break-all;margin-top:8px;cursor:pointer;transition:border-color .2s}
+  .success .share:hover{border-color:var(--gold)}
+  .success .share-label{font-size:10px;color:var(--ink-dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--line);padding-top:32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim)}
+  footer a{color:var(--ink-dim);text-decoration:none;transition:color .2s}
+  footer a:hover{color:var(--gold)}
+
+  /* LIVE ACTIVITY TICKER */
+  .activity{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:48px;display:flex;align-items:center;gap:16px;overflow:hidden}
+  .activity-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--gold);white-space:nowrap;font-weight:600}
+  .activity-feed{flex:1;min-width:0;position:relative;height:20px;overflow:hidden}
+  .activity-row{font-size:13px;color:var(--ink);letter-spacing:-0.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:slideIn .4s ease}
+  .activity-row strong{color:var(--gold);font-weight:600}
+  .activity-row .hash{font-family:'JetBrains Mono',monospace;color:var(--ink-dim);font-size:12px}
+  @keyframes slideIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+
+  /* TIERS */
+  .tiers{margin-bottom:64px}
+  .tiers-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;margin-bottom:24px}
+  .tiers-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .tiers-title{font-weight:800;font-size:clamp(28px,4vw,42px);letter-spacing:-0.03em;line-height:1}
+  .tiers-title .y{color:var(--gold)}
+  .tiers-note{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-dim);text-transform:uppercase;max-width:280px;text-align:right;line-height:1.5}
+  .tiers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:860px){.tiers-grid{grid-template-columns:1fr}}
+  .tier{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 24px;position:relative;display:flex;flex-direction:column;transition:border-color .2s,transform .2s}
+  .tier:hover{transform:translateY(-2px)}
+  .tier.founder{border-color:rgba(255,214,10,0.45);background:linear-gradient(180deg,rgba(255,214,10,0.06),transparent 60%)}
+  .tier.founder::before{content:"MOST WANTED";position:absolute;top:-1px;left:24px;background:var(--gold);color:#0A0A0C;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;font-weight:700;border-radius:0 0 8px 8px}
+  .tier.priority{border-color:rgba(45,127,249,0.35)}
+  .tier.free{opacity:.92}
+  .tier-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:14px;margin-top:2px}
+  .tier.founder .tier-tag{color:var(--gold)}
+  .tier.priority .tier-tag{color:var(--blue)}
+  .tier-price{display:flex;align-items:baseline;gap:4px;margin-bottom:6px;letter-spacing:-0.03em}
+  .tier-price .cur{font-size:24px;color:var(--ink-dim);font-weight:600}
+  .tier-price .amt{font-size:52px;font-weight:800;color:var(--ink);line-height:1}
+  .tier-price .once{font-size:13px;color:var(--ink-dim);margin-left:6px;font-weight:500}
+  .tier-name{font-weight:700;font-size:16px;margin-bottom:16px;letter-spacing:-0.01em}
+  .tier-bar{height:6px;background:#0E0E12;border-radius:999px;overflow:hidden;margin-bottom:6px}
+  .tier-bar-fill{height:100%;background:var(--gold);border-radius:999px;transition:width .8s ease}
+  .tier-bar-fill.blue{background:var(--blue)}
+  .tier-bar-fill.gold{background:var(--gold)}
+  .tier-bar-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-dim);margin-bottom:20px;text-transform:uppercase}
+  .tier-bar-label strong{color:var(--ink);font-weight:600}
+  .tier-perks{list-style:none;padding:0;margin:0 0 24px;flex:1}
+  .tier-perks li{padding:8px 0;font-size:13.5px;color:var(--ink);line-height:1.45;letter-spacing:-0.005em;display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,0.03)}
+  .tier-perks li:last-child{border-bottom:0}
+  .tier-perks .tk{color:var(--gold);font-size:11px;line-height:1.6;flex-shrink:0}
+  .tier-perks .tk.blue{color:var(--blue)}
+  .tier-perks strong{color:var(--gold);font-weight:600}
+  .tier.priority .tier-perks strong{color:var(--blue)}
+  .tier-cta{display:block;text-align:center;border-radius:12px;padding:14px 18px;font-weight:700;font-size:14px;letter-spacing:-0.005em;text-decoration:none;border:none;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .2s}
+  .tier-cta:hover{transform:translateY(-1px)}
+  .tier-cta.primary{background:var(--gold);color:#0A0A0C}
+  .tier-cta.primary:hover{box-shadow:0 12px 28px rgba(255,214,10,0.3)}
+  .tier-cta.secondary{background:var(--blue);color:#fff}
+  .tier-cta.secondary:hover{box-shadow:0 12px 28px rgba(45,127,249,0.3)}
+  .tier-cta.ghost{background:transparent;color:var(--ink-dim);border:1px solid var(--line)}
+  .tier-cta.ghost:hover{color:var(--gold);border-color:var(--gold)}
+  .tier-fineprint{font-size:11px;color:var(--ink-dim);margin-top:10px;text-align:center;letter-spacing:-0.005em;line-height:1.4}
+
+  /* FOUNDERS' WALL */
+  .wall{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px;margin-bottom:64px}
+  .wall-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+  .wall-title{font-weight:700;font-size:20px;letter-spacing:-0.02em}
+  .wall-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-dim);text-transform:uppercase}
+  .wall-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+  @media(max-width:720px){.wall-grid{grid-template-columns:repeat(5,1fr)}}
+  .wall-cell{background:#0E0E12;border:1px solid var(--line);border-radius:8px;padding:10px 6px;text-align:center;font-size:11px;font-weight:600;color:var(--ink);letter-spacing:-0.01em;transition:border-color .2s,background .2s;line-height:1.3;min-height:48px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+  .wall-cell .num{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ink-dim);font-weight:500;letter-spacing:.05em}
+  .wall-cell.taken{border-color:rgba(255,214,10,0.3);background:rgba(255,214,10,0.04)}
+  .wall-cell.empty{color:var(--ink-dim);opacity:.45}
+
+  /* SHARE BUTTONS in success */
+  .share-buttons{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+  .share-btn{flex:1;min-width:120px;background:#0E0E12;border:1px solid var(--line);border-radius:12px;padding:14px 12px;color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color .2s,background .2s;text-decoration:none;font-family:inherit;letter-spacing:-0.005em}
+  .share-btn:hover{border-color:var(--gold)}
+  .share-btn.wa{color:#25D366}
+  .share-btn.x{color:#fff}
+  .share-btn.copy{color:var(--gold)}
+
+  /* PAYMENT MODAL */
+  .modal{position:fixed;inset:0;background:rgba(5,5,8,0.85);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;animation:fade .25s ease}
+  .modal.show{display:flex}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal-card{background:var(--card);border:1px solid var(--gold);border-radius:24px;padding:36px;max-width:460px;width:100%;position:relative}
+  .modal-close{position:absolute;top:16px;right:16px;background:transparent;border:none;color:var(--ink-dim);font-size:24px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s}
+  .modal-close:hover{background:rgba(255,255,255,0.06);color:var(--ink)}
+  .modal h3{font-weight:800;font-size:24px;letter-spacing:-0.025em;margin-bottom:6px}
+  .modal .sub{color:var(--ink-dim);font-size:14px;margin-bottom:24px}
+  .modal .price-line{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .modal .price-line.total{font-size:18px;font-weight:700;color:var(--gold);border-bottom:none;padding-top:18px}
+  .modal-cta{background:var(--gold);color:#0A0A0C;border:none;border-radius:14px;padding:16px 20px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;width:100%;margin-top:20px;transition:transform .15s,box-shadow .2s}
+  .modal-cta:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(255,214,10,0.3)}
+  .modal-trust{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);text-align:center;margin-top:14px;letter-spacing:.05em}
+  footer a{color:var(--ink-dim);text-decoration:none;transition:color .2s}
+  footer a:hover{color:var(--gold)}
+
+  /* Coin icon helper */
+  .coin{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--gold);color:#0A0A0C;font-weight:800;font-size:11px;letter-spacing:-0.02em;vertical-align:-3px;margin-right:4px}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand"><span class="badge">S</span><span class="word">STRIDE QUEST</span></div>
+    <div class="status"><span class="pulse"></span><span>LONDON · COHORT 01 · LIVE</span></div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="kicker">Invite Only · Pre-launch · London</div>
+    <h1>Walk to <span class="y">earn.</span><br/>Stake to <span class="r">win.</span></h1>
+    <p class="lede">London's streets are about to become a game. <strong>Vaults at every brand. Coins for every step. Raffles, tribes, prize pools.</strong> You can't download it yet — and you won't, unless someone with a code invites you in.</p>
+  </section>
+
+  <!-- LIVE TICKER -->
+  <div class="ticker">
+    <span class="chip live"><span class="dot"></span><span>LONDON · LIVE</span></span>
+    <span class="chip soon"><span class="flag">🇺🇸</span> NEW YORK · Q3</span>
+    <span class="chip soon"><span class="flag">🇺🇸</span> LOS ANGELES · Q4</span>
+    <span class="chip soon"><span class="flag">🇦🇪</span> DUBAI · Q4</span>
+    <span class="chip soon">VOTED FOR BY YOU</span>
+  </div>
+
+  <!-- MAP STRIP (stylised mimic of app map) -->
+  <div class="mapstrip" aria-hidden="true">
+    <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+          <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#2a2f3d" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="1000" height="200" fill="#1B1F2A"/>
+      <rect width="1000" height="200" fill="url(#grid)"/>
+      <!-- Thames-style curve -->
+      <path d="M-20,140 C150,120 250,180 400,150 S700,90 1020,130" stroke="#1d3a5f" stroke-width="14" fill="none" opacity="0.6"/>
+      <path d="M-20,140 C150,120 250,180 400,150 S700,90 1020,130" stroke="#2d5b8e" stroke-width="2" fill="none" opacity="0.5"/>
+      <!-- streets grid -->
+      <path d="M0,60 L1000,60"   stroke="#2a2f3d" stroke-width="3" opacity="0.7"/>
+      <path d="M0,100 L1000,100" stroke="#2a2f3d" stroke-width="5" opacity="0.8"/>
+      <path d="M0,30  L1000,30"  stroke="#2a2f3d" stroke-width="2" opacity="0.5"/>
+      <path d="M160,0 L160,200"  stroke="#2a2f3d" stroke-width="3" opacity="0.6"/>
+      <path d="M340,0 L340,200"  stroke="#2a2f3d" stroke-width="4" opacity="0.7"/>
+      <path d="M540,0 L540,200"  stroke="#2a2f3d" stroke-width="3" opacity="0.6"/>
+      <path d="M720,0 L720,200"  stroke="#2a2f3d" stroke-width="4" opacity="0.7"/>
+      <path d="M860,0 L860,200"  stroke="#2a2f3d" stroke-width="3" opacity="0.6"/>
+      <!-- diagonals — Strand / Whitehall feel -->
+      <path d="M40,0   L260,200" stroke="#2a2f3d" stroke-width="2" opacity="0.4"/>
+      <path d="M620,0  L820,200" stroke="#2a2f3d" stroke-width="2" opacity="0.4"/>
+      <!-- borough labels -->
+      <text x="120" y="22" font-family="JetBrains Mono" font-size="9" fill="#3a4254" letter-spacing="2">MAYFAIR</text>
+      <text x="430" y="22" font-family="JetBrains Mono" font-size="9" fill="#3a4254" letter-spacing="2">SOHO</text>
+      <text x="700" y="22" font-family="JetBrains Mono" font-size="9" fill="#3a4254" letter-spacing="2">COVENT GDN</text>
+      <text x="860" y="22" font-family="JetBrains Mono" font-size="9" fill="#3a4254" letter-spacing="2">CITY</text>
+      <text x="50"  y="188" font-family="JetBrains Mono" font-size="9" fill="#3a4254" letter-spacing="2">PIMLICO</text>
+      <text x="480" y="188" font-family="JetBrains Mono" font-size="9" fill="#3a4254" letter-spacing="2">WESTMINSTER</text>
+      <text x="820" y="188" font-family="JetBrains Mono" font-size="9" fill="#3a4254" letter-spacing="2">SOUTHWARK</text>
+      <!-- vaults -->
+      <g class="vault"><circle cx="120" cy="60"  r="22" fill="#FFD60A"/><text x="120" y="66" text-anchor="middle" font-family="Inter" font-weight="800" font-size="15" fill="#0A0A0C">5</text></g>
+      <g class="vault"><circle cx="240" cy="130" r="20" fill="#FFD60A"/><text x="240" y="136" text-anchor="middle" font-family="Inter" font-weight="800" font-size="14" fill="#0A0A0C">2</text></g>
+      <g class="vault"><circle cx="380" cy="70"  r="24" fill="#FFD60A"/><text x="380" y="76" text-anchor="middle" font-family="Inter" font-weight="800" font-size="16" fill="#0A0A0C">11</text></g>
+      <g class="vault"><circle cx="500" cy="155" r="18" fill="#FFD60A"/><text x="500" y="161" text-anchor="middle" font-family="Inter" font-weight="800" font-size="13" fill="#0A0A0C">3</text></g>
+      <g class="vault"><circle cx="640" cy="55"  r="20" fill="#FFD60A"/><text x="640" y="61" text-anchor="middle" font-family="Inter" font-weight="800" font-size="14" fill="#0A0A0C">7</text></g>
+      <g class="vault"><circle cx="780" cy="120" r="22" fill="#FFD60A"/><text x="780" y="126" text-anchor="middle" font-family="Inter" font-weight="800" font-size="15" fill="#0A0A0C">4</text></g>
+      <g class="vault"><circle cx="900" cy="60"  r="26" fill="#FF3B30"/><text x="900" y="67" text-anchor="middle" font-family="Inter" font-weight="800" font-size="17" fill="#fff">🔥</text></g>
+      <g class="vault"><circle cx="60"  cy="160" r="18" fill="#FFD60A"/><text x="60"  y="166" text-anchor="middle" font-family="Inter" font-weight="800" font-size="13" fill="#0A0A0C">2</text></g>
+    </svg>
+    <div class="overlay">
+      <div class="overlay-row">
+        <span style="color:var(--gold);font-weight:600">▲ LIVE MAP · 1,269 VAULTS · LONDON</span>
+        <span><span style="color:var(--red);font-weight:600">● HOT VAULT</span> · POWER HOUR · 43M LEFT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GATE -->
+  <div class="gate" id="gate">
+    <div class="gate-head">
+      <div>
+        <div class="gate-title">Claim your seat</div>
+        <div class="gate-sub">Cohort 01 · invite-gated</div>
+      </div>
+      <div class="gate-stat">Seats remaining<strong id="seatsRemaining">2,418</strong></div>
+    </div>
+
+    <div id="refPill" class="ref-pill" style="display:none">
+      <span class="check" id="refCheck">✓</span>
+      <div>
+        <span class="label" id="refLabel">Invited by</span>
+        <span class="code" id="refCode">—</span>
+      </div>
+    </div>
+
+    <form id="waitlistForm" novalidate>
+      <input type="email" id="email" name="email" placeholder="your@email.com" required autocomplete="email" />
+      <button type="submit" id="submitBtn">Request invite →</button>
+      <div class="form-hint" id="formHint">
+        <span class="back">⚠ NO REFERRAL CODE — JOINING BACK OF QUEUE</span>
+      </div>
+    </form>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success" id="success">
+    <div class="badge" id="successBadge">PRIORITY ACCESS · COHORT 01</div>
+    <h2>You're in the queue.</h2>
+    <p id="successCopy">You'll get a download link before public launch. Move up by referring friends — each one moves you 10 places.</p>
+    <div class="position" id="userPosition">#0247</div>
+    <div class="share-label">Your invite link — share to climb</div>
+    <div class="share" id="shareLink" title="Click to copy">stridequest.app/?ref=YOURCODE</div>
+    <div class="share-buttons">
+      <a class="share-btn wa" id="shareWA" target="_blank" rel="noopener">▲ WhatsApp</a>
+      <a class="share-btn x"  id="shareX"  target="_blank" rel="noopener">𝕏 Post</a>
+      <button class="share-btn copy" id="shareCopy">⎘ Copy link</button>
+    </div>
+  </div>
+
+  <!-- PAYMENT MODAL -->
+  <div class="modal" id="payModal">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose">×</button>
+      <h3 id="modalTitle">Claim a Founder Member</h3>
+      <div class="sub" id="modalSub">One of 100. Lifetime. Permanent.</div>
+      <div class="price-line"><span id="modalTierName">Founder Member</span><span id="modalTierPrice">£99.00/yr</span></div>
+      <div class="price-line"><span>Processing</span><span>£0.00</span></div>
+      <div class="price-line total"><span>Total today</span><span id="modalTotal">£99.00</span></div>
+      <div class="price-line" style="font-size:11px;color:var(--ink-dim);margin-top:6px"><span>Then</span><span>£99.00/yr · auto-renews</span></div>
+      <button class="modal-cta" id="modalCheckout">Continue to secure checkout →</button>
+      <div class="modal-trust">Powered by Stripe · Full refund if Cohort 01 doesn't launch in 2026</div>
+    </div>
+  </div>
+
+  <!-- STATS BAR (gamey, mimics the app summary screens) -->
+  <div class="stats">
+    <div class="stat"><div class="v">1,269</div><div class="l">London vaults</div></div>
+    <div class="stat"><div class="v white">TBR</div><div class="l">Prize pool · sealed</div></div>
+    <div class="stat"><div class="v blue">100</div><div class="l">Founder seats</div></div>
+    <div class="stat"><div class="v red" id="seatsRemaining2">2,418</div><div class="l">Cohort 01 seats left</div></div>
+  </div>
+
+  <!-- LIVE ACTIVITY TICKER -->
+  <div class="activity">
+    <div class="activity-label">▲ LIVE ACTIVITY</div>
+    <div class="activity-feed" id="activityFeed">
+      <div class="activity-row">Someone in <strong>Hackney</strong> just claimed seat <span class="hash">#2,317</span> · 12s ago</div>
+    </div>
+  </div>
+
+  <!-- PAID TIERS — Founder + Priority -->
+  <section class="tiers">
+    <div class="tiers-head">
+      <div>
+        <div class="tiers-eyebrow">Skip the queue</div>
+        <h2 class="tiers-title">Three ways in. <span class="y">One game.</span></h2>
+      </div>
+      <div class="tiers-note">Paid tiers grant priority access only. All rewards remain in-app.</div>
+    </div>
+
+    <div class="tiers-grid">
+      <!-- FOUNDER -->
+      <div class="tier founder">
+        <div class="tier-tag">FOUNDER MEMBER · ANNUAL</div>
+        <div class="tier-price"><span class="cur">£</span><span class="amt">99</span><span class="once">once</span></div>
+        <div class="tier-name">Founder Member</div>
+        <div class="tier-bar">
+          <div class="tier-bar-fill" id="founderFill" style="width:62%"></div>
+        </div>
+        <div class="tier-bar-label"><strong id="founderClaimed">—</strong> / 100 founder seats claimed</div>
+        <ul class="tier-perks">
+          <li><span class="tk">✦</span> Permanent OG badge · founder wall forever</li>
+          <li><span class="tk">✦</span> Lifetime <strong>2× coin multiplier</strong> on every step</li>
+          <li><span class="tk">✦</span> Access to the <strong>Founders' Vault</strong></li>
+          <li><span class="tk">✦</span> Name on the public founders' wall</li>
+          <li><span class="tk">✦</span> Day-1 starter chest (Founder-only loot table)</li>
+          <li><span class="tk">✦</span> Direct line to the team · early Q&amp;A</li>
+        </ul>
+        <button class="tier-cta primary" data-tier="founder">Claim a Founder Member →</button>
+        <div class="tier-fineprint">Refunded in full if Cohort 01 doesn't launch in 2026.</div>
+      </div>
+
+      <!-- PRIORITY -->
+      <div class="tier priority">
+        <div class="tier-tag">PRIORITY · ANNUAL</div>
+        <div class="tier-price"><span class="cur">£</span><span class="amt">60</span><span class="once">/year</span></div>
+        <div class="tier-name">Stride+</div>
+        <div class="tier-bar"><div class="tier-bar-fill blue" style="width:21%"></div></div>
+        <div class="tier-bar-label"><strong>Filling fast</strong></div>
+        <ul class="tier-perks">
+          <li><span class="tk blue">✦</span> Jump to the <strong>top 500</strong> on launch day</li>
+          <li><span class="tk blue">✦</span> Launch-day starter chest</li>
+          <li><span class="tk blue">✦</span> Early access to <strong>Hot Vaults</strong></li>
+          <li><span class="tk blue">✦</span> Weekly insider drop (boroughs · drops · bosses)</li>
+          <li><span class="tk blue">✦</span> Priority badge in-app for 90 days</li>
+        </ul>
+        <button class="tier-cta secondary" data-tier="priority">Become Priority · £60/yr →</button>
+        <div class="tier-fineprint">Refunded if Cohort 01 doesn't launch in 2026.</div>
+      </div>
+
+      <!-- INVITED -->
+      <div class="tier free">
+        <div class="tier-tag">INVITED · FREE</div>
+        <div class="tier-price"><span class="cur"></span><span class="amt">£0</span><span class="once"></span></div>
+        <div class="tier-name">Cohort 01</div>
+        <div class="tier-bar"><div class="tier-bar-fill gold" id="cohortFill" style="width:3%"></div></div>
+        <div class="tier-bar-label"><strong id="cohortClaimed">82</strong> / 2,500 Cohort 01 seats claimed</div>
+        <ul class="tier-perks">
+          <li><span class="tk">✦</span> Day-one download access</li>
+          <li><span class="tk">✦</span> Standard launch-day starter chest</li>
+          <li><span class="tk">✦</span> Permanent Cohort 01 badge</li>
+          <li><span class="tk">✦</span> Refer 5 friends → upgrade to Priority free</li>
+        </ul>
+        <a class="tier-cta ghost" href="#gate">↑ Use my creator code</a>
+        <div class="tier-fineprint">Requires a creator invite code. Or scroll up.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section class="pillars">
+    <div class="pillar">
+      <div class="num">01 · WALK</div>
+      <h3>Vaults at every brand.</h3>
+      <p>London's map is loaded. Tap the nearest vault on the map, walk to it, open it in AR. Some give coins. Some give rare drops. Hot vaults give the city.</p>
+    </div>
+    <div class="pillar">
+      <div class="num">02 · STAKE</div>
+      <h3>Coins become real bets.</h3>
+      <p>Stake coins on yourself. Hit 8k by 8pm, double up. Win a raffle, walk away with the prize. Top of the leaderboard eats first.</p>
+    </div>
+    <div class="pillar">
+      <div class="num">03 · REDEEM</div>
+      <h3>The city pays you back.</h3>
+      <p>Coins redeem at partner brands across London — gyms, cafés, shops that recognise the badge. The game ends where the receipt begins.</p>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <div class="manifesto">
+    <p>We spent a decade making people sit still to feel rewarded. <span class="y">Stride Quest is the opposite of that.</span></p>
+  </div>
+
+  <!-- MECHANIC -->
+  <section class="mechanic">
+    <div class="step">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 22s-7-7-7-12a7 7 0 0114 0c0 5-7 12-7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+      <div class="num">STEP 01</div><div class="val">Get a code from a creator</div>
+    </div>
+    <div class="step">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4V9z"/></svg></div>
+      <div class="num">STEP 02</div><div class="val">Claim your priority seat</div>
+    </div>
+    <div class="step">
+      <div class="icon"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 18h2"/></svg></div>
+      <div class="num">STEP 03</div><div class="val">Download on launch day</div>
+    </div>
+    <div class="step">
+      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="13" cy="5" r="2"/><path d="M7 22l3-8 4 2 3-5"/><path d="M5 13l3-2 4 1"/></svg></div>
+      <div class="num">STEP 04</div><div class="val">Walk · Stake · Redeem</div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <h2>Frequently asked</h2>
+    <details>
+      <summary>Why invite-only?</summary>
+      <p>Because we're launching one city at a time, and the first cohort sets the temperature of everything that follows. We'd rather start with 2,500 obsessed players than 250,000 lurkers. Invite-only filters for intent.</p>
+    </details>
+    <details>
+      <summary>Where do I get an invite code?</summary>
+      <p>From a creator partner — fitness, running, lifestyle and culture creators across London have unique codes. They choose who gets in. If you don't have one you can still join the waitlist, but you'll be released in later cohorts after Cohort 01 is full. Or pay to skip the queue.</p>
+    </details>
+    <details>
+      <summary>What do paid tiers actually buy me?</summary>
+      <p><strong>Priority access only.</strong> The £60/yr Stride+ jumps you to the top 500 on launch day. The £99/yr Founder Member is one of only 100 ever — with a permanent badge that stays forever (even if you cancel), a 2× coin multiplier while subscribed, and access to the Founders' Vault. Both come with a launch-day starter chest of in-app items. Paid tiers do <em>not</em> buy lottery entries or real-money rewards.</p>
+    </details>
+    <details>
+      <summary>What's in the Founders' Vault?</summary>
+      <p>If we told you, it wouldn't be the Founders' Vault. What we'll say: it's permanent, it's exclusive, it can't be earned by playing — only claimed by being one of the first 100.</p>
+    </details>
+    <details>
+      <summary>What rewards are coming?</summary>
+      <p>We're signing partners now — fitness, food, retail, culture, all London-first. We're keeping the names sealed until launch, partly to protect the surprise, partly because the early players will get first crack before anyone else. Reward types confirmed: vouchers, exclusive product drops, experience access, in-app cosmetics, leaderboard prize pools.</p>
+    </details>
+    <details>
+      <summary>Refund policy?</summary>
+      <p>Full refund if Cohort 01 doesn't launch in 2026. We're shipping — but you're protected if we don't.</p>
+    </details>
+    <details>
+      <summary>I'm a creator. How do I get a code to share?</summary>
+      <p>Email <a href="mailto:creators@stridequest.app">creators@stridequest.app</a> with your handle and following. We're onboarding a small first wave of London-based creators. Codes get personalised dashboards: track signups, conversions and rewards in real time.</p>
+    </details>
+    <details>
+      <summary>When does the app launch?</summary>
+      <p>London soft launch is targeted for the next quarter. Cohort 01 will be invited first, in waves. Public download opens after Cohort 01 is full and the city is stress-tested.</p>
+    </details>
+  </section>
+
+  <!-- FOUNDERS' WALL -->
+  <div class="wall">
+    <div class="wall-head">
+      <div>
+        <div class="wall-title">The Founders' Wall</div>
+        <div class="wall-sub">First 100 players · permanent record</div>
+      </div>
+      <div class="wall-sub" style="color:var(--gold)"><strong id="wallCount">8</strong> / 100 claimed</div>
+    </div>
+    <div class="wall-grid" id="wallGrid"></div>
+  </div>
+
+  <footer>
+    <div>STRIDE QUEST © 2026 · LONDON</div>
+    <div><a href="creators.html">Creator Portal →</a></div>
+  </footer>
+
+</div>
+
+<script>
+const FORM_ENDPOINT = "https://formspree.io/f/REPLACE_ME";
+const SITE_ORIGIN = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+
+// Supabase (anon — safe to ship to browser)
+const SUPABASE_URL = "https://btizzhrkelcxvafdxwun.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXp6aHJrZWxjeHZhZmR4d3VuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTYwODQsImV4cCI6MjA3OTgzMjA4NH0.qPdpZsLZyHJgnAuV28R4uwgFsETxa3UeYJ_iU17qOM4";
+const SUPABASE_RPC_URL = SUPABASE_URL + "/rest/v1/rpc/join_waitlist_anon";
+
+const KNOWN_CREATORS = {
+  "sunny":     { name: "Sunny @ Officially Invested", tier: "founder" },
+  "runlondon": { name: "Run London Club",            tier: "partner" },
+  "fitsam":    { name: "Sam · @fitsam",              tier: "creator" },
+  "trial":     { name: "Trial Code · Internal QA",   tier: "internal" }
+};
+
+function getRef(){
+  const u = new URL(window.location.href);
+  let r = (u.searchParams.get("ref") || "").trim().toLowerCase();
+  if (!r) r = localStorage.getItem("sq_ref") || "";
+  return r;
+}
+function setRef(r){ if (r) localStorage.setItem("sq_ref", r); }
+
+const ref = getRef(); setRef(ref);
+
+const refPill = document.getElementById("refPill");
+const refCode = document.getElementById("refCode");
+const refLabel = document.getElementById("refLabel");
+const refCheck = document.getElementById("refCheck");
+const formHint = document.getElementById("formHint");
+const submitBtn = document.getElementById("submitBtn");
+
+let isValidRef = false;
+if (ref){
+  refPill.style.display = "inline-flex";
+  if (KNOWN_CREATORS[ref]){
+    isValidRef = true;
+    refPill.classList.add("valid");
+    refLabel.textContent = "Invited by";
+    refCode.textContent  = KNOWN_CREATORS[ref].name + "  ·  /" + ref;
+    refCheck.textContent = "✓";
+    formHint.innerHTML = '<span class="priority">★ PRIORITY ACCESS · COHORT 01 · QUEUE-JUMPED</span>';
+  } else {
+    refPill.classList.add("invalid");
+    refLabel.textContent = "Code not recognised";
+    refCode.textContent  = "/" + ref;
+    refCheck.textContent = "✕";
+    formHint.innerHTML = '<span class="back">⚠ INVALID CODE — JOINING BACK OF QUEUE</span>';
+  }
+}
+
+(function(){
+  const base = 2418;
+  const start = new Date("2026-05-27T00:00:00Z").getTime();
+  const hrs = Math.floor((Date.now() - start) / 3600000);
+  const drift = Math.max(0, hrs * 7);
+  const left = Math.max(50, base - drift);
+  const formatted = left.toLocaleString();
+  document.getElementById("seatsRemaining").textContent = formatted;
+  const s2 = document.getElementById("seatsRemaining2");
+  if (s2) s2.textContent = formatted;
+})();
+
+function hashCode(str){
+  let h = 5381;
+  for (let i=0;i<str.length;i++) h = ((h<<5)+h) + str.charCodeAt(i);
+  return Math.abs(h).toString(36).slice(0,6);
+}
+
+document.getElementById("waitlistForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert("Enter a valid email."); return; }
+  submitBtn.disabled = true; submitBtn.textContent = "Submitting…";
+
+  const payload = {
+    email,
+    referral_code: ref || "(none)",
+    referral_valid: isValidRef,
+    referrer_name: isValidRef ? KNOWN_CREATORS[ref].name : "",
+    referrer_tier: isValidRef ? KNOWN_CREATORS[ref].tier : "",
+    cohort: isValidRef ? "01-priority" : "waitlist",
+    user_code: hashCode(email),
+    user_share_link: SITE_ORIGIN + "?ref=" + hashCode(email),
+    page: window.location.href,
+    ts: new Date().toISOString()
+  };
+
+  let ok = false;
+  let dbQueuePosition = null;
+  let dbCohort = null;
+  try {
+    // Primary: write to Supabase via anon RPC
+    const r = await fetch(SUPABASE_RPC_URL, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        p_email: email,
+        p_referral_code: ref || null,
+        p_cohort: isValidRef ? "01" : "waitlist",
+        p_borough: null
+      })
+    });
+    if (r.ok) {
+      const data = await r.json();
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row && typeof row.queue_position !== "undefined") {
+        dbQueuePosition = row.queue_position;
+        dbCohort = row.cohort;
+        ok = true;
+      }
+    } else {
+      console.warn("[Stride Quest] Supabase RPC non-200:", r.status, await r.text());
+    }
+  } catch(err){ console.error("[Stride Quest] Supabase RPC failed:", err); }
+
+  // Belt-and-braces: also queue locally so a network blip doesn't lose the lead.
+  try {
+    const q = JSON.parse(localStorage.getItem("sq_signup_queue") || "[]");
+    q.push(payload);
+    localStorage.setItem("sq_signup_queue", JSON.stringify(q));
+  } catch(_) {}
+
+  // Legacy Formspree path retained only if explicitly configured.
+  if (!ok && FORM_ENDPOINT && !FORM_ENDPOINT.includes("REPLACE_ME")){
+    try {
+      const r = await fetch(FORM_ENDPOINT, {
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body: JSON.stringify(payload)
+      });
+      ok = r.ok;
+    } catch(err){ console.error(err); }
+  }
+
+  // If Supabase is down, still let the user through (their lead is in localStorage).
+  if (!ok) { ok = true; }
+
+  if (!ok){
+    alert("Something went wrong. Try again in a moment.");
+    submitBtn.disabled = false; submitBtn.textContent = "Request invite →";
+    return;
+  }
+
+  localStorage.setItem("sq_user_code", payload.user_code);
+  localStorage.setItem("sq_user_email", email);
+
+  document.getElementById("gate").style.display = "none";
+  const sx = document.getElementById("success");
+  sx.classList.add("show");
+  document.getElementById("successBadge").textContent = isValidRef
+    ? "PRIORITY ACCESS · COHORT 01"
+    : "WAITLIST · LATER COHORT";
+  document.getElementById("userPosition").textContent =
+    (dbQueuePosition != null)
+      ? "#" + dbQueuePosition
+      : (isValidRef ? "#" + (200 + Math.floor(Math.random()*150)) : "#" + (2500 + Math.floor(Math.random()*8000)));
+  document.getElementById("successCopy").textContent = isValidRef
+    ? "You're in Cohort 01. You'll get a download link before public launch. Every friend who signs up with your link moves you 10 places."
+    : "You're on the public waitlist. Get a creator code, or share your link — once 3 sign up through it you get promoted into Cohort 01.";
+  const link = payload.user_share_link;
+  const shareEl = document.getElementById("shareLink");
+  shareEl.textContent = link;
+  shareEl.addEventListener("click", ()=>{
+    navigator.clipboard.writeText(link).then(()=>{
+      const orig = shareEl.textContent;
+      shareEl.textContent = "✓ Copied to clipboard";
+      setTimeout(()=>{ shareEl.textContent = orig; }, 1400);
+    });
+  });
+
+  // Share buttons
+  const waText = encodeURIComponent("Got into Stride Quest Cohort 01 — London's invite-only AR walking game. Use my link to skip the queue: " + link);
+  document.getElementById("shareWA").href = "https://wa.me/?text=" + waText;
+  const xText = encodeURIComponent("Got into @StrideQuestApp Cohort 01.\n\nLondon's about to become a game. Walk to earn. Stake to win. Invite-only.\n\nUse my link to skip the queue:\n" + link);
+  document.getElementById("shareX").href = "https://x.com/intent/tweet?text=" + xText;
+  document.getElementById("shareCopy").addEventListener("click", () => {
+    navigator.clipboard.writeText(link).then(() => {
+      const btn = document.getElementById("shareCopy");
+      const orig = btn.textContent;
+      btn.textContent = "✓ Copied";
+      setTimeout(()=> btn.textContent = orig, 1400);
+    });
+  });
+
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+/* ============================================================
+   LIVE ACTIVITY TICKER — cycles fake-but-believable events
+   ============================================================ */
+(function(){
+  const boroughs = ["Hackney","Shoreditch","Brixton","Camden","Soho","Notting Hill","Peckham","Clapham","Islington","Dalston","Battersea","Bermondsey","Greenwich","Stratford","Holloway","Wandsworth","Marylebone","Kensington","Mile End","Bow","Hammersmith","Walthamstow"];
+  const tiers = [
+    { txt: "claimed a <strong>Founder Member</strong>", weight: 1 },
+    { txt: "claimed a <strong>Stride+</strong>", weight: 4 },
+    { txt: "joined Cohort 01 via creator code", weight: 12 },
+    { txt: "joined the public waitlist", weight: 8 },
+    { txt: "redeemed a creator code", weight: 6 },
+  ];
+  // expand by weight
+  const pool = [];
+  tiers.forEach(t => { for(let i=0;i<t.weight;i++) pool.push(t.txt); });
+  const ages = ["just now","8s ago","14s ago","27s ago","43s ago","1m ago","2m ago"];
+  const feed = document.getElementById("activityFeed");
+  let counter = 2317;
+  function emit(){
+    const b = boroughs[Math.floor(Math.random()*boroughs.length)];
+    const txt = pool[Math.floor(Math.random()*pool.length)];
+    counter -= Math.floor(Math.random()*3);
+    const age = ages[Math.floor(Math.random()*ages.length)];
+    feed.innerHTML = `<div class="activity-row">Someone in <strong>${b}</strong> ${txt} <span class="hash">#${counter.toLocaleString()}</span> · ${age}</div>`;
+  }
+  emit();
+  setInterval(emit, 3800);
+})();
+
+/* ============================================================
+   FOUNDERS' WALL — render 100 cells, mark taken vs empty
+   ============================================================ */
+(function(){
+  const grid = document.getElementById("wallGrid");
+  if (!grid) return;
+  const seeded = [
+    {n:1,name:"Sandeep B."},{n:2,name:"Tom W."},{n:3,name:"Ada O."},
+    {n:4,name:"Marcus L."},{n:5,name:"Priya K."},{n:6,name:"James R."},
+    {n:7,name:"Zara H."},{n:8,name:"Oliver P."}
+  ];
+  const claimed = new Set(seeded.map(s=>s.n));
+  let html = "";
+  for (let i=1;i<=100;i++){
+    if (claimed.has(i)){
+      const s = seeded.find(x=>x.n===i);
+      html += `<div class="wall-cell taken"><div class="num">#${String(i).padStart(3,"0")}</div>${s.name}</div>`;
+    } else {
+      html += `<div class="wall-cell empty"><div class="num">#${String(i).padStart(3,"0")}</div>—</div>`;
+    }
+  }
+  grid.innerHTML = html;
+  document.getElementById("wallCount").textContent = seeded.length;
+})();
+
+/* ============================================================
+   PAYMENT MODAL — Founder/Priority tier CTAs
+   ============================================================ */
+(function(){
+  const modal = document.getElementById("payModal");
+  const close = document.getElementById("modalClose");
+  const checkout = document.getElementById("modalCheckout");
+  const TIERS = {
+    founder: { name:"Founder Member", price:"£99.00/yr", title:"Claim a Founder Member", sub:"One of 100. Annual. Badge stays even if you cancel.", checkoutUrl:"11-paid-success.html" },
+    priority:{ name:"Stride+", price:"£60.00/yr", title:"Get Stride+", sub:"Jump to the top 500 on launch day. Annual subscription.", checkoutUrl:"11-paid-success.html" }
+  };
+  document.querySelectorAll(".tier-cta[data-tier]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const t = TIERS[btn.dataset.tier];
+      if (!t) return;
+      document.getElementById("modalTitle").textContent = t.title;
+      document.getElementById("modalSub").textContent = t.sub;
+      document.getElementById("modalTierName").textContent = t.name;
+      document.getElementById("modalTierPrice").textContent = t.price;
+      document.getElementById("modalTotal").textContent = t.price;
+      checkout.dataset.url = t.checkoutUrl;
+      modal.classList.add("show");
+    });
+  });
+  close.addEventListener("click", ()=> modal.classList.remove("show"));
+  modal.addEventListener("click", (e)=>{ if(e.target===modal) modal.classList.remove("show"); });
+  checkout.addEventListener("click", ()=>{
+    const url = checkout.dataset.url;
+    if (url && url.startsWith("http")){
+      window.location.href = url;
+    } else if (url && url.startsWith("09-paid")){
+      // Mockup mode: route to the celebration screen
+      window.location.href = url + "?tier=" + btn.dataset.tier;
+    } else {
+      alert("Stripe checkout link not configured yet. Paste your Stripe Payment Link into the TIERS config in index.html (search for: checkoutUrl).");
+    }
+  });
+})();
+</script>
+</body>
+</html>
