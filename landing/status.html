@@ -136,21 +136,32 @@
   .up-sub{font-size:14px;line-height:1.5;color:var(--ink-dim);margin-bottom:22px}
   .tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media (max-width:520px){ .tier-grid{grid-template-columns:1fr} }
-  .tier-card{background:#0E0E12;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px;position:relative;transition:border-color .2s, transform .2s}
+  .tier-card{background:#0E0E12;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px;position:relative;transition:border-color .2s, transform .2s, box-shadow .2s}
   .tier-card:hover{transform:translateY(-2px)}
   .tier-card.founder{border-color:rgba(255,214,10,0.3)}
   .tier-card.founder:hover{border-color:var(--gold);box-shadow:0 12px 28px rgba(255,214,10,0.15)}
   .tier-card.plus{border-color:rgba(16,185,129,0.25)}
   .tier-card.plus:hover{border-color:var(--green);box-shadow:0 12px 28px rgba(16,185,129,0.15)}
-  .tier-pill{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:3px 8px;border-radius:5px;align-self:flex-start;background:rgba(255,214,10,0.12);border:1px solid rgba(255,214,10,0.3);color:var(--gold)}
+  .tier-pill{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 9px;border-radius:5px;align-self:flex-start;background:rgba(255,214,10,0.12);border:1px solid rgba(255,214,10,0.3);color:var(--gold);font-weight:600}
   .tier-pill.plus{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:var(--green)}
-  .tier-name{font-weight:800;font-size:18px;letter-spacing:-0.015em;color:var(--ink);margin-top:4px}
-  .tier-price{font-weight:700;font-size:14px;color:var(--ink)}
-  .tier-price span{color:var(--ink-dim);font-weight:500}
-  .tier-pitch{font-size:12.5px;line-height:1.45;color:var(--ink-dim);margin:4px 0 12px}
-  .tier-pitch strong{color:var(--ink);font-weight:600}
-  .tier-btn{display:block;text-align:center;padding:11px 14px;border-radius:10px;font-weight:700;font-size:13px;letter-spacing:-0.005em;text-decoration:none;cursor:pointer;margin-top:auto}
-  .tier-btn.founder{background:var(--gold);color:#0A0A0C}
+  .tier-name{font-weight:800;font-size:22px;letter-spacing:-0.025em;color:var(--ink);margin-top:2px;line-height:1.1}
+  .tier-pitch-lead{font-size:14px;line-height:1.5;color:var(--ink-dim);margin:0}
+  .tier-pitch-lead strong{color:var(--ink);font-weight:600}
+  .tier-perks{list-style:none;padding:0;margin:6px 0 0 0;display:flex;flex-direction:column;gap:9px}
+  .tier-perks li{font-size:13px;line-height:1.45;color:var(--ink-dim);display:flex;align-items:flex-start;gap:9px;padding-left:0}
+  .tier-perks li strong{color:var(--ink);font-weight:600}
+  .tier-perks li em{font-style:normal;color:var(--ink-dim);opacity:0.75;font-size:12px}
+  .tier-perks .tk{flex-shrink:0;color:var(--gold);font-size:13px;line-height:1.45;margin-top:1px;width:14px;text-align:center;font-weight:700}
+  .tier-perks .tk.plus{color:var(--green)}
+  .tier-bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:8px}
+  .tier-price{font-weight:800;font-size:30px;letter-spacing:-0.025em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;flex-wrap:wrap}
+  .tier-price .cur{font-size:18px;font-weight:600;color:var(--ink-dim);margin-right:1px}
+  .tier-price .per{font-size:14px;color:var(--ink-dim);font-weight:500;margin-left:2px}
+  .tier-price .note{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase;font-weight:500;margin-left:10px;align-self:center}
+  .tier-btn{display:block;text-align:center;padding:13px 14px;border-radius:10px;font-weight:700;font-size:13.5px;letter-spacing:-0.005em;text-decoration:none;cursor:pointer;transition:transform .15s, box-shadow .15s}
+  .tier-btn:hover{transform:translateY(-1px)}
+  .tier-btn.founder{background:var(--gold);color:#0A0A0C;box-shadow:0 6px 16px rgba(255,214,10,0.25)}
+  .tier-btn.founder:hover{box-shadow:0 8px 22px rgba(255,214,10,0.4)}
   .tier-btn.plus{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.4)}
   .tier-btn.plus:hover{background:rgba(16,185,129,0.25)}
   .up-footnote{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase;text-align:center;margin-top:14px;line-height:1.5}
@@ -234,28 +245,39 @@
     <div class="tier-grid">
       <!-- FOUNDER -->
       <div class="tier-card founder">
-        <span class="tier-pill">LIMITED · 100 SEATS</span>
+        <span class="tier-pill">LIMITED · 100 SEATS · LIFETIME BADGE</span>
         <div class="tier-name">Founder Member</div>
-        <div class="tier-price">£99<span>/yr</span></div>
-        <div class="tier-pitch">
-          <strong>Permanent founder badge</strong> · Day-1 starter chest ·
-          <strong>2× coin multiplier</strong> · Founders' Vault access ·
-          Skip <strong id="founderSkip">800+</strong> ahead of you.
+        <div class="tier-pitch-lead">The permanent record. <strong>Lifetime founder status</strong> across every season, every city — Cohort 01 included.</div>
+        <ul class="tier-perks">
+          <li><span class="tk">✦</span> <strong>Permanent founder badge</strong> — never expires</li>
+          <li><span class="tk">✦</span> <strong>2× coin multiplier</strong> on every step, forever</li>
+          <li><span class="tk">✦</span> Day-1 starter chest <em>(rare cosmetic + 500 coins)</em></li>
+          <li><span class="tk">✦</span> Founders' Vault — exclusive vaults you'll never see</li>
+          <li><span class="tk">✦</span> Cuts the queue: you launch on day one</li>
+          <li><span class="tk">✦</span> Your name etched on the <strong>Founders' Wall</strong></li>
+        </ul>
+        <div class="tier-bottom">
+          <div class="tier-price"><span class="cur">£</span>99<span class="per">/yr</span><span class="note">· capped at 100 seats</span></div>
+          <a href="/#tiers?tier=founder" class="tier-btn founder">Claim a Founder seat →</a>
         </div>
-        <a href="/#tiers?tier=founder" class="tier-btn founder">Claim a seat →</a>
       </div>
 
       <!-- STRIDE+ -->
       <div class="tier-card plus">
-        <span class="tier-pill plus">PRIORITY · COHORT 01</span>
+        <span class="tier-pill plus">PRIORITY · COHORT 01 GUARANTEED</span>
         <div class="tier-name">Stride+</div>
-        <div class="tier-price">£60<span>/yr</span></div>
-        <div class="tier-pitch">
-          <strong>Top 500 on launch day</strong> · Priority badge in-app ·
-          Launch starter chest · Annual subscription ·
-          Skip <strong id="plusSkip">500+</strong> ahead of you.
+        <div class="tier-pitch-lead">The priority pass. <strong>Skip straight into Cohort 01</strong> with priority perks for the first season.</div>
+        <ul class="tier-perks">
+          <li><span class="tk plus">⚡</span> <strong>Top 500 on launch day</strong> — instant access</li>
+          <li><span class="tk plus">⚡</span> Priority badge in-app + on leaderboards</li>
+          <li><span class="tk plus">⚡</span> Launch starter chest <em>(cosmetic + 200 coins)</em></li>
+          <li><span class="tk plus">⚡</span> Annual subscription — renewable</li>
+          <li><span class="tk plus">⚡</span> Cuts the queue: skips the public waitlist entirely</li>
+        </ul>
+        <div class="tier-bottom">
+          <div class="tier-price"><span class="cur">£</span>60<span class="per">/yr</span><span class="note">· annual subscription</span></div>
+          <a href="/#tiers?tier=priority" class="tier-btn plus">Become Priority →</a>
         </div>
-        <a href="/#tiers?tier=priority" class="tier-btn plus">Become Priority →</a>
       </div>
     </div>
 
@@ -475,13 +497,17 @@ function render(profile, email){
     upPanel.style.display = "block";
     document.getElementById("refSubPos").textContent = "#" + pos;
 
-    // Build ladder rungs — current refs count drives which is met / next
+    // Build ladder rungs — milestones match the SQL trigger thresholds in
+    // supabase/migrations/20260602000000_referral_climb.sql:
+    //   cohort_01_refs    = 3   → promoted out of public waitlist
+    //   stride_plus_refs  = 10  → free Stride+ (priority + perks)
+    //   founder_refs      = 25  → free Founder Member tier (permanent badge)
     const rungs = [
-      { n: 0, head: "You're in the queue",            detail: "Share your invite link to start climbing." },
-      { n: 1, head: "First referral — climb 5 spots", detail: "Each friend cuts 5 ahead of you." },
-      { n: 3, head: "Cohort 01 — priority access",    detail: "Promoted out of the public waitlist." },
-      { n: 5, head: "Free Priority badge (90 days)",  detail: "Stride+ perks in-app, no payment." },
-      { n: 10, head: "Free Stride+ for a year",       detail: "Top 500 at launch + a permanent perk." }
+      { n: 0,  head: "You're in the queue",            detail: "Share your invite link to start climbing. Each friend who signs up cuts 5 ahead of you." },
+      { n: 1,  head: "First referral — climb 5 spots", detail: "Every successful signup through your link bumps you up the queue." },
+      { n: 3,  head: "Cohort 01 — priority access",    detail: "Promoted out of the public waitlist. You launch with the first wave." },
+      { n: 10, head: "Free Stride+ — priority tier",   detail: "All Stride+ perks unlocked, no payment. Top 500 at launch." },
+      { n: 25, head: "Free Founder Member",            detail: "Permanent founder badge + 2× coin multiplier. You'd otherwise pay £99/yr." }
     ];
     const ladder = document.getElementById("ladder");
     ladder.innerHTML = "";
@@ -510,19 +536,9 @@ function render(profile, email){
       const need = nextRung.n - refs;
       refCtaText.innerHTML = `Next: <strong>${need} more referral${need===1?"":"s"}</strong> → ${escHtml(nextRung.head)}.`;
     } else {
-      refCtaText.innerHTML = `<strong>Maxed out.</strong> You've claimed every referral reward — Stride+ is free for a year.`;
-      // No more rungs — hide the upsell too (they've earned Stride+)
+      refCtaText.innerHTML = `<strong>Maxed out.</strong> You've claimed every referral reward — Founder Member is yours for free.`;
+      // No more rungs — hide the upsell too (they've already earned Founder)
       upPanel.style.display = "none";
-    }
-
-    // Personalise upsell card "skip N ahead of you" using queue position
-    const founderSkip = document.getElementById("founderSkip");
-    const plusSkip = document.getElementById("plusSkip");
-    if (typeof pos === "number" || /^\d+$/.test(String(pos))) {
-      const n = parseInt(pos, 10);
-      // Founder = jump to #1-100 range; Plus = top 500
-      founderSkip.textContent = Math.max(0, n - 50);
-      plusSkip.textContent = Math.max(0, n - 500);
     }
   }
   // ===== end referral/upsell =====
