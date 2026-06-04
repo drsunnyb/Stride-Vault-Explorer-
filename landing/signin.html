@@ -155,8 +155,8 @@ async function sendMagicLink(email){
       },
       body: JSON.stringify({
         email,
-        // email_redirect_to must be top-level for the REST /auth/v1/otp endpoint
-        // (the JS SDK wraps it in options{} but the raw REST API doesn't).
+        // REST /auth/v1/otp requires email_redirect_to top-level (not nested in options).
+        // DEPLOY-MARKER-2026-06-04-1640 (forced rebuild to fix stale Netlify deploy)
         email_redirect_to: window.location.origin + "/status.html",
         create_user: true
       })
