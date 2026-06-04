@@ -2,6 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<!-- AUTH-HASH FORWARDER: if Supabase magic-link landed us here with #access_token=..., -->
+<!-- forward to /status.html preserving the hash. Runs before the page renders. -->
+<script>
+(function(){
+  try {
+    if (window.location.hash && /[#&](access_token|error_code|error_description|type=magiclink|type=recovery|type=invite|type=signup)/.test(window.location.hash)) {
+      var target = window.location.origin + "/status.html" + window.location.hash;
+      window.location.replace(target);
+    }
+  } catch(_){}
+})();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Stride Quest — Invite Only · London</title>
 <meta name="description" content="Walk to earn. Stake to win. London's invite-only quest is about to open." />
