@@ -96,6 +96,56 @@
   .ftr{text-align:center;color:var(--ink-dim);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;padding:32px 0 16px}
   .ftr a{color:var(--ink-dim);text-decoration:none}
   .ftr a:hover{color:var(--gold)}
+
+  /* ===== Referral explainer panel ===== */
+  .ref-panel{background:#0E0E12;border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:20px}
+  .ref-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+  .ref-title{font-weight:800;font-size:24px;line-height:1.15;letter-spacing:-0.02em;color:var(--ink);margin-bottom:8px}
+  .ref-sub{font-size:14px;line-height:1.5;color:var(--ink-dim);margin-bottom:20px}
+  .ref-sub strong{color:var(--gold);font-weight:600}
+  .ladder{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+  .ladder-row{display:flex;align-items:center;gap:14px;padding:12px 14px;background:#17171C;border:1px solid var(--line);border-radius:12px;position:relative}
+  .ladder-row.met{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.04)}
+  .ladder-row.next{border-color:var(--gold);background:rgba(255,214,10,0.06);box-shadow:0 0 0 1px rgba(255,214,10,0.3)}
+  .ladder-mark{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace}
+  .ladder-mark.empty{background:#17171C;border:1px solid var(--line);color:var(--ink-dim)}
+  .ladder-mark.met{background:var(--green);color:#0A0A0C}
+  .ladder-mark.next{background:var(--gold);color:#0A0A0C}
+  .ladder-body{flex:1;min-width:0}
+  .ladder-head{font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-0.005em}
+  .ladder-head.met{color:var(--green)}
+  .ladder-head.next{color:var(--gold)}
+  .ladder-detail{font-size:12px;color:var(--ink-dim);margin-top:2px;line-height:1.35}
+  .ref-cta-row{display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(90deg,rgba(255,214,10,0.12),rgba(255,193,7,0.04));border:1px solid rgba(255,214,10,0.3);border-radius:12px;font-size:13.5px;line-height:1.4}
+  .ref-cta-row strong{color:var(--gold);font-weight:600}
+
+  /* ===== Upsell panel ===== */
+  .up-panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+  .up-panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .up-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px}
+  .up-title{font-weight:800;font-size:26px;line-height:1.1;letter-spacing:-0.025em;color:var(--ink);margin-bottom:8px}
+  .up-title em{font-style:normal;color:var(--gold)}
+  .up-sub{font-size:14px;line-height:1.5;color:var(--ink-dim);margin-bottom:22px}
+  .tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:520px){ .tier-grid{grid-template-columns:1fr} }
+  .tier-card{background:#0E0E12;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px;position:relative;transition:border-color .2s, transform .2s}
+  .tier-card:hover{transform:translateY(-2px)}
+  .tier-card.founder{border-color:rgba(255,214,10,0.3)}
+  .tier-card.founder:hover{border-color:var(--gold);box-shadow:0 12px 28px rgba(255,214,10,0.15)}
+  .tier-card.plus{border-color:rgba(16,185,129,0.25)}
+  .tier-card.plus:hover{border-color:var(--green);box-shadow:0 12px 28px rgba(16,185,129,0.15)}
+  .tier-pill{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:3px 8px;border-radius:5px;align-self:flex-start;background:rgba(255,214,10,0.12);border:1px solid rgba(255,214,10,0.3);color:var(--gold)}
+  .tier-pill.plus{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:var(--green)}
+  .tier-name{font-weight:800;font-size:18px;letter-spacing:-0.015em;color:var(--ink);margin-top:4px}
+  .tier-price{font-weight:700;font-size:14px;color:var(--ink)}
+  .tier-price span{color:var(--ink-dim);font-weight:500}
+  .tier-pitch{font-size:12.5px;line-height:1.45;color:var(--ink-dim);margin:4px 0 12px}
+  .tier-pitch strong{color:var(--ink);font-weight:600}
+  .tier-btn{display:block;text-align:center;padding:11px 14px;border-radius:10px;font-weight:700;font-size:13px;letter-spacing:-0.005em;text-decoration:none;cursor:pointer;margin-top:auto}
+  .tier-btn.founder{background:var(--gold);color:#0A0A0C}
+  .tier-btn.plus{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.4)}
+  .tier-btn.plus:hover{background:rgba(16,185,129,0.25)}
+  .up-footnote{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase;text-align:center;margin-top:14px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -148,6 +198,61 @@
     <div class="unlock" id="unlockRow">
       <span class="ic">⚡</span>
       <span class="body" id="unlockText">Loading next unlock…</span>
+    </div>
+  </div>
+
+  <!-- ===== REFERRAL EXPLAINER PANEL (hidden for paid tiers) ===== -->
+  <div class="ref-panel" id="refPanel" style="display:none">
+    <div class="ref-eyebrow">▲ HOW YOU CLIMB</div>
+    <div class="ref-title">Every Strider you bring <span style="color:var(--gold)">jumps you 5 places.</span></div>
+    <div class="ref-sub" id="refSub">You're at <strong id="refSubPos">#—</strong>. Each friend who joins with your link cuts <strong>5 people</strong> ahead of you — and hits milestones that promote you, free.</div>
+
+    <div class="ladder" id="ladder">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="ref-cta-row" id="refCtaRow">
+      <span style="font-size:18px">🎯</span>
+      <span id="refCtaText">Next milestone: <strong>2 more referrals</strong> to lock in Cohort 01.</span>
+    </div>
+  </div>
+
+  <!-- ===== UPSELL PANEL — skip the queue with paid tier (hidden for paid tiers) ===== -->
+  <div class="up-panel" id="upPanel" style="display:none">
+    <div class="up-eyebrow">⚡ FAST TRACK · SKIP THE QUEUE</div>
+    <div class="up-title">Don't want to wait? <em>Buy your spot.</em></div>
+    <div class="up-sub" id="upSub">Paid tiers cut straight past the queue into <strong style="color:var(--ink)">Cohort 01</strong> with permanent perks. Referrals are free but slow — these are instant.</div>
+
+    <div class="tier-grid">
+      <!-- FOUNDER -->
+      <div class="tier-card founder">
+        <span class="tier-pill">LIMITED · 100 SEATS</span>
+        <div class="tier-name">Founder Member</div>
+        <div class="tier-price">£99<span>/yr</span></div>
+        <div class="tier-pitch">
+          <strong>Permanent founder badge</strong> · Day-1 starter chest ·
+          <strong>2× coin multiplier</strong> · Founders' Vault access ·
+          Skip <strong id="founderSkip">800+</strong> ahead of you.
+        </div>
+        <a href="/#tiers?tier=founder" class="tier-btn founder">Claim a seat →</a>
+      </div>
+
+      <!-- STRIDE+ -->
+      <div class="tier-card plus">
+        <span class="tier-pill plus">PRIORITY · COHORT 01</span>
+        <div class="tier-name">Stride+</div>
+        <div class="tier-price">£60<span>/yr</span></div>
+        <div class="tier-pitch">
+          <strong>Top 500 on launch day</strong> · Priority badge in-app ·
+          Launch starter chest · Annual subscription ·
+          Skip <strong id="plusSkip">500+</strong> ahead of you.
+        </div>
+        <a href="/#tiers?tier=priority" class="tier-btn plus">Become Priority →</a>
+      </div>
+    </div>
+
+    <div class="up-footnote">
+      ✦&nbsp;&nbsp;PAID TIERS GRANT PRIORITY ACCESS ONLY · ALL IN-APP REWARDS REMAIN EARNED
     </div>
   </div>
 
@@ -351,6 +456,68 @@ function render(profile, email){
   } else {
     lead.textContent = "You're on the public waitlist. Share your link to climb — 3 referrals promotes you into Cohort 01.";
   }
+
+  // ===== Referral ladder + upsell panel (free + non-founder tiers only) =====
+  const refPanel = document.getElementById("refPanel");
+  const upPanel = document.getElementById("upPanel");
+  const isPaid = (tier === "founder" || tier === "stride_plus");
+
+  if (!isPaid) {
+    refPanel.style.display = "block";
+    upPanel.style.display = "block";
+    document.getElementById("refSubPos").textContent = "#" + pos;
+
+    // Build ladder rungs — current refs count drives which is met / next
+    const rungs = [
+      { n: 0, head: "You're in the queue",            detail: "Share your invite link to start climbing." },
+      { n: 1, head: "First referral — climb 5 spots", detail: "Each friend cuts 5 ahead of you." },
+      { n: 3, head: "Cohort 01 — priority access",    detail: "Promoted out of the public waitlist." },
+      { n: 5, head: "Free Priority badge (90 days)",  detail: "Stride+ perks in-app, no payment." },
+      { n: 10, head: "Free Stride+ for a year",       detail: "Top 500 at launch + a permanent perk." }
+    ];
+    const ladder = document.getElementById("ladder");
+    ladder.innerHTML = "";
+    let nextRung = null;
+    rungs.forEach((r, i) => {
+      const isMet = refs >= r.n && r.n > 0;
+      const isNext = !isMet && r.n > refs && nextRung === null;
+      if (isNext) nextRung = r;
+      const cls = isMet ? "met" : (isNext ? "next" : "");
+      const markCls = isMet ? "met" : (isNext ? "next" : "empty");
+      const markText = isMet ? "✓" : r.n;
+      ladder.innerHTML += `
+        <div class="ladder-row ${cls}">
+          <div class="ladder-mark ${markCls}">${markText}</div>
+          <div class="ladder-body">
+            <div class="ladder-head ${cls}">${escHtml(r.head)}</div>
+            <div class="ladder-detail">${escHtml(r.detail)}</div>
+          </div>
+        </div>
+      `;
+    });
+
+    // Personalised "next milestone" CTA copy
+    const refCtaText = document.getElementById("refCtaText");
+    if (nextRung) {
+      const need = nextRung.n - refs;
+      refCtaText.innerHTML = `Next: <strong>${need} more referral${need===1?"":"s"}</strong> → ${escHtml(nextRung.head)}.`;
+    } else {
+      refCtaText.innerHTML = `<strong>Maxed out.</strong> You've claimed every referral reward — Stride+ is free for a year.`;
+      // No more rungs — hide the upsell too (they've earned Stride+)
+      upPanel.style.display = "none";
+    }
+
+    // Personalise upsell card "skip N ahead of you" using queue position
+    const founderSkip = document.getElementById("founderSkip");
+    const plusSkip = document.getElementById("plusSkip");
+    if (typeof pos === "number" || /^\d+$/.test(String(pos))) {
+      const n = parseInt(pos, 10);
+      // Founder = jump to #1-100 range; Plus = top 500
+      founderSkip.textContent = Math.max(0, n - 50);
+      plusSkip.textContent = Math.max(0, n - 500);
+    }
+  }
+  // ===== end referral/upsell =====
 
   // Share link
   const shareCode = profile.share_code || hashCode(email);

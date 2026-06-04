@@ -450,7 +450,7 @@
   </div>
 
   <!-- PAID TIERS — Founder + Priority -->
-  <section class="tiers">
+  <section class="tiers" id="tiers">
     <div class="tiers-head">
       <div>
         <div class="tiers-eyebrow">Skip the queue</div>
@@ -931,6 +931,23 @@ document.getElementById("waitlistForm").addEventListener("submit", async functio
       alert("Stripe checkout link not configured yet. Paste your Stripe Payment Link into the TIERS config in index.html (search for: checkoutUrl).");
     }
   });
+
+  // Deep-link from /status.html → auto-open the modal when arriving with #tiers?tier=founder|priority
+  function openTierFromHash(){
+    const hash = window.location.hash || "";
+    const m = hash.match(/[?#&]tier=(founder|priority)/);
+    if (m) {
+      const targetBtn = document.querySelector(`.tier-cta[data-tier="${m[1]}"]`);
+      if (targetBtn) targetBtn.click();
+    }
+  }
+  // Run on load + on hash change
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", openTierFromHash);
+  } else {
+    openTierFromHash();
+  }
+  window.addEventListener("hashchange", openTierFromHash);
 })();
 </script>
 </body>
